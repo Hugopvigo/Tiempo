@@ -64,6 +64,47 @@ export interface TideForecast {
   coefficient?: number;
 }
 
+export interface MarineData {
+  hourly: {
+    time: string[];
+    waveHeight: number[];
+    waveDirection: number[];
+    wavePeriod: number[];
+  };
+  daily: {
+    date: string[];
+    waveHeightMax: number[];
+    waveDirectionDominant: number[];
+    wavePeriodMax: number[];
+  };
+}
+
+export interface SeaCondition {
+  waveHeight: number;
+  waveDirection: number;
+  wavePeriod: number;
+  label: string;
+  description: string;
+}
+
+export function getSeaConditionLabel(waveHeight: number): string {
+  if (waveHeight < 0.5) return "Calma";
+  if (waveHeight < 1.0) return "Marejadilla";
+  if (waveHeight < 2.0) return "Marejada";
+  if (waveHeight < 3.0) return "Mar gruesa";
+  if (waveHeight < 5.0) return "Mar muy gruesa";
+  return "Mar enorme";
+}
+
+export function getSeaConditionDescription(waveHeight: number): string {
+  if (waveHeight < 0.5) return "Mar en calma, ideal para navegación";
+  if (waveHeight < 1.0) return "Oleaje suave, condiciones favorables";
+  if (waveHeight < 2.0) return "Oleaje moderado, precaución en embarcaciones pequeñas";
+  if (waveHeight < 3.0) return "Oleaje fuerte, no recomendado para pequeñas embarcaciones";
+  if (waveHeight < 5.0) return "Oleaje muy fuerte, permanecer en puerto";
+  return "Condiciones extremas, peligro en la mar";
+}
+
 export interface City {
   id: string;
   name: string;
@@ -72,6 +113,7 @@ export interface City {
   lat: number;
   lon: number;
   isLocation?: boolean;
+  isCoastal?: boolean;
 }
 
 export interface WeatherAlert {
@@ -94,6 +136,9 @@ export interface AppSettings {
     storm: boolean;
     snow: boolean;
     wind: boolean;
+    heat: boolean;
+    cold: boolean;
+    coastal: boolean;
   };
   temperatureUnit: "celsius" | "fahrenheit";
   windUnit: "kmh" | "mph" | "ms" | "knots";

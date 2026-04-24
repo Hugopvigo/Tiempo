@@ -37,8 +37,9 @@ export default function RootLayout() {
           <Stack.Screen name="search" />
           <Stack.Screen name="tides" />
           <Stack.Screen name="map" />
-          <Stack.Screen name="settings" />
-        </Stack>
+        <Stack.Screen name="settings" />
+        <Stack.Screen name="alert-detail" />
+      </Stack>
       </ThemeProvider>
     </QueryClientProvider>
   );

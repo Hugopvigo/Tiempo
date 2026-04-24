@@ -1,4 +1,4 @@
-import type { WeatherData } from "@/types/weather";
+import type { WeatherData, MarineData } from "@/types/weather";
 import { weatherCodeToCondition, conditionToDescription, conditionToIcon } from "@/constants/weather";
 
 const BASE_URL = "https://api.open-meteo.com/v1";
@@ -153,7 +153,24 @@ export async function searchCities(query: string) {
   }));
 }
 
-export async function getMarineWeather(lat: number, lon: number) {
+interface MarineApiResponse {
+  latitude: number;
+  longitude: number;
+  hourly: {
+    time: string[];
+    wave_height: number[];
+    wave_direction: number[];
+    wave_period: number[];
+  };
+  daily: {
+    time: string[];
+    wave_height_max: number[];
+    wave_direction_dominant: number[];
+    wave_period_max: number[];
+  };
+}
+
+export async function getMarineWeather(lat: number, lon: number): Promise<MarineData> {
   const params = new URLSearchParams({
     latitude: lat.toString(),
     longitude: lon.toString(),
@@ -166,5 +183,20 @@ export async function getMarineWeather(lat: number, lon: number) {
   const res = await fetch(`https://marine-api.open-meteo.com/v1/forecast?${params}`);
   if (!res.ok) throw new Error(`Marine API error: ${res.status}`);
 
-  return res.json();
+  const data: MarineApiResponse = await res.json();
+
+  return {
+    hourly: {
+      time: data.hourly.time,
+      waveHeight: data.hourly.wave_height,
+      waveDirection: data.hourly.wave_direction,
+      wavePeriod: data.hourly.wave_period,
+    },
+    daily: {
+      date: data.daily.time,
+      waveHeightMax: data.daily.wave_height_max,
+      waveDirectionDominant: data.daily.wave_direction_dominant,
+      wavePeriodMax: data.daily.wave_period_max,
+    },
+  };
 }

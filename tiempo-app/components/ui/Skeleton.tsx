@@ -86,3 +86,42 @@ export function WeatherDetailsSkeleton() {
     </View>
   );
 }
+
+export function SeaConditionSkeleton() {
+  return (
+    <View style={{ padding: 16, gap: 12 }}>
+      <SkeletonBox width={120} height={16} borderRadius={8} />
+      <SkeletonBox width={160} height={32} borderRadius={8} />
+      <SkeletonBox width={240} height={18} borderRadius={8} />
+      <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
+        <SkeletonBox width="33%" height={60} />
+        <SkeletonBox width="33%" height={60} />
+        <SkeletonBox width="33%" height={60} />
+      </View>
+    </View>
+  );
+}
+
+export function TideChartSkeleton() {
+  return (
+    <View style={{ padding: 16, gap: 12 }}>
+      <SkeletonBox width={160} height={16} borderRadius={8} />
+      <SkeletonBox width="100%" height={180} />
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <SkeletonBox width={80} height={14} borderRadius={6} />
+        <SkeletonBox width={80} height={14} borderRadius={6} />
+      </View>
+    </View>
+  );
+}
+
+export function TideTableSkeleton() {
+  return (
+    <View style={{ padding: 16, gap: 12 }}>
+      <SkeletonBox width={100} height={16} borderRadius={8} />
+      {Array.from({ length: 7 }).map((_, i) => (
+        <SkeletonBox key={i} width="100%" height={36} borderRadius={8} />
+      ))}
+    </View>
+  );
+}

@@ -5,25 +5,51 @@ import { CurrentWeather, HourlyForecastCard, DailyForecastCard, WeatherDetails }
 import { CurrentWeatherSkeleton, HourlyForecastSkeleton, DailyForecastSkeleton, WeatherDetailsSkeleton } from "@/components/ui/Skeleton";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { CitySelector } from "@/components/city";
+import { AlertBanner } from "@/components/alerts";
 import { useWeather } from "@/hooks/useWeather";
+import { useLocalAlerts } from "@/hooks/useAlerts";
 import { useCities } from "@/hooks/useCities";
 import { useThemeContext } from "@/components/theme";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { TouchableOpacity } from "react-native";
 import { ChevronDown } from "lucide-react-native";
+import { requestNotificationPermissions, setupNotificationChannel, setBadgeCount } from "@/services/notifications";
+import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
+import { useSettingsStore } from "@/stores/cityStore";
 
 export default function HomeScreen() {
   const { isDark } = useThemeContext();
   const { activeCity } = useCities();
+  const { settings } = useSettingsStore();
   const { data: weather, isLoading, error, refetch, isRefetching } = useWeather(
     activeCity.lat,
     activeCity.lon,
     activeCity.name
   );
+  const alerts = useLocalAlerts(weather);
   const [showCitySelector, setShowCitySelector] = useState(false);
 
   const condition = weather?.current.condition ?? "clear";
   const iconColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)";
+
+  useEffect(() => {
+    setupNotificationChannel();
+    if (settings.notifications.enabled) {
+      requestNotificationPermissions().then((granted) => {
+        if (granted) registerBackgroundFetch();
+      });
+    } else {
+      unregisterBackgroundFetch();
+    }
+  }, [settings.notifications.enabled]);
+
+  useEffect(() => {
+    if (alerts.length > 0 && settings.notifications.enabled) {
+      setBadgeCount(alerts.length);
+    } else {
+      setBadgeCount(0);
+    }
+  }, [alerts.length, settings.notifications.enabled]);
 
   return (
     <DynamicBackground condition={condition}>
@@ -49,6 +75,10 @@ export default function HomeScreen() {
             </ThemedText>
             <ChevronDown size={18} color={iconColor} />
           </TouchableOpacity>
+
+          {weather && alerts.length > 0 && (
+            <AlertBanner alerts={alerts} />
+          )}
 
           {isLoading && (
             <View style={{ gap: 12 }}>

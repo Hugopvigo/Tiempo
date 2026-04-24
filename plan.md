@@ -82,28 +82,27 @@ tiempo-app/
 ## Fases de Implementación
 
 ### Fase 0 — Scaffolding
-- [ ] Crear proyecto con `npx create-expo-app` + template TypeScript
-- [ ] Instalar y configurar Expo Router v4
-- [ ] Instalar y configurar NativeWind v4
-- [ ] Instalar Zustand, TanStack Query, MMKV, Reanimated, Skia, Lucide
-- [ ] Crear estructura de carpetas
-- [ ] Configurar ThemeProvider (claro/oscuro + sistema)
-- [ ] Configurar providers root (QueryClient, Theme, MMKV)
-- [ ] Limpiar archivos legacy (HTML, CSS, Python, subdirectorio Tiempo/)
-- [ ] Configurar EAS Build para Android
-- [ ] Configurar TypeScript estricto
+- [x] Crear proyecto con `npx create-expo-app` + template TypeScript
+- [x] Instalar y configurar Expo Router v4
+- [x] Instalar y configurar NativeWind v4
+- [x] Instalar Zustand, TanStack Query, MMKV, Reanimated, Lucide
+- [x] Crear estructura de carpetas
+- [x] Configurar ThemeProvider (claro/oscuro + sistema)
+- [x] Configurar providers root (QueryClient, Theme, MMKV)
+- [x] Limpiar archivos legacy (HTML, CSS, Python, subdirectorio Tiempo/)
+- [x] Configurar TypeScript estricto
 
 ### Fase 1 — Core: Previsión Actual + 7 días
-- [ ] Servicio `openmeteo.ts`: función `getWeather(lat, lon)`
-- [ ] Servicio `aemet.ts`: función `getWeatherAEMET(codigoMunicipio)`
-- [ ] Hook `useWeather(lat, lon)` con TanStack Query (stale 10min, cache 30min)
-- [ ] Fallback automático AEMET → Open-Meteo
-- [ ] Pantalla principal: fondo degradado dinámico por condición + modo
-- [ ] Card tiempo actual (temp, sensación, humedad, viento, UV)
-- [ ] Previsión horaria (scroll horizontal, 24h)
-- [ ] Previsión diaria (7 días, max/min, icono, prob. lluvia)
-- [ ] Skeleton loaders
-- [ ] Mapeo condición → icono + gradiente (claro/oscuro)
+- [x] Servicio `openmeteo.ts`: función `getWeather(lat, lon)`
+- [x] Servicio `aemet.ts`: stub con funciones definidas
+- [x] Hook `useWeather(lat, lon)` con TanStack Query (stale 10min, cache 30min)
+- [x] Pantalla principal: fondo degradado dinámico por condición + modo
+- [x] Card tiempo actual (temp, sensación, humedad, viento, UV)
+- [x] Previsión horaria (scroll horizontal, 24h)
+- [x] Previsión diaria (7 días, max/min, icono, prob. lluvia)
+- [x] Skeleton loaders con shimmer
+- [x] Mapeo condición → icono + gradiente (claro/oscuro)
+- [x] Pull-to-refresh
 
 ### Fase 2 — Gestión de Ciudades
 - [x] Servicio `geocoding.ts`: búsqueda con Open-Meteo Geocoding
@@ -118,26 +117,30 @@ tiempo-app/
 - [x] Transición animada al cambiar ciudad
 
 ### Fase 3 — Mareas
-- [ ] Servicio Open-Meteo Marine API
-- [ ] Servicio AEMET mareas
-- [ ] Hook `useTides(lat, lon)`
-- [ ] Gráfico de mareas con Skia (curva sinusoidal)
-- [ ] Tabla mareas: hora, altura, tipo (alta/baja), coeficiente
-- [ ] Solo visible para ciudades costeras
-- [ ] Previsión mareas de la semana
-- [ ] Adaptación visual al modo claro/oscuro
+- [x] Servicio Open-Meteo Marine API (tipado fuerte, snake→camelCase)
+- [x] Hook `useTides(lat, lon)` + `useCurrentSeaCondition(lat, lon)`
+- [x] Gráfico de mareas con SVG (curva Bézier 24h, fill + grid)
+- [x] Tabla mareas 7 días: oleaje, dirección, periodo
+- [x] Detección automática de ciudad costera (`isCoastalCity()`)
+- [x] Card estado del mar actual (altura, dirección, periodo, alerta)
+- [x] Selector de día (tabs: Hoy, Lun, Mar...)
+- [x] Pantalla "ciudad interior" cuando no es costera
+- [x] Skeleton loaders para mareas
+- [x] Adaptación visual al modo claro/oscuro
+- [ ] Servicio AEMET mareas (pendiente API key)
 
 ### Fase 4 — Notificaciones y Alertas
-- [ ] Expo Notifications setup
-- [ ] Servicio AEMET Avisos (avisos por zona costera/provincia)
-- [ ] Hook `useAlerts(codigoProvincia)`
-- [ ] Notificaciones push para avisos AEMET
-- [ ] Configuración de umbral por ciudad
-- [ ] Background fetch periódico
-- [ ] Badge en icono de app
-- [ ] Banner de alerta en pantalla principal (color según severidad)
-- [ ] Pantalla de detalle de alerta
-- [ ] Ajustes de notificaciones por tipo (lluvia, tormenta, nieve, viento)
+- [x] Alertas locales generadas desde datos de previsión (viento, UV, tormenta, lluvia, nieve, frío, calor, niebla)
+- [x] Servicio AEMET Avisos (parsing tipado, fallback si no hay key)
+- [x] Hook `useLocalAlerts(weather)` + `useAlerts(zonaCode)`
+- [x] AlertBanner en pantalla principal (color por severidad, dismiss, navegación a detalle)
+- [x] AlertList + AlertRow (lista de avisos con icono, severidad, timestamps)
+- [x] Pantalla detalle de alerta (título, descripción, inicio/fin, severidad, link AEMET)
+- [x] Expo Notifications setup + permisos + canal Android
+- [x] Background fetch periódico (30min) para alertas
+- [x] Badge en icono de app (número de alertas activas)
+- [x] Ajustes de notificaciones por tipo (lluvia, tormenta, nieve, viento, calor, frío, costera)
+- [x] `AppSettings.notifications` ampliado con heat/cold/coastal
 
 ### Fase 5 — Mapa Meteorológico
 - [ ] `@rnmapbox/maps` con Mapbox

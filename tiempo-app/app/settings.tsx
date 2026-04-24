@@ -1,13 +1,16 @@
-import { View, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, ScrollView, TouchableOpacity, Alert, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeContext, ThemedText, ThemedCard } from "@/components/theme";
 import { useSettingsStore, useCityStore } from "@/stores/cityStore";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { SwipeableCityRow } from "@/components/city";
 import { useRouter } from "expo-router";
-import { Moon, Sun, Monitor, Plus, Navigation, Thermometer } from "lucide-react-native";
+import { Moon, Sun, Monitor, Plus, Navigation, Thermometer, Bell, CloudRain, CloudLightning, Snowflake, Wind, ThermometerSun, ThermometerSnowflake, Waves } from "lucide-react-native";
 import { useLocation } from "@/hooks/useLocation";
+import { requestNotificationPermissions, setupNotificationChannel } from "@/services/notifications";
+import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
 import type { ThemeMode } from "@/types/weather";
+import { useEffect } from "react";
 
 export default function SettingsScreen() {
   const { isDark } = useThemeContext();
@@ -150,9 +153,138 @@ export default function SettingsScreen() {
             </View>
           </View>
         </ThemedCard>
+
+        <ThemedCard style={{ marginBottom: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 }}>
+            <Bell size={16} color={iconColor} />
+            <ThemedText
+              secondary
+              style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}
+            >
+              Notificaciones
+            </ThemedText>
+          </View>
+
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <ThemedText style={{ fontSize: 16 }}>Activar alertas</ThemedText>
+            <Switch
+              value={settings.notifications.enabled}
+              onValueChange={(enabled) => {
+                if (enabled) {
+                  requestNotificationPermissions().then((granted) => {
+                    if (granted) {
+                      setupNotificationChannel();
+                      registerBackgroundFetch();
+                      updateSettings({ notifications: { ...settings.notifications, enabled: true } });
+                    } else {
+                      Alert.alert("Permiso denegado", "Activa las notificaciones en los ajustes del sistema.");
+                    }
+                  });
+                } else {
+                  unregisterBackgroundFetch();
+                  updateSettings({ notifications: { ...settings.notifications, enabled: false } });
+                }
+              }}
+              trackColor={{ false: isDark ? "#333" : "#E0E0E0", true: isDark ? "#5AC8FA" : "#007AFF" }}
+              thumbColor="#FFF"
+            />
+          </View>
+
+          {settings.notifications.enabled && (
+            <View style={{ gap: 10, marginTop: 4 }}>
+              <NotificationToggle
+                label="Lluvia"
+                icon={CloudRain}
+                value={settings.notifications.rain}
+                onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, rain: v } })}
+                iconColor={iconColor}
+                isDark={isDark}
+              />
+              <NotificationToggle
+                label="Tormenta"
+                icon={CloudLightning}
+                value={settings.notifications.storm}
+                onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, storm: v } })}
+                iconColor={iconColor}
+                isDark={isDark}
+              />
+              <NotificationToggle
+                label="Nieve"
+                icon={Snowflake}
+                value={settings.notifications.snow}
+                onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, snow: v } })}
+                iconColor={iconColor}
+                isDark={isDark}
+              />
+              <NotificationToggle
+                label="Viento"
+                icon={Wind}
+                value={settings.notifications.wind}
+                onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, wind: v } })}
+                iconColor={iconColor}
+                isDark={isDark}
+              />
+              <NotificationToggle
+                label="Calor / UV"
+                icon={ThermometerSun}
+                value={settings.notifications.heat}
+                onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, heat: v } })}
+                iconColor={iconColor}
+                isDark={isDark}
+              />
+              <NotificationToggle
+                label="Frío"
+                icon={ThermometerSnowflake}
+                value={settings.notifications.cold}
+                onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, cold: v } })}
+                iconColor={iconColor}
+                isDark={isDark}
+              />
+              <NotificationToggle
+                label="Costera"
+                icon={Waves}
+                value={settings.notifications.coastal}
+                onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, coastal: v } })}
+                iconColor={iconColor}
+                isDark={isDark}
+              />
+            </View>
+          )}
+        </ThemedCard>
       </ScrollView>
 
       <BottomNavBar />
     </SafeAreaView>
+  );
+}
+
+function NotificationToggle({
+  label,
+  icon: Icon,
+  value,
+  onValueChange,
+  iconColor,
+  isDark,
+}: {
+  label: string;
+  icon: any;
+  value: boolean;
+  onValueChange: (v: boolean) => void;
+  iconColor: string;
+  isDark: boolean;
+}) {
+  return (
+    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <Icon size={16} color={iconColor} />
+        <ThemedText style={{ fontSize: 14 }}>{label}</ThemedText>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ false: isDark ? "#333" : "#E0E0E0", true: isDark ? "#5AC8FA" : "#007AFF" }}
+        thumbColor="#FFF"
+      />
+    </View>
   );
 }
