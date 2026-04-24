@@ -87,19 +87,24 @@ export function CitySelector({ visible, onClose }: CitySelectorProps) {
         <Pressable
           style={{
             backgroundColor: bgColor,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            borderTopLeftRadius: 32,
+            borderTopRightRadius: 32,
             maxHeight: "70%",
             paddingBottom: 20,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: -10 },
+            shadowOpacity: 0.1,
+            shadowRadius: 20,
+            elevation: 20,
           }}
           onPress={(e) => e.stopPropagation()}
         >
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
-            <ThemedText style={{ fontSize: 18, fontWeight: "600" }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 24, paddingTop: 20, paddingBottom: 12 }}>
+            <ThemedText style={{ fontSize: 20, fontWeight: "700" }}>
               Ciudades
             </ThemedText>
-            <TouchableOpacity onPress={onClose} hitSlop={8}>
-              <X size={22} color={isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)"} />
+            <TouchableOpacity onPress={onClose} hitSlop={12}>
+              <X size={24} color={isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)"} />
             </TouchableOpacity>
           </View>
 
@@ -121,16 +126,18 @@ export function CitySelector({ visible, onClose }: CitySelectorProps) {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              gap: 6,
-              paddingVertical: 14,
-              marginHorizontal: 20,
-              marginTop: 8,
-              borderRadius: 12,
-              backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
+              gap: 8,
+              paddingVertical: 16,
+              marginHorizontal: 24,
+              marginTop: 12,
+              borderRadius: 100, // Forma de píldora
+              backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+              borderWidth: 1,
+              borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
             }}
           >
-            <Plus size={18} color="#2196F3" />
-            <ThemedText style={{ fontSize: 16, fontWeight: "500", color: "#2196F3" }}>
+            <Plus size={20} color="#2196F3" />
+            <ThemedText style={{ fontSize: 16, fontWeight: "600", color: "#2196F3" }}>
               Añadir ciudad
             </ThemedText>
           </TouchableOpacity>

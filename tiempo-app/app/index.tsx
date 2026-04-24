@@ -1,6 +1,6 @@
 import { View, ScrollView, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { DynamicBackground, ThemedText } from "@/components/theme";
+import { DynamicBackground, ThemedText, AnimatedView } from "@/components/theme";
 import { CurrentWeather, HourlyForecastCard, DailyForecastCard, WeatherDetails } from "@/components/weather";
 import { CurrentWeatherSkeleton, HourlyForecastSkeleton, DailyForecastSkeleton, WeatherDetailsSkeleton } from "@/components/ui/Skeleton";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
@@ -105,30 +105,39 @@ export default function HomeScreen() {
           )}
 
           {weather && (
-            <>
-              <CurrentWeather
-                cityName={activeCity.isLocation ? "Mi ubicación" : activeCity.name}
-                temperature={weather.current.temperature}
-                feelsLike={weather.current.feelsLike}
-                condition={weather.current.condition}
-                description={weather.current.description}
-                tempMax={weather.daily[0]?.tempMax ?? 0}
-                tempMin={weather.daily[0]?.tempMin ?? 0}
-              />
+            <View style={{ gap: 16 }}>
+              <AnimatedView delay={0}>
+                <CurrentWeather
+                  cityName={activeCity.isLocation ? "Mi ubicación" : activeCity.name}
+                  temperature={weather.current.temperature}
+                  feelsLike={weather.current.feelsLike}
+                  condition={weather.current.condition}
+                  description={weather.current.description}
+                  tempMax={weather.daily[0]?.tempMax ?? 0}
+                  tempMin={weather.daily[0]?.tempMin ?? 0}
+                />
+              </AnimatedView>
 
-              <HourlyForecastCard hourly={weather.hourly} />
-              <DailyForecastCard daily={weather.daily} />
+              <AnimatedView delay={100}>
+                <HourlyForecastCard hourly={weather.hourly} />
+              </AnimatedView>
 
-              <WeatherDetails
-                feelsLike={weather.current.feelsLike}
-                humidity={weather.current.humidity}
-                windSpeed={weather.current.windSpeed}
-                windDirection={weather.current.windDirection}
-                uvIndex={weather.current.uvIndex}
-                pressure={weather.current.pressure}
-                visibility={weather.current.visibility}
-              />
-            </>
+              <AnimatedView delay={200}>
+                <DailyForecastCard daily={weather.daily} />
+              </AnimatedView>
+
+              <AnimatedView delay={300}>
+                <WeatherDetails
+                  feelsLike={weather.current.feelsLike}
+                  humidity={weather.current.humidity}
+                  windSpeed={weather.current.windSpeed}
+                  windDirection={weather.current.windDirection}
+                  uvIndex={weather.current.uvIndex}
+                  pressure={weather.current.pressure}
+                  visibility={weather.current.visibility}
+                />
+              </AnimatedView>
+            </View>
           )}
         </ScrollView>
 

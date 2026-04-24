@@ -10,14 +10,22 @@ web-build/
 expo-env.d.ts
 nativewind-env.d.ts
 
-# Native
+# Native (Android/iOS)
 .kotlin/
 *.orig.*
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
 *.mobileprovision
+local.properties
+*.apk
+*.aab
+
+# Google/Firebase (Recomendado ignorar si contienen keys sensibles)
+# google-services.json
+# GoogleService-Info.plist
 
 # Metro
 .metro-health-check*
@@ -31,8 +39,18 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# Environment variables & Secrets (CRÍTICO)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+secrets.json
+
+# EAS (Expo Application Services)
+.eas/
+credentials.json
 
 # typescript
 *.tsbuildinfo
@@ -40,6 +58,3 @@ yarn-error.*
 # generated native folders
 /ios
 /android
-
-# EAS
-.eas/
