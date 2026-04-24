@@ -3,84 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiempo — Tu Clima en Tiempo Real</title>
+    <title>Tiempo — Belleza en cada pronóstico</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="tiempo-app/assets/favicon.png" type="image/png">
-    <!-- Lucide Icons for a modern look -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div id="app-bg" class="bg-sunny"></div>
+    <div id="app-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
     
-    <main class="content">
-        <header class="fade-in">
+    <nav class="navbar fade-in">
+        <div class="container">
             <div class="logo">
-                <i data-lucide="cloud-sun" class="logo-icon"></i>
-                <h1>Tiempo</h1>
+                <div class="logo-icon-wrapper">
+                    <i data-lucide="sun" class="sun-icon"></i>
+                </div>
+                <span>Tiempo</span>
             </div>
-            <span class="badge">BETA — En Desarrollo</span>
-        </header>
+            <div class="nav-links">
+                <a href="https://github.com/Hugopvigo/Tiempo" class="btn-ghost">GitHub</a>
+                <a href="#features" class="btn-outline">Características</a>
+            </div>
+        </div>
+    </nav>
 
-        <section class="hero glass fade-in">
-            <div class="hero-text">
-                <h2>Precisión oficial. <br><span class="highlight">Estética minimalista.</span></h2>
-                <p>La app meteorológica diseñada para Android que combina datos oficiales de la <strong>AEMET</strong> con una interfaz adaptativa y moderna.</p>
-                <div class="cta-group">
-                    <a href="https://github.com/Hugopvigo/Tiempo" class="btn-primary">Ver en GitHub</a>
-                    <div class="status">
-                        <span class="status-dot"></span>
-                        Próximamente en Google Play
-                    </div>
+    <main>
+        <section class="hero container">
+            <div class="hero-content fade-in-up">
+                <span class="announcement">✨ Nueva Beta en camino</span>
+                <h1>El clima nunca se vio <span class="text-gradient">tan bien.</span></h1>
+                <p>Una experiencia meteorológica refinada. Datos precisos de AEMET envueltos en una interfaz diseñada para deleitar tus ojos.</p>
+                <div class="hero-btns">
+                    <a href="https://github.com/Hugopvigo/Tiempo" class="btn-primary">Explorar Proyecto</a>
+                    <span class="coming-soon">
+                        <i data-lucide="play"></i> Disponible pronto
+                    </span>
                 </div>
             </div>
-            <div class="hero-visual">
-                <!-- Simulación de la App -->
-                <div class="phone-mockup">
-                    <div class="phone-screen">
-                        <div class="weather-info">
-                            <span class="city">Vigo</span>
-                            <span class="temp">18°</span>
-                            <span class="condition">Parcialmente Nublado</span>
+
+            <div class="hero-visual fade-in-up delay-1">
+                <div class="app-preview">
+                    <div class="preview-header">
+                        <span class="preview-city">Vigo, ES</span>
+                        <span class="preview-temp">22°</span>
+                    </div>
+                    <div class="preview-body">
+                        <div class="card-mini">
+                            <i data-lucide="cloud-lightning" class="icon-vibrant"></i>
+                            <span>Tormenta sutil</span>
                         </div>
-                        <div class="forecast-mini">
-                            <div class="forecast-item"><span>14h</span><i data-lucide="sun"></i><span>19°</span></div>
-                            <div class="forecast-item"><span>15h</span><i data-lucide="cloud"></i><span>18°</span></div>
-                            <div class="forecast-item"><span>16h</span><i data-lucide="cloud-rain"></i><span>17°</span></div>
+                        <div class="preview-graph">
+                            <div class="bar" style="height: 60%"></div>
+                            <div class="bar" style="height: 80%"></div>
+                            <div class="bar" style="height: 40%"></div>
+                            <div class="bar" style="height: 90%"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="features grid">
-            <div class="feature-card glass">
-                <i data-lucide="waves" class="feature-icon"></i>
-                <h3>Mareas Skia</h3>
-                <p>Gráficos sinusoidales en tiempo real para zonas costeras.</p>
+        <section id="features" class="features container">
+            <div class="section-title fade-in-up">
+                <h2>Diseño que respira</h2>
+                <p>No es solo una app del tiempo, es tu ventana al exterior.</p>
             </div>
-            <div class="feature-card glass">
-                <i data-lucide="map" class="feature-icon"></i>
-                <h3>Mapas Pro</h3>
-                <p>Capas interactivas de lluvia, viento y temperatura.</p>
-            </div>
-            <div class="feature-card glass">
-                <i data-lucide="bell" class="feature-icon"></i>
-                <h3>Alertas AEMET</h3>
-                <p>Notificaciones directas de avisos oficiales.</p>
+            <div class="feature-grid">
+                <div class="f-card fade-in-up delay-1">
+                    <div class="f-icon purple"><i data-lucide="palette"></i></div>
+                    <h3>Gradients Vivos</h3>
+                    <p>Fondos que cambian con la hora del día y la humedad.</p>
+                </div>
+                <div class="f-card fade-in-up delay-2">
+                    <div class="f-icon blue"><i data-lucide="waves"></i></div>
+                    <h3>Mareas Skia</h3>
+                    <p>Visualización fluida de las costas gallegas y españolas.</p>
+                </div>
+                <div class="f-card fade-in-up delay-3">
+                    <div class="f-icon orange"><i data-lucide="zap"></i></div>
+                    <h3>Motor MMKV</h3>
+                    <p>Velocidad instantánea. Sin esperas, sin lag.</p>
+                </div>
             </div>
         </section>
-
-        <footer class="fade-in">
-            <p>Desarrollado con ❤️ por <strong>Hugo Perez-Vigo</strong></p>
-            <div class="social-links">
-                <a href="https://github.com/Hugopvigo" target="_blank"><i data-lucide="github"></i></a>
-            </div>
-        </footer>
     </main>
 
+    <footer class="container">
+        <div class="footer-content">
+            <p>© 2026 Tiempo App · Creado por <strong>Hugo Perez-Vigo</strong></p>
+        </div>
+    </footer>
+
     <script src="script.js"></script>
-    <script>
-      lucide.createIcons();
-    </script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>

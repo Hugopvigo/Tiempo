@@ -1,30 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const bg = document.getElementById('app-bg');
-    const weatherStates = ['bg-sunny', 'bg-cloudy', 'bg-rainy'];
-    let currentState = 0;
-
-    /**
-     * Cicla suavemente entre diferentes estados climáticos para el fondo
-     */
-    const cycleBackground = () => {
-        bg.classList.remove(...weatherStates);
-        currentState = (currentState + 1) % weatherStates.length;
-        bg.classList.add(weatherStates[currentState]);
+    // Animación de las barras de la gráfica en la preview
+    const bars = document.querySelectorAll('.bar');
+    
+    const animateBars = () => {
+        bars.forEach(bar => {
+            const randomHeight = Math.floor(Math.random() * 60) + 20;
+            bar.style.height = `${randomHeight}%`;
+        });
     };
 
-    // Cambiar fondo cada 8 segundos
-    setInterval(cycleBackground, 8000);
+    // Animar barras cada 3 segundos
+    setInterval(animateBars, 3000);
 
-    // Efecto de scroll sutil para los elementos glass
-    window.addEventListener('scroll', () => {
-        const scrolled = window.scrollY;
-        const cards = document.querySelectorAll('.glass');
+    // Efecto sutil de movimiento en los Blobs del fondo al mover el ratón
+    document.addEventListener('mousemove', (e) => {
+        const x = e.clientX / window.innerWidth;
+        const y = e.clientY / window.innerHeight;
         
-        cards.forEach((card, index) => {
-            const speed = 0.05 + (index * 0.02);
-            card.style.transform = `translateY(${scrolled * -speed}px)`;
+        const blobs = document.querySelectorAll('.blob');
+        blobs.forEach((blob, index) => {
+            const speed = (index + 1) * 20;
+            blob.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
         });
     });
 
-    console.log("🌦️ Tiempo Landing Page cargada. Diseño en desarrollo.");
+    console.log("✨ Tiempo Landing: Versión Refinada cargada.");
 });
