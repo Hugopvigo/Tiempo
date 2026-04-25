@@ -54,94 +54,94 @@ export default function HomeScreen() {
   return (
     <DynamicBackground condition={condition}>
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              onRefresh={refetch}
-              tintColor={isDark ? "#FFFFFF" : "#1C1C1E"}
-            />
-          }
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={isDark ? "#FFFFFF" : "#1C1C1E"}
+          />
+        }
+      >
+        <TouchableOpacity
+          onPress={() => setShowCitySelector(true)}
+          activeOpacity={0.6}
+          style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingTop: 8, paddingBottom: 4, gap: 4 }}
         >
-          <TouchableOpacity
-            onPress={() => setShowCitySelector(true)}
-            activeOpacity={0.6}
-            style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingTop: 8, paddingBottom: 4, gap: 4 }}
-          >
-            <ThemedText style={{ fontSize: 16, fontWeight: "500" }}>
-              {activeCity.isLocation ? "Mi ubicación" : activeCity.name}
+          <ThemedText style={{ fontSize: 16, fontWeight: "500" }}>
+            {activeCity.isLocation ? "Mi ubicación" : activeCity.name}
+          </ThemedText>
+          <ChevronDown size={18} color={iconColor} />
+        </TouchableOpacity>
+
+        {weather && alerts.length > 0 && (
+          <AlertBanner alerts={alerts} />
+        )}
+
+        {isLoading && (
+          <View style={{ gap: 12 }}>
+            <CurrentWeatherSkeleton />
+            <HourlyForecastSkeleton />
+            <DailyForecastSkeleton />
+            <WeatherDetailsSkeleton />
+          </View>
+        )}
+
+        {error && (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center", minHeight: 400 }}>
+            <ThemedText secondary style={{ fontSize: 18, textAlign: "center" }}>
+              No se pudo cargar el tiempo
             </ThemedText>
-            <ChevronDown size={18} color={iconColor} />
-          </TouchableOpacity>
+            <ThemedText
+              secondary
+              style={{ fontSize: 14, marginTop: 8, textDecorationLine: "underline" }}
+              onPress={() => refetch()}
+            >
+              Reintentar
+            </ThemedText>
+          </View>
+        )}
 
-          {weather && alerts.length > 0 && (
-            <AlertBanner alerts={alerts} />
-          )}
+        {weather && (
+          <View style={{ gap: 16 }}>
+            <AnimatedView delay={0}>
+              <CurrentWeather
+                cityName={activeCity.isLocation ? "Mi ubicación" : activeCity.name}
+                temperature={weather.current.temperature}
+                feelsLike={weather.current.feelsLike}
+                condition={weather.current.condition}
+                description={weather.current.description}
+                tempMax={weather.daily[0]?.tempMax ?? 0}
+                tempMin={weather.daily[0]?.tempMin ?? 0}
+              />
+            </AnimatedView>
 
-          {isLoading && (
-            <View style={{ gap: 12 }}>
-              <CurrentWeatherSkeleton />
-              <HourlyForecastSkeleton />
-              <DailyForecastSkeleton />
-              <WeatherDetailsSkeleton />
-            </View>
-          )}
+            <AnimatedView delay={100}>
+              <HourlyForecastCard hourly={weather.hourly} />
+            </AnimatedView>
 
-          {error && (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", minHeight: 400 }}>
-              <ThemedText secondary style={{ fontSize: 18, textAlign: "center" }}>
-                No se pudo cargar el tiempo
-              </ThemedText>
-              <ThemedText
-                secondary
-                style={{ fontSize: 14, marginTop: 8, textDecorationLine: "underline" }}
-                onPress={() => refetch()}
-              >
-                Reintentar
-              </ThemedText>
-            </View>
-          )}
+            <AnimatedView delay={200}>
+              <DailyForecastCard daily={weather.daily} />
+            </AnimatedView>
 
-          {weather && (
-            <View style={{ gap: 16 }}>
-              <AnimatedView delay={0}>
-                <CurrentWeather
-                  cityName={activeCity.isLocation ? "Mi ubicación" : activeCity.name}
-                  temperature={weather.current.temperature}
-                  feelsLike={weather.current.feelsLike}
-                  condition={weather.current.condition}
-                  description={weather.current.description}
-                  tempMax={weather.daily[0]?.tempMax ?? 0}
-                  tempMin={weather.daily[0]?.tempMin ?? 0}
-                />
-              </AnimatedView>
+            <AnimatedView delay={300}>
+              <WeatherDetails
+                feelsLike={weather.current.feelsLike}
+                humidity={weather.current.humidity}
+                windSpeed={weather.current.windSpeed}
+                windDirection={weather.current.windDirection}
+                uvIndex={weather.current.uvIndex}
+                pressure={weather.current.pressure}
+                visibility={weather.current.visibility}
+              />
+            </AnimatedView>
+          </View>
+        )}
+      </ScrollView>
 
-              <AnimatedView delay={100}>
-                <HourlyForecastCard hourly={weather.hourly} />
-              </AnimatedView>
-
-              <AnimatedView delay={200}>
-                <DailyForecastCard daily={weather.daily} />
-              </AnimatedView>
-
-              <AnimatedView delay={300}>
-                <WeatherDetails
-                  feelsLike={weather.current.feelsLike}
-                  humidity={weather.current.humidity}
-                  windSpeed={weather.current.windSpeed}
-                  windDirection={weather.current.windDirection}
-                  uvIndex={weather.current.uvIndex}
-                  pressure={weather.current.pressure}
-                  visibility={weather.current.visibility}
-                />
-              </AnimatedView>
-            </View>
-          )}
-        </ScrollView>
-
-        <BottomNavBar />
+      <BottomNavBar />
 
         <CitySelector
           visible={showCitySelector}

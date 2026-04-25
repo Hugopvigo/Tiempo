@@ -37,7 +37,7 @@ export default function TidesScreen() {
       <DynamicBackground condition="clear">
         <SafeAreaView style={{ flex: 1 }}>
           <ScrollView
-            contentContainerStyle={{ padding: 20, paddingBottom: 40, flexGrow: 1 }}
+            contentContainerStyle={{ padding: 20, paddingBottom: 32, flexGrow: 1 }}
           >
             <TouchableOpacity
               onPress={() => setShowCitySelector(true)}
@@ -118,9 +118,9 @@ export default function TidesScreen() {
   return (
     <DynamicBackground condition="clear">
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
-          showsVerticalScrollIndicator={false}
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}

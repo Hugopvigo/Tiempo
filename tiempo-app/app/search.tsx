@@ -174,6 +174,7 @@ export default function SearchScreen() {
         data={results}
         keyExtractor={(item) => item.id}
         style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 8 }}
         renderItem={({ item }) => (
           <SearchResultItem
             city={item}
