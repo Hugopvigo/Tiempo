@@ -1,22 +1,16 @@
-import Animated, { 
-  FadeInDown, 
-  Layout 
-} from "react-native-reanimated";
+import { View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import type { ReactNode } from "react";
-import type { ViewProps } from "react-native";
 
-interface AnimatedViewProps extends ViewProps {
+interface AnimatedViewProps {
   children: ReactNode;
   delay?: number;
 }
 
-export function AnimatedView({ children, delay = 0, style, ...props }: AnimatedViewProps) {
+export function AnimatedView({ children, delay = 0 }: AnimatedViewProps) {
   return (
     <Animated.View
-      entering={FadeInDown.delay(delay).duration(600).springify().damping(15)}
-      layout={Layout.springify()}
-      style={style}
-      {...props}
+      entering={FadeInDown.duration(400).delay(delay)}
     >
       {children}
     </Animated.View>
