@@ -1,11 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   getRainViewerData,
   getRadarTileUrl,
   getSatelliteTileUrl,
   getRadarTimestamps,
+  getOpenWeatherMapTileUrl,
   type RainViewerData,
 } from "@/services/weatherLayers";
+import { useSettingsStore } from "@/stores/cityStore";
+
+const OWM_LAYER_MAP: Record<string, string> = {
+  temperature: "temp_new",
+  wind: "wind_new",
+  visibility: "clouds_new",
+  waves: "precipitation_new",
+};
 
 export function useWeatherLayers() {
   const [data, setData] = useState<RainViewerData | null>(null);
@@ -14,6 +23,8 @@ export function useWeatherLayers() {
   const [timestamps, setTimestamps] = useState<number[]>([]);
   const [frameIndex, setFrameIndex] = useState<number>(-1);
   const [loading, setLoading] = useState(true);
+  const { settings } = useSettingsStore();
+  const owmApiKey = settings.openWeatherMapApiKey ?? "";
 
   useEffect(() => {
     getRainViewerData().then((d) => {
@@ -37,14 +48,32 @@ export function useWeatherLayers() {
     setRadarUrl(getRadarTileUrl(data, idx));
   };
 
+  const owmLayers = useMemo(() => {
+    const result: Record<string, string | null> = {};
+    for (const [layer, owmId] of Object.entries(OWM_LAYER_MAP)) {
+      result[layer] = getOpenWeatherMapTileUrl(owmId, owmApiKey);
+    }
+    return result;
+  }, [owmApiKey]);
+
+  const availableLayers = useMemo(() => {
+    const layers: string[] = ["precipitation", "clouds"];
+    if (owmApiKey) {
+      layers.push("temperature", "wind", "visibility", "waves");
+    }
+    return layers;
+  }, [owmApiKey]);
+
   return {
     radarUrl,
     satelliteUrl,
+    owmLayers,
+    availableLayers,
     timestamps,
     frameIndex,
     selectFrame,
     loading,
     hasRadar: (data?.radarPast.length ?? 0) > 0,
-    hasSatellite: (data?.satelliteInfrared.length ?? 0) > 0,
+    hasSatellite: true,
   };
 }

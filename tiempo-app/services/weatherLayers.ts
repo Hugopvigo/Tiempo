@@ -40,10 +40,17 @@ export function getRadarTileUrl(data: RainViewerData, frameIndex?: number): stri
 
 export function getSatelliteTileUrl(data: RainViewerData, frameIndex?: number): string | null {
   const frames = data.satelliteInfrared;
-  if (frames.length === 0) return null;
+  if (frames.length === 0) {
+    return `${data.host}/v2/satellite/infrared/256/{z}/{x}/{y}/0/0_0.png`;
+  }
   const idx = frameIndex ?? frames.length - 1;
   const frame = frames[Math.min(idx, frames.length - 1)];
   return `${data.host}${frame.path}/256/{z}/{x}/{y}/0/0_0.png`;
+}
+
+export function getOpenWeatherMapTileUrl(layer: string, apiKey: string): string | null {
+  if (!apiKey) return null;
+  return `https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${apiKey}`;
 }
 
 export function getRadarTimestamps(data: RainViewerData): number[] {

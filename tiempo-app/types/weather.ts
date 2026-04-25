@@ -142,4 +142,5 @@ export interface AppSettings {
   };
   temperatureUnit: "celsius" | "fahrenheit";
   windUnit: "kmh" | "mph" | "ms" | "knots";
+  openWeatherMapApiKey?: string;
 }

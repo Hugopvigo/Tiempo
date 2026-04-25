@@ -9,47 +9,47 @@ interface ThemeGradients {
 
 export const themeGradients: ThemeGradients = {
   light: {
-    clear: ["#FF9A3C", "#FFCF4A"],
-    partly_cloudy: ["#5EB5F7", "#3AA0E8"],
-    cloudy: ["#A8C8E8", "#C5DCF0"],
-    rain: ["#4CA8E0", "#6B8FD6"],
-    storm: ["#2A5298", "#3A6FCF"],
-    snow: ["#D8C0F0", "#A0C8F0"],
-    fog: ["#8AB8D8", "#A0C0B0"],
-    night_clear: ["#2C4A6E", "#1A2D44"],
-    night_cloudy: ["#4A3A90", "#2E1A58"],
+    clear: ["#FFC86B", "#FFDAB9"],      // Atardecer/Día claro cálido
+    partly_cloudy: ["#82C1FF", "#BEE3F8"], // Azul cielo suave
+    cloudy: ["#E2E8F0", "#CBD5E0"],      // Gris azulado claro
+    rain: ["#90CDF4", "#A3BFFA"],        // Lluvia suave/azulada
+    storm: ["#BEE3F8", "#90CDF4"],       // Tormenta (más claro para contraste)
+    snow: ["#EDF2F7", "#E2E8F0"],        // Nieve muy suave
+    fog: ["#CBD5E0", "#E2E8F0"],         // Niebla clara
+    night_clear: ["#E2E8F0", "#CBD5E0"], // Noche clara (Grisáceo muy suave)
+    night_cloudy: ["#CBD5E0", "#A0AEC0"], // Noche nublada (Gris suave)
   },
   dark: {
-    clear: ["#F2994A", "#F2C94C"],
-    partly_cloudy: ["#2C3E50", "#4CA1AF"],
-    cloudy: ["#1F1C2C", "#928DAB"],
-    rain: ["#000046", "#1CB5E0"],
-    storm: ["#0F2027", "#2C5364"],
-    snow: ["#2980B9", "#6DD5FA"],
-    fog: ["#3E5151", "#DECBA4"],
-    night_clear: ["#000000", "#434343"],
-    night_cloudy: ["#0F0C29", "#302B63"],
+    clear: ["#1A202C", "#2D3748"],      // Noche profunda
+    partly_cloudy: ["#2D3748", "#1A202C"],
+    cloudy: ["#171923", "#2D3748"],
+    rain: ["#1A365D", "#2A4365"],
+    storm: ["#171923", "#2C5282"],
+    snow: ["#2D3748", "#4A5568"],
+    fog: ["#2D3748", "#1A202C"],
+    night_clear: ["#0F172A", "#1E293B"], // Noche premium
+    night_cloudy: ["#1E293B", "#334155"],
   },
 };
 
 export const cardBackground = {
-  light: "#FFFFFF",
-  dark: "rgba(30, 30, 30, 0.6)",
+  light: "rgba(255, 255, 255, 0.7)",
+  dark: "rgba(30, 41, 59, 0.4)",
 };
 
 export const cardBorder = {
-  light: "rgba(0, 0, 0, 0.05)",
-  dark: "rgba(255, 255, 255, 0.08)",
+  light: "rgba(255, 255, 255, 0.3)",
+  dark: "rgba(255, 255, 255, 0.05)",
 };
 
 export const textColor = {
-  light: "#2D3748",
-  dark: "#FFFFFF",
+  light: "#1A202C",
+  dark: "#F8FAFC",
 };
 
 export const secondaryTextColor = {
-  light: "#718096",
-  dark: "rgba(255, 255, 255, 0.5)",
+  light: "#4A5568",
+  dark: "#94A3B8",
 };
 
 export const screenBackground = {

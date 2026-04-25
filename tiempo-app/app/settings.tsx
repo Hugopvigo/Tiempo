@@ -1,4 +1,4 @@
-import { View, ScrollView, TouchableOpacity, Alert, Switch } from "react-native";
+import { View, ScrollView, TouchableOpacity, Alert, Switch, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeContext, ThemedText, ThemedCard } from "@/components/theme";
 import { screenBackground } from "@/constants/theme";
@@ -6,12 +6,12 @@ import { useSettingsStore, useCityStore } from "@/stores/cityStore";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { SwipeableCityRow } from "@/components/city";
 import { useRouter } from "expo-router";
-import { Moon, Sun, Monitor, Plus, Navigation, Thermometer, Bell, CloudRain, CloudLightning, Snowflake, Wind, ThermometerSun, ThermometerSnowflake, Waves } from "lucide-react-native";
+import { Moon, Sun, Monitor, Plus, Navigation, Thermometer, Bell, CloudRain, CloudLightning, Snowflake, Wind, ThermometerSun, ThermometerSnowflake, Waves, Key } from "lucide-react-native";
 import { useLocation } from "@/hooks/useLocation";
 import { requestNotificationPermissions, setupNotificationChannel } from "@/services/notifications";
 import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
 import type { ThemeMode } from "@/types/weather";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function SettingsScreen() {
   const { isDark } = useThemeContext();
@@ -251,10 +251,33 @@ export default function SettingsScreen() {
               />
             </View>
           )}
-        </ThemedCard>
-      </ScrollView>
+      </ThemedCard>
 
-      <BottomNavBar />
+      <ThemedCard style={{ marginBottom: 16 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <Key size={16} color={iconColor} />
+          <ThemedText
+            secondary
+            style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}
+          >
+            Claves API
+          </ThemedText>
+        </View>
+        <ThemedText
+          secondary
+          style={{ fontSize: 12, lineHeight: 18, marginBottom: 12 }}
+        >
+          Introduce tu clave de OpenWeatherMap para activar las capas de temperatura, viento y más en el mapa.
+        </ThemedText>
+        <ApiKeyInput
+          value={settings.openWeatherMapApiKey ?? ""}
+          onSave={(key) => updateSettings({ openWeatherMapApiKey: key })}
+          isDark={isDark}
+        />
+      </ThemedCard>
+    </ScrollView>
+
+    <BottomNavBar />
     </SafeAreaView>
   );
 }
@@ -286,6 +309,96 @@ function NotificationToggle({
         trackColor={{ false: isDark ? "#333" : "#E0E0E0", true: isDark ? "#5AC8FA" : "#007AFF" }}
         thumbColor="#FFF"
       />
+    </View>
+  );
+}
+
+function ApiKeyInput({
+  value,
+  onSave,
+  isDark,
+}: {
+  value: string;
+  onSave: (key: string) => void;
+  isDark: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+
+  const handleSave = () => {
+    onSave(draft.trim());
+    setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setDraft(value);
+    setEditing(false);
+  };
+
+  const hasKey = value.length > 0;
+
+  if (!editing) {
+    return (
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <ThemedText style={{ fontSize: 14, flex: 1 }} numberOfLines={1}>
+          {hasKey ? `${value.slice(0, 4)}${"*".repeat(Math.max(0, value.length - 4))}` : "Sin configurar"}
+        </ThemedText>
+        <TouchableOpacity
+          onPress={() => { setDraft(value); setEditing(true); }}
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 8,
+            backgroundColor: isDark ? "rgba(90,200,250,0.15)" : "rgba(0,122,255,0.1)",
+          }}
+        >
+          <ThemedText style={{ fontSize: 13, fontWeight: "500", color: isDark ? "#5AC8FA" : "#007AFF" }}>
+            {hasKey ? "Editar" : "Añadir"}
+          </ThemedText>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ gap: 10 }}>
+      <TextInput
+        value={draft}
+        onChangeText={setDraft}
+        placeholder="API Key de OpenWeatherMap"
+        placeholderTextColor={isDark ? "#666" : "#999"}
+        autoCapitalize="none"
+        autoCorrect={false}
+        spellCheck={false}
+        style={{
+          fontSize: 14,
+          paddingVertical: 10,
+          paddingHorizontal: 12,
+          borderRadius: 10,
+          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+          color: isDark ? "#FFF" : "#000",
+          fontFamily: "monospace",
+        }}
+      />
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
+        <TouchableOpacity
+          onPress={handleCancel}
+          style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8 }}
+        >
+          <ThemedText secondary style={{ fontSize: 13, fontWeight: "500" }}>Cancelar</ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleSave}
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 8,
+            backgroundColor: isDark ? "#5AC8FA" : "#007AFF",
+          }}
+        >
+          <ThemedText style={{ fontSize: 13, fontWeight: "500", color: "#FFF" }}>Guardar</ThemedText>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

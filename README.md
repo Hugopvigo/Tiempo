@@ -1,4 +1,4 @@
-# 🌦️ Tiempo — Tu Clima en Tiempo Real (BETA)
+# 🌦️ Tiempo — Tu Clima en Tiempo Real  - Version 2.0
 
 [![Expo](https://img.shields.io/badge/Expo-54+-000020.svg?style=flat&logo=expo&logoColor=white)](https://expo.dev)
 [![React Native](https://img.shields.io/badge/React_Native-0.81+-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactnative.dev)
@@ -7,6 +7,16 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Tiempo** es una aplicación meteorológica de alto rendimiento para Android, diseñada para ofrecer datos precisos con una estética minimalista inspirada en Apple Weather. Combina datos oficiales de la **AEMET** para España con la cobertura global de **Open-Meteo**.
+
+---
+
+## 📱 Vista Previa
+
+<div align="center">
+  <img src="tiempo-app/assets/screen-1.jpg" width="280" alt="Screen 1" style="border-radius: 20px; margin: 10px;" />
+  <img src="tiempo-app/assets/screen-2.jpg" width="280" alt="Screen 2" style="border-radius: 20px; margin: 10px;" />
+  <img src="tiempo-app/assets/screen-3.jpg" width="280" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
+</div>
 
 ---
 

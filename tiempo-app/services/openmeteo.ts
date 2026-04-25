@@ -180,7 +180,7 @@ export async function getMarineWeather(lat: number, lon: number): Promise<Marine
     forecast_days: "7",
   });
 
-  const res = await fetch(`https://marine-api.open-meteo.com/v1/forecast?${params}`);
+  const res = await fetch(`https://marine-api.open-meteo.com/v1/marine?${params}`);
   if (!res.ok) throw new Error(`Marine API error: ${res.status}`);
 
   const data: MarineApiResponse = await res.json();

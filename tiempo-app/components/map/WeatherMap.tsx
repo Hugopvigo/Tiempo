@@ -13,7 +13,20 @@ interface WeatherMapProps {
   onCityPress: (city: City) => void;
   radarTileUrl: string | null;
   satelliteTileUrl: string | null;
+  owmLayers: Record<string, string | null>;
   activeLayer: string;
+}
+
+function resolveTileUrl(
+  layer: string,
+  radarUrl: string | null,
+  satUrl: string | null,
+  owmLayers: Record<string, string | null>
+): string | null {
+  if (layer === "precipitation" || layer === "rain") return radarUrl;
+  if (layer === "clouds") return satUrl;
+  if (owmLayers[layer]) return owmLayers[layer];
+  return null;
 }
 
 export function WeatherMap({
@@ -22,6 +35,7 @@ export function WeatherMap({
   onCityPress,
   radarTileUrl,
   satelliteTileUrl,
+  owmLayers,
   activeLayer,
 }: WeatherMapProps) {
   const { isDark } = useThemeContext();
@@ -56,36 +70,28 @@ export function WeatherMap({
 
   const injectLayer = useCallback(() => {
     if (!webviewRef.current) return;
+    const tileUrl = resolveTileUrl(activeLayer, radarTileUrl, satelliteTileUrl, owmLayers);
+    if (!tileUrl) return;
     const js = `
-      (function(){
-        if(!window._map) return;
-        if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
-        var layerType = "${activeLayer}";
-        var radarUrl = ${radarTileUrl ? `"${radarTileUrl}"` : "null"};
-        var satUrl = ${satelliteTileUrl ? `"${satelliteTileUrl}"` : "null"};
-        var tileUrl = null;
-        if(layerType === "precipitation" || layerType === "rain") tileUrl = radarUrl;
-        else if(layerType === "clouds") tileUrl = satUrl;
-        if(tileUrl) {
-          window._overlay = L.tileLayer(tileUrl, {
-            opacity: 0.7,
-            maxZoom: 13,
-            minZoom: 3,
-          }).addTo(window._map);
-        }
-      })();
-    `;
+(function(){
+if(!window._map) return;
+if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
+window._overlay = L.tileLayer("${tileUrl}", {
+  opacity: 0.7,
+  maxZoom: 13,
+  minZoom: 3,
+}).addTo(window._map);
+})();
+`;
     webviewRef.current.injectJavaScript(js);
-  }, [activeLayer, radarTileUrl, satelliteTileUrl]);
+  }, [activeLayer, radarTileUrl, satelliteTileUrl, owmLayers]);
 
   const html = useMemo(() => {
     const markersJson = JSON.stringify(cityMarkers);
     const tileLayer = isDark
       ? "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
       : "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png";
-    const radarUrl = radarTileUrl || "";
-    const satUrl = satelliteTileUrl || "";
-    const initialLayer = activeLayer;
+    const initialTileUrl = resolveTileUrl(activeLayer, radarTileUrl, satelliteTileUrl, owmLayers) || "";
 
     return `<!DOCTYPE html>
 <html>
@@ -98,22 +104,22 @@ export function WeatherMap({
 html,body,#map{width:100%;height:100%;overflow:hidden}
 .marker-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:auto}
 .dot{
-  width:22px;height:22px;border-radius:11px;
-  background:rgba(0,122,255,0.92);
-  border:2px solid #fff;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 8px rgba(0,0,0,0.35);
+width:22px;height:22px;border-radius:11px;
+background:rgba(0,122,255,0.92);
+border:2px solid #fff;
+display:flex;align-items:center;justify-content:center;
+box-shadow:0 2px 8px rgba(0,0,0,0.35);
 }
 .dot.active{width:30px;height:30px;border-radius:15px;border-color:${isDark ? "#5AC8FA" : "#007AFF"};border-width:2.5px}
 .dot-inner{width:8px;height:8px;border-radius:4px;background:#fff}
 .dot.active .dot-inner{width:10px;height:10px;border-radius:5px}
 .dot.loc .dot-inner{background:none;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid #fff}
 .lbl{
-  background:${isDark ? "rgba(28,28,30,0.88)" : "rgba(255,255,255,0.95)"};
-  color:${isDark ? "#fff" : "#1c1c1e"};
-  padding:2px 7px;border-radius:4px;
-  font-size:10px;font-weight:600;font-family:-apple-system,sans-serif;
-  white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.15);
+background:${isDark ? "rgba(28,28,30,0.88)" : "rgba(255,255,255,0.95)"};
+color:${isDark ? "#fff" : "#1c1c1e"};
+padding:2px 7px;border-radius:4px;
+font-size:10px;font-weight:600;font-family:-apple-system,sans-serif;
+white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.15);
 }
 .lbl.active{font-size:11px}
 .leaflet-control-attribution{font-size:7px!important;background:transparent!important;color:${isDark ? "#666" : "#999"}!important}
@@ -124,63 +130,58 @@ html,body,#map{width:100%;height:100%;overflow:hidden}
 <div id="map"></div>
 <script>
 document.addEventListener("DOMContentLoaded",function(){
-  try{
-    var map=L.map("map",{
-      center:[${activeCity.lat},${activeCity.lon}],
-      zoom:6,
-      zoomControl:false,
-      attributionControl:true
-    });
-    L.tileLayer("${tileLayer}",{
-      attribution:"&copy; OSM &copy; CARTO",
-      maxZoom:13,minZoom:3,
-      subdomains:"abcd"
-    }).addTo(map);
+try{
+var map=L.map("map",{
+center:[${activeCity.lat},${activeCity.lon}],
+zoom:6,
+zoomControl:false,
+attributionControl:true
+});
+L.tileLayer("${tileLayer}",{
+attribution:"&copy; OSM &copy; CARTO",
+maxZoom:13,minZoom:3,
+subdomains:"abcd"
+}).addTo(map);
 
-    window._map=map;
-    window._overlay=null;
+window._map=map;
+window._overlay=null;
 
-    var radarUrl="${radarUrl}";
-    var satUrl="${satUrl}";
-    var layerType="${initialLayer}";
-    var tileUrl=null;
-    if((layerType==="precipitation"||layerType==="rain")&&radarUrl) tileUrl=radarUrl;
-    else if(layerType==="clouds"&&satUrl) tileUrl=satUrl;
-    if(tileUrl){
-      window._overlay=L.tileLayer(tileUrl,{opacity:0.7,maxZoom:13,minZoom:3}).addTo(map);
-    }
+var initUrl="${initialTileUrl}";
+if(initUrl){
+window._overlay=L.tileLayer(initUrl,{opacity:0.7,maxZoom:13,minZoom:3}).addTo(map);
+}
 
-    var markers=${markersJson};
-    for(var i=0;i<markers.length;i++){
-      (function(m){
-        var icon=L.divIcon({
-          className:"",
-          html:'<div class="marker-wrap">'
-            +'<div class="dot'+(m.isActive?" active":"")+(m.isLocation?" loc":"")+'"><div class="dot-inner"></div></div>'
-            +'<div class="lbl'+(m.isActive?" active":"")+'">'+m.name+'</div>'
-            +'</div>',
-          iconSize:[44,44],
-          iconAnchor:[22,22]
-        });
-        var marker=L.marker([m.lat,m.lon],{icon:icon}).addTo(map);
-        marker.on("click",function(){
-          if(window.ReactNativeWebView){
-            window.ReactNativeWebView.postMessage(JSON.stringify({type:"cityPress",cityId:m.id}));
-          }
-        });
-      })(markers[i]);
-    }
+var markers=${markersJson};
+for(var i=0;i<markers.length;i++){
+(function(m){
+var icon=L.divIcon({
+className:"",
+html:'<div class="marker-wrap">'
++'<div class="dot'+(m.isActive?" active":"")+(m.isLocation?" loc":"")+'"><div class="dot-inner"></div></div>'
++'<div class="lbl'+(m.isActive?" active":"")+'">'+m.name+'</div>'
++'</div>',
+iconSize:[44,44],
+iconAnchor:[22,22]
+});
+var marker=L.marker([m.lat,m.lon],{icon:icon}).addTo(map);
+marker.on("click",function(){
+if(window.ReactNativeWebView){
+window.ReactNativeWebView.postMessage(JSON.stringify({type:"cityPress",cityId:m.id}));
+}
+});
+})(markers[i]);
+}
 
-    setTimeout(function(){map.invalidateSize()},300);
-    window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify({type:"mapReady"}));
-  }catch(e){
-    window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify({type:"mapError",error:e.message}));
-  }
+setTimeout(function(){map.invalidateSize()},300);
+window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify({type:"mapReady"}));
+}catch(e){
+window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify({type:"mapError",error:e.message}));
+}
 });
 </script>
 </body>
 </html>`;
-  }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteTileUrl, activeLayer]);
+  }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteTileUrl, owmLayers, activeLayer]);
 
   const current = weather?.current;
   const condition = current?.condition;

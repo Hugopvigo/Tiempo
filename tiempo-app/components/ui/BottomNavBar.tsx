@@ -43,7 +43,11 @@ export function BottomNavBar() {
             return (
               <TouchableOpacity
                 key={tab.path}
-                onPress={() => router.push(tab.path as any)}
+                onPress={() => {
+                  if (pathname !== tab.path) {
+                    router.replace(tab.path as any);
+                  }
+                }}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 style={styles.tabItem}
               >

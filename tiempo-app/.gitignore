@@ -58,3 +58,6 @@ credentials.json
 # generated native folders
 /ios
 /android
+
+# Root config files
+../.androidStudio.md
