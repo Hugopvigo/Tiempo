@@ -32,14 +32,14 @@ const HourItem = memo(function HourItem({ h }: { h: HourlyForecast }) {
 
 export function HourlyForecastCard({ hourly }: HourlyForecastProps) {
   return (
-    <ThemedCard style={{ marginBottom: 12 }}>
+    <ThemedCard style={{ marginBottom: 12, paddingHorizontal: 20, paddingVertical: 18 }}>
       <ThemedText
         secondary
-        style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 12, letterSpacing: 0.5 }}
+        style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 14, letterSpacing: 0.5 }}
       >
         Previsión horaria
       </ThemedText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 4 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
         {hourly.slice(0, 25).map((h, i) => (
           <HourItem key={`${h.time}-${i}`} h={h} />
         ))}

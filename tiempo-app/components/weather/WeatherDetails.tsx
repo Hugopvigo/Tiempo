@@ -40,18 +40,18 @@ const DetailTile = memo(function DetailTile({
   const defaultColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)";
 
   return (
-    <ThemedCard style={{ flex: 1, padding: 14, minHeight: 140 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 }}>
+    <ThemedCard style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 18, minHeight: 140, alignItems: "center", justifyContent: "center" }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 6 }}>
         {icon}
         <ThemedText secondary style={{ fontSize: 12, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}>
           {label}
         </ThemedText>
       </View>
-      <ThemedText style={{ fontSize: 26, fontWeight: "500" }}>
+      <ThemedText style={{ fontSize: 28, fontWeight: "500", textAlign: "center" }}>
         {value}
       </ThemedText>
       {subtitle && (
-        <ThemedText secondary style={{ fontSize: 14, marginTop: 2 }}>
+        <ThemedText secondary style={{ fontSize: 14, marginTop: 4, textAlign: "center" }}>
           {subtitle}
         </ThemedText>
       )}

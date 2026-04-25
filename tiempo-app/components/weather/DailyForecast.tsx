@@ -55,10 +55,10 @@ export function DailyForecastCard({ daily }: DailyForecastProps) {
   const { isDark } = useThemeContext();
 
   return (
-    <ThemedCard style={{ marginBottom: 12 }}>
+    <ThemedCard style={{ marginBottom: 12, paddingHorizontal: 20, paddingVertical: 18 }}>
       <ThemedText
         secondary
-        style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 8, letterSpacing: 0.5 }}
+        style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 12, letterSpacing: 0.5 }}
       >
         Próximos 7 días
       </ThemedText>
