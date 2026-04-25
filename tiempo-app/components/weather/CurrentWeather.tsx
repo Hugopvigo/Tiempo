@@ -28,7 +28,7 @@ export function CurrentWeather({
         {cityName}
       </ThemedText>
 
-      <WeatherIcon condition={condition} size={40} color="rgba(255,255,255,0.9)" />
+      <WeatherIcon condition={condition} size={40} />
 
       <ThemedText style={{ fontSize: 102, fontWeight: "200", marginTop: -4 }}>
         {Math.round(temperature)}°

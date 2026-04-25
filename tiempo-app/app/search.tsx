@@ -2,6 +2,7 @@ import { View, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from "
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useCallback, useRef, useEffect, memo } from "react";
 import { useThemeContext, ThemedText } from "@/components/theme";
+import { screenBackground } from "@/constants/theme";
 import { searchCities } from "@/services/openmeteo";
 import { useCities } from "@/hooks/useCities";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
@@ -106,7 +107,7 @@ export default function SearchScreen() {
   const iconColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)";
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? screenBackground.dark : screenBackground.light }}>
       <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 8, gap: 12 }}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
           <ArrowLeft size={24} color={isDark ? "#FFF" : "#000"} />

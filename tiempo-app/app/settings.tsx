@@ -1,6 +1,7 @@
 import { View, ScrollView, TouchableOpacity, Alert, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeContext, ThemedText, ThemedCard } from "@/components/theme";
+import { screenBackground } from "@/constants/theme";
 import { useSettingsStore, useCityStore } from "@/stores/cityStore";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { SwipeableCityRow } from "@/components/city";
@@ -48,7 +49,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? screenBackground.dark : screenBackground.light }}>
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 32 }}>
         <ThemedText style={{ fontSize: 34, fontWeight: "600", marginBottom: 24 }}>
           Ajustes

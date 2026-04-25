@@ -17,7 +17,7 @@ const HourItem = memo(function HourItem({ h }: { h: HourlyForecast }) {
       <ThemedText secondary style={{ fontSize: 13 }}>
         {label}
       </ThemedText>
-      <WeatherIcon condition={h.condition} size={22} color="rgba(255,255,255,0.8)" />
+      <WeatherIcon condition={h.condition} size={22} />
       <ThemedText style={{ fontSize: 17, fontWeight: "500" }}>
         {Math.round(h.temperature)}°
       </ThemedText>

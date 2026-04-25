@@ -9,15 +9,15 @@ interface ThemeGradients {
 
 export const themeGradients: ThemeGradients = {
   light: {
-    clear: ["#FF8E3C", "#FFD700"], // Naranja vibrante a Oro
-    partly_cloudy: ["#4facfe", "#00f2fe"], // Azul cielo brillante
-    cloudy: ["#A1C4FD", "#C2E9FB"], // Azul suave (no gris)
-    rain: ["#48C6EF", "#6F86D6"], // Azul aqua a azul real
-    storm: ["#1e3c72", "#2a5298"], // Azul profundo eléctrico
-    snow: ["#E0C3FC", "#8EC5FC"], // Lavanda a azul hielo
-    fog: ["#74ABE2", "#557353"], // Niebla con toque orgánico
-    night_clear: ["#243B55", "#141E30"], // Azul espacial
-    night_cloudy: ["#3D3393", "#2B0548"], // Púrpura cósmico
+    clear: ["#FF9A3C", "#FFCF4A"],
+    partly_cloudy: ["#5EB5F7", "#3AA0E8"],
+    cloudy: ["#A8C8E8", "#C5DCF0"],
+    rain: ["#4CA8E0", "#6B8FD6"],
+    storm: ["#2A5298", "#3A6FCF"],
+    snow: ["#D8C0F0", "#A0C8F0"],
+    fog: ["#8AB8D8", "#A0C0B0"],
+    night_clear: ["#2C4A6E", "#1A2D44"],
+    night_cloudy: ["#4A3A90", "#2E1A58"],
   },
   dark: {
     clear: ["#F2994A", "#F2C94C"],
@@ -33,23 +33,33 @@ export const themeGradients: ThemeGradients = {
 };
 
 export const cardBackground = {
-  light: "rgba(255, 255, 255, 0.22)", // Un poco más transparente para ver el degradado
-  dark: "rgba(0, 0, 0, 0.25)",
+  light: "#FFFFFF",
+  dark: "rgba(30, 30, 30, 0.6)",
 };
 
 export const cardBorder = {
-  light: "rgba(255, 255, 255, 0.4)", // Borde brillante para efecto cristal
-  dark: "rgba(255, 255, 255, 0.1)",
+  light: "rgba(0, 0, 0, 0.05)",
+  dark: "rgba(255, 255, 255, 0.08)",
 };
 
 export const textColor = {
-  light: "#1C1C1E",
+  light: "#2D3748",
   dark: "#FFFFFF",
 };
 
 export const secondaryTextColor = {
-  light: "rgba(0, 0, 0, 0.6)",
-  dark: "rgba(255, 255, 255, 0.6)",
+  light: "#718096",
+  dark: "rgba(255, 255, 255, 0.5)",
+};
+
+export const screenBackground = {
+  light: "#F5F7FA",
+  dark: "#000000",
+};
+
+export const navBarBackground = {
+  light: "#FFFFFF",
+  dark: "#0A0A0A",
 };
 
 export const alertColors = {

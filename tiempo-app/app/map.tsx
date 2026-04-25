@@ -1,6 +1,7 @@
 import { View, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeContext } from "@/components/theme";
+import { screenBackground } from "@/constants/theme";
 import { WeatherMap, LayerSelector, LayerInfo } from "@/components/map";
 import type { MapLayer } from "@/components/map";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
@@ -19,7 +20,7 @@ export default function MapScreen() {
   }, [setActiveCity]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}>
+    <View style={{ flex: 1, backgroundColor: isDark ? screenBackground.dark : screenBackground.light }}>
       <View style={{ flex: 1, paddingTop: insets.top }}>
         <WeatherMap
           cities={cities}

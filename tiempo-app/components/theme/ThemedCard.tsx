@@ -12,17 +12,17 @@ export function ThemedCard({ style, ...props }: ViewProps) {
       style={[
         {
           backgroundColor: bg,
-          borderRadius: 28,
-          padding: 16,
+          borderRadius: 16,
+          paddingHorizontal: 16,
+          paddingVertical: 16,
           overflow: "hidden",
           borderWidth: 1,
-          borderColor: borderColor,
-          // Sombra suave para profundidad
+          borderColor,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: isDark ? 0.3 : 0.1,
-          shadowRadius: 12,
-          elevation: 5,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: isDark ? 0.2 : 0.04,
+          shadowRadius: 8,
+          elevation: isDark ? 3 : 1,
         },
         style,
       ]}

@@ -1,8 +1,11 @@
 import { useRef, useCallback, useMemo, useState } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, Text, TouchableOpacity } from "react-native";
 import { WebView as RNWebView } from "react-native-webview";
 import type { City } from "@/types/weather";
 import { useThemeContext } from "@/components/theme";
+import { useWeather } from "@/hooks/useWeather";
+import { WeatherIcon } from "@/components/weather/WeatherIcon";
+import { ThemedText } from "@/components/theme";
 
 interface WeatherMapProps {
   cities: City[];
@@ -14,6 +17,8 @@ export function WeatherMap({ cities, activeCity, onCityPress }: WeatherMapProps)
   const { isDark } = useThemeContext();
   const webviewRef = useRef<RNWebView>(null);
   const [loading, setLoading] = useState(true);
+  const [mapError, setMapError] = useState(false);
+  const { data: weather } = useWeather(activeCity.lat, activeCity.lon, activeCity.name);
 
   const cityMarkers = useMemo(() => {
     return cities.map((city) => ({
@@ -67,10 +72,10 @@ html,body,#map{width:100%;height:100%;overflow:hidden}
 .dot.active .dot-inner{width:10px;height:10px;border-radius:5px}
 .dot.loc .dot-inner{background:none;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid #fff}
 .lbl{
-  background:${isDark ? "rgba(28,28,30,0.88)" : "rgba(255,255,255,0.92)"};
+  background:${isDark ? "rgba(28,28,30,0.88)" : "rgba(255,255,255,0.95)"};
   color:${isDark ? "#fff" : "#1c1c1e"};
   padding:2px 7px;border-radius:4px;
-  font-size:10px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:10px;font-weight:600;font-family:-apple-system,sans-serif;
   white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.15);
 }
 .lbl.active{font-size:11px}
@@ -82,51 +87,57 @@ html,body,#map{width:100%;height:100%;overflow:hidden}
 <div id="map"></div>
 <script>
 document.addEventListener("DOMContentLoaded",function(){
-  var map=L.map("map",{
-    center:[${activeCity.lat},${activeCity.lon}],
-    zoom:6,
-    zoomControl:false,
-    attributionControl:true
-  });
-  L.tileLayer("${tileLayer}",{
-    attribution:"&copy; OSM &copy; CARTO",
-    maxZoom:13,minZoom:3,
-    subdomains:"abcd"
-  }).addTo(map);
+  try{
+    var map=L.map("map",{
+      center:[${activeCity.lat},${activeCity.lon}],
+      zoom:6,
+      zoomControl:false,
+      attributionControl:true
+    });
+    L.tileLayer("${tileLayer}",{
+      attribution:"&copy; OSM &copy; CARTO",
+      maxZoom:13,minZoom:3,
+      subdomains:"abcd"
+    }).addTo(map);
 
-  var markers=${markersJson};
-  for(var i=0;i<markers.length;i++){
-    (function(m){
-      var icon=L.divIcon({
-        className:"",
-        html:'<div class="marker-wrap">'
-          +'<div class="dot'+(m.isActive?" active":"")+(m.isLocation?" loc":"")+'"><div class="dot-inner"></div></div>'
-          +'<div class="lbl'+(m.isActive?" active":"")+'">'+m.name+'</div>'
-          +'</div>',
-        iconSize:[44,44],
-        iconAnchor:[22,22]
-      });
-      var marker=L.marker([m.lat,m.lon],{icon:icon}).addTo(map);
-      marker.on("click",function(){
-        if(window.ReactNativeWebView){
-          window.ReactNativeWebView.postMessage(JSON.stringify({type:"cityPress",cityId:m.id}));
-        }
-      });
-    })(markers[i]);
+    var markers=${markersJson};
+    for(var i=0;i<markers.length;i++){
+      (function(m){
+        var icon=L.divIcon({
+          className:"",
+          html:'<div class="marker-wrap">'
+            +'<div class="dot'+(m.isActive?" active":"")+(m.isLocation?" loc":"")+'"><div class="dot-inner"></div></div>'
+            +'<div class="lbl'+(m.isActive?" active":"")+'">'+m.name+'</div>'
+            +'</div>',
+          iconSize:[44,44],
+          iconAnchor:[22,22]
+        });
+        var marker=L.marker([m.lat,m.lon],{icon:icon}).addTo(map);
+        marker.on("click",function(){
+          if(window.ReactNativeWebView){
+            window.ReactNativeWebView.postMessage(JSON.stringify({type:"cityPress",cityId:m.id}));
+          }
+        });
+      })(markers[i]);
+    }
+
+    setTimeout(function(){map.invalidateSize()},300);
+    window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify({type:"mapReady"}));
+  }catch(e){
+    window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify({type:"mapError",error:e.message}));
   }
-
-  setTimeout(function(){map.invalidateSize()},300);
-
-  window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify({type:"mapReady"}));
 });
 </script>
 </body>
 </html>`;
   }, [cityMarkers, activeCity.lat, activeCity.lon, isDark]);
 
+  const current = weather?.current;
+  const condition = current?.condition;
+
   return (
     <View style={{ flex: 1 }}>
-      {loading && (
+      {loading && !mapError && (
         <View
           style={{
             position: "absolute",
@@ -136,7 +147,7 @@ document.addEventListener("DOMContentLoaded",function(){
             bottom: 0,
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: isDark ? "#1a1a2e" : "#f5f5f5",
+            backgroundColor: isDark ? "#1a1a2e" : "#F5F7FA",
             zIndex: 10,
           }}
         >
@@ -146,26 +157,101 @@ document.addEventListener("DOMContentLoaded",function(){
           />
         </View>
       )}
-      <RNWebView
-        ref={webviewRef}
-        source={{ html }}
-        style={{ flex: 1, backgroundColor: isDark ? "#1a1a2e" : "#f5f5f5" }}
-        originWhitelist={["*"]}
-        onMessage={(e) => {
-          try {
-            const data = JSON.parse(e.nativeEvent.data);
-            if (data.type === "mapReady") setLoading(false);
-            else handleMessage(e as any);
-          } catch {}
-        }}
-        javaScriptEnabled
-        domStorageEnabled
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-        scrollEnabled
-        overScrollMode="never"
-        cacheEnabled
+
+      {!mapError && (
+        <RNWebView
+          ref={webviewRef}
+          source={{ html }}
+          style={{ flex: 1, backgroundColor: isDark ? "#1a1a2e" : "#F5F7FA" }}
+          originWhitelist={["*"]}
+          onMessage={(e) => {
+            try {
+              const data = JSON.parse(e.nativeEvent.data);
+              if (data.type === "mapReady") setLoading(false);
+              else if (data.type === "mapError") setMapError(true);
+              else handleMessage(e as any);
+            } catch {}
+          }}
+          onError={() => setMapError(true)}
+          onHttpError={() => setMapError(true)}
+          javaScriptEnabled
+          domStorageEnabled
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          scrollEnabled
+          overScrollMode="never"
+          cacheEnabled
         />
+      )}
+
+      {mapError && (
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: isDark ? "#1a1a2e" : "#F5F7FA",
+            padding: 24,
+          }}
+        >
+          <Text style={{ fontSize: 48, marginBottom: 8 }}>🗺️</Text>
+          <ThemedText style={{ fontSize: 18, fontWeight: "600", textAlign: "center" }}>
+            No se pudo cargar el mapa
+          </ThemedText>
+          <ThemedText secondary style={{ fontSize: 14, marginTop: 8, textAlign: "center" }}>
+            Comprueba tu conexión a internet
+          </ThemedText>
+          <TouchableOpacity
+            onPress={() => {
+              setMapError(false);
+              setLoading(true);
+            }}
+            style={{
+              marginTop: 16,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              backgroundColor: isDark ? "rgba(90,200,250,0.2)" : "rgba(0,122,255,0.12)",
+              borderRadius: 20,
+            }}
+          >
+            <ThemedText style={{ fontSize: 14, fontWeight: "500", color: isDark ? "#5AC8FA" : "#007AFF" }}>
+              Reintentar
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {current && (
+        <View
+          style={{
+            position: "absolute",
+            top: 8,
+            left: 16,
+            backgroundColor: isDark ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.92)",
+            paddingHorizontal: 14,
+            paddingVertical: 10,
+            borderRadius: 14,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.12,
+            shadowRadius: 8,
+            elevation: 4,
+          }}
+        >
+          {condition && <WeatherIcon condition={condition} size={20} />}
+          <View>
+            <ThemedText style={{ fontSize: 22, fontWeight: "500" }}>
+              {Math.round(current.temperature)}°
+            </ThemedText>
+            <ThemedText secondary style={{ fontSize: 11 }}>
+              {current.description}
+            </ThemedText>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

@@ -1,6 +1,7 @@
 import { View, ScrollView, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DynamicBackground, ThemedText, ThemedCard, useThemeContext } from "@/components/theme";
+import { screenBackground } from "@/constants/theme";
 import { TideChart, TideTable, SeaConditionCard } from "@/components/tides";
 import { SeaConditionSkeleton, TideChartSkeleton, TideTableSkeleton } from "@/components/ui/Skeleton";
 import { useTides, useCurrentSeaCondition } from "@/hooks/useTides";

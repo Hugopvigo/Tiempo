@@ -29,7 +29,7 @@ const DayRow = memo(function DayRow({ d, index, isDark }: { d: DailyForecast; in
       </ThemedText>
 
       <View style={{ width: 36, alignItems: "center" }}>
-        <WeatherIcon condition={d.condition} size={20} color="rgba(255,255,255,0.7)" />
+        <WeatherIcon condition={d.condition} size={20} />
       </View>
 
       {d.precipitationChance > 0 && (
