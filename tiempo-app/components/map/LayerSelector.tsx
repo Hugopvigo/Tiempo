@@ -7,20 +7,22 @@ export type MapLayer = "precipitation" | "clouds" | "temperature" | "wind" | "vi
 interface LayerSelectorProps {
   selected: MapLayer;
   onSelect: (layer: MapLayer) => void;
+  availableLayers?: MapLayer[];
 }
 
 const layers: { id: MapLayer; label: string; icon: any; desc: string }[] = [
   { id: "precipitation", label: "Lluvia", icon: CloudRain, desc: "Radar de precipitación" },
-  { id: "clouds", label: "Nubes", icon: Cloud, desc: "Cobertura de nubes" },
+  { id: "clouds", label: "Nubes", icon: Cloud, desc: "Satélite infrarrojo" },
   { id: "temperature", label: "Temp", icon: Thermometer, desc: "Temperatura superficial" },
   { id: "wind", label: "Viento", icon: Wind, desc: "Velocidad del viento" },
   { id: "visibility", label: "Vis", icon: Eye, desc: "Visibilidad" },
   { id: "waves", label: "Oleaje", icon: Waves, desc: "Altura de olas" },
 ];
 
-export function LayerSelector({ selected, onSelect }: LayerSelectorProps) {
+export function LayerSelector({ selected, onSelect, availableLayers }: LayerSelectorProps) {
   const { isDark } = useThemeContext();
   const activeColor = isDark ? "#5AC8FA" : "#007AFF";
+  const available = new Set(availableLayers ?? ["precipitation", "clouds"]);
 
   return (
     <View
@@ -39,11 +41,13 @@ export function LayerSelector({ selected, onSelect }: LayerSelectorProps) {
       >
         {layers.map((layer) => {
           const isActive = selected === layer.id;
+          const isAvailable = available.has(layer.id);
           const Icon = layer.icon;
           return (
             <TouchableOpacity
               key={layer.id}
-              onPress={() => onSelect(layer.id)}
+              onPress={() => isAvailable && onSelect(layer.id)}
+              activeOpacity={isAvailable ? undefined : 0.4}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -69,6 +73,7 @@ export function LayerSelector({ selected, onSelect }: LayerSelectorProps) {
                 shadowOpacity: 0.15,
                 shadowRadius: 6,
                 elevation: 4,
+                opacity: isAvailable ? 1 : 0.4,
               }}
             >
               <Icon

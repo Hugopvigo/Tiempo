@@ -132,7 +132,7 @@ export function CitySelector({ visible, onClose }: CitySelectorProps) {
               marginTop: 12,
               borderRadius: 100, // Forma de píldora
               backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
-              borderWidth: 1,
+              borderWidth: 0.5,
               borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
             }}
           >

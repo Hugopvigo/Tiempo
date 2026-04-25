@@ -1,19 +1,23 @@
 import { View, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeContext } from "@/components/theme";
-import { screenBackground } from "@/constants/theme";
 import { WeatherMap, LayerSelector, LayerInfo } from "@/components/map";
 import type { MapLayer } from "@/components/map";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { useCities } from "@/hooks/useCities";
-import { useState, useCallback } from "react";
+import { useWeatherLayers } from "@/hooks/useWeatherLayers";
+import { useState, useCallback, useEffect } from "react";
 import { Locate } from "lucide-react-native";
+import { screenBackground } from "@/constants/theme";
+
+const LAYERS_WITH_DATA: MapLayer[] = ["precipitation", "clouds"];
 
 export default function MapScreen() {
   const { isDark } = useThemeContext();
   const { cities, activeCity, setActiveCity } = useCities();
   const insets = useSafeAreaInsets();
   const [selectedLayer, setSelectedLayer] = useState<MapLayer>("precipitation");
+  const { radarUrl, satelliteUrl, loading: layersLoading } = useWeatherLayers();
 
   const handleCityPress = useCallback((city: typeof cities[0]) => {
     setActiveCity(city);
@@ -26,11 +30,18 @@ export default function MapScreen() {
           cities={cities}
           activeCity={activeCity}
           onCityPress={handleCityPress}
+          radarTileUrl={radarUrl}
+          satelliteTileUrl={satelliteUrl}
+          activeLayer={selectedLayer}
         />
       </View>
 
       <LayerInfo layer={selectedLayer} />
-      <LayerSelector selected={selectedLayer} onSelect={setSelectedLayer} />
+      <LayerSelector
+        selected={selectedLayer}
+        onSelect={setSelectedLayer}
+        availableLayers={LAYERS_WITH_DATA}
+      />
 
       <TouchableOpacity
         onPress={() => setActiveCity(cities[0])}

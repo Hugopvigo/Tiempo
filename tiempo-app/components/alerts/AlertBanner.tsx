@@ -48,7 +48,7 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
         <View
           style={{
             backgroundColor: `${color}18`,
-            borderWidth: 1,
+            borderWidth: 0.5,
             borderColor: `${color}40`,
             borderRadius: 14,
             padding: 14,
@@ -155,7 +155,7 @@ function AlertRow({ alert }: { alert: WeatherAlert }) {
         padding: 14,
         borderRadius: 14,
         backgroundColor: `${color}10`,
-        borderWidth: 1,
+        borderWidth: 0.5,
         borderColor: `${color}30`,
         marginBottom: 10,
       }}

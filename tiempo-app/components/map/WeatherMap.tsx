@@ -11,9 +11,19 @@ interface WeatherMapProps {
   cities: City[];
   activeCity: City;
   onCityPress: (city: City) => void;
+  radarTileUrl: string | null;
+  satelliteTileUrl: string | null;
+  activeLayer: string;
 }
 
-export function WeatherMap({ cities, activeCity, onCityPress }: WeatherMapProps) {
+export function WeatherMap({
+  cities,
+  activeCity,
+  onCityPress,
+  radarTileUrl,
+  satelliteTileUrl,
+  activeLayer,
+}: WeatherMapProps) {
   const { isDark } = useThemeContext();
   const webviewRef = useRef<RNWebView>(null);
   const [loading, setLoading] = useState(true);
@@ -44,11 +54,38 @@ export function WeatherMap({ cities, activeCity, onCityPress }: WeatherMapProps)
     [cities, onCityPress]
   );
 
+  const injectLayer = useCallback(() => {
+    if (!webviewRef.current) return;
+    const js = `
+      (function(){
+        if(!window._map) return;
+        if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
+        var layerType = "${activeLayer}";
+        var radarUrl = ${radarTileUrl ? `"${radarTileUrl}"` : "null"};
+        var satUrl = ${satelliteTileUrl ? `"${satelliteTileUrl}"` : "null"};
+        var tileUrl = null;
+        if(layerType === "precipitation" || layerType === "rain") tileUrl = radarUrl;
+        else if(layerType === "clouds") tileUrl = satUrl;
+        if(tileUrl) {
+          window._overlay = L.tileLayer(tileUrl, {
+            opacity: 0.7,
+            maxZoom: 13,
+            minZoom: 3,
+          }).addTo(window._map);
+        }
+      })();
+    `;
+    webviewRef.current.injectJavaScript(js);
+  }, [activeLayer, radarTileUrl, satelliteTileUrl]);
+
   const html = useMemo(() => {
     const markersJson = JSON.stringify(cityMarkers);
     const tileLayer = isDark
       ? "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
       : "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png";
+    const radarUrl = radarTileUrl || "";
+    const satUrl = satelliteTileUrl || "";
+    const initialLayer = activeLayer;
 
     return `<!DOCTYPE html>
 <html>
@@ -100,6 +137,19 @@ document.addEventListener("DOMContentLoaded",function(){
       subdomains:"abcd"
     }).addTo(map);
 
+    window._map=map;
+    window._overlay=null;
+
+    var radarUrl="${radarUrl}";
+    var satUrl="${satUrl}";
+    var layerType="${initialLayer}";
+    var tileUrl=null;
+    if((layerType==="precipitation"||layerType==="rain")&&radarUrl) tileUrl=radarUrl;
+    else if(layerType==="clouds"&&satUrl) tileUrl=satUrl;
+    if(tileUrl){
+      window._overlay=L.tileLayer(tileUrl,{opacity:0.7,maxZoom:13,minZoom:3}).addTo(map);
+    }
+
     var markers=${markersJson};
     for(var i=0;i<markers.length;i++){
       (function(m){
@@ -130,7 +180,7 @@ document.addEventListener("DOMContentLoaded",function(){
 </script>
 </body>
 </html>`;
-  }, [cityMarkers, activeCity.lat, activeCity.lon, isDark]);
+  }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteTileUrl, activeLayer]);
 
   const current = weather?.current;
   const condition = current?.condition;
@@ -167,7 +217,10 @@ document.addEventListener("DOMContentLoaded",function(){
           onMessage={(e) => {
             try {
               const data = JSON.parse(e.nativeEvent.data);
-              if (data.type === "mapReady") setLoading(false);
+              if (data.type === "mapReady") {
+                setLoading(false);
+                injectLayer();
+              }
               else if (data.type === "mapError") setMapError(true);
               else handleMessage(e as any);
             } catch {}

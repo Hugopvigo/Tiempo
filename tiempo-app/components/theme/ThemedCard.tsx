@@ -16,7 +16,7 @@ export function ThemedCard({ style, ...props }: ViewProps) {
           paddingHorizontal: 16,
           paddingVertical: 16,
           overflow: "hidden",
-          borderWidth: 1,
+          borderWidth: 0.5,
           borderColor,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
