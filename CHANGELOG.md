@@ -328,3 +328,86 @@ tiempo-app/
 
 ### plan.md actualizado
 - Fase 4 marcada como completada
+
+---
+
+## Fase 5-6 — Mapas y Capas adicionales
+
+### Mapa interactivo (`app/map.tsx`)
+- WebView con Leaflet embebido + CartoDB tiles (light_all / dark_all)
+- Marcadores de ciudades con divIcons personalizados
+- Resolución de capas: precipitación → RainViewer, nubes → satélite/OWM, resto → OWM tiles
+
+### Capas del mapa (`services/weatherLayers.ts`)
+- `getRainViewerData()`: API de RainViewer con cache 10min TTL
+- `getRadarTileUrl()`: tiles de radar de precipitación
+- `getSatelliteTileUrl()`: tiles de satélite infrarrojo
+- `getOpenWeatherMapTileUrl()`: V1 tiles (`clouds_new`, `temp_new`, `wind_new`, `pressure_new`)
+- `getOpenWeatherMapV2TileUrl()`: V2 tiles (`HRD0` humedad, Maps 2.0 endpoint)
+
+### Hook de capas (`hooks/useWeatherLayers.ts`)
+- `useWeatherLayers()`: gestiona RainViewer data + URLs OWM + capas disponibles
+- `OWM_LAYER_MAP`: mapa de capas con flag `v2` para endpoint Maps 2.0
+- Capas disponibles sin API key: precipitación, nubes
+- Capas disponibles con API key: temperatura, viento, humedad, presión
+
+### Selector de capas (`components/map/LayerSelector.tsx`)
+- 6 capas: Lluvia, Nubes, Temp, Viento, Humedad, Presión
+- Botones horizontales scrollables con iconos Lucide
+- Estilo adaptativo claro/oscuro
+
+### Modo oscuro del mapa mejorado
+- Opacidad overlay: 0.7 (claro) → 0.85 (oscuro) para mayor visibilidad
+- maxZoom ampliado: 13 → 18 para capas OWM
+- `errorTileUrl`: GIF transparente 1x1 para tiles fallidos
+- Botones de capas con contraste mejorado en dark mode
+
+### Clave API configurable (`app/settings.tsx`)
+- Nueva sección "Claves API" con input de OpenWeatherMap API Key
+- Muestra clave ofuscada (4 primeros chars + asteriscos)
+- Botones Editar/Añadir/Guardar/Cancelar
+
+---
+
+## Fase 7 — Mareas v2: Altura de marea y horarios de pleamar/bajamar
+
+### Datos de marea reales (Open-Meteo Marine API)
+- `sea_level_height_msl`: altura del nivel del mar incluyendo mareas, por hora
+- Añadido a `getMarineWeather()` en `services/openmeteo.ts`
+- `MarineData.hourly.seaLevelHeight`: array numérico con alturas horarias
+
+### Tipos nuevos (`types/weather.ts`)
+| Tipo | Descripción |
+|------|-------------|
+| `TideDirection` | `"rising" \| "falling" \| "stable"` |
+| `TideDirectionInfo` | `{ height: number; direction: TideDirection }` |
+| `MarineData.hourly.seaLevelHeight` | Altura del nivel del mar por hora |
+
+### Hooks nuevos (`hooks/useTides.ts`)
+| Hook/Función | Descripción |
+|------|-------------|
+| `useTideDirection(lat, lon, isCoastal)` | Devuelve `TideDirectionInfo`: altura actual + dirección (subiendo/bajando/estable) |
+| `deriveTideForecasts(seaLevelHeight, times, dates)` | Deriva `TideForecast[]` con horarios de pleamar/bajamar detectando picos/valles locales |
+
+### Componente nuevo: `TideTimesCard` (`components/tides/TideTimesCard.tsx`)
+- Muestra horarios de pleamar (↑ verde) y bajamar (↓ naranja) con altura
+- Coeficiente de marea estimado
+- Aviso de que datos son estimados por modelo numérico
+- Estilo adaptativo claro/oscuro
+
+### Componente mejorado: `SeaConditionCard`
+- Nueva 4ª columna: indicador de marea con icono TrendingUp/TrendingDown/Minus
+- Muestra altura del nivel del mar + dirección (Subiendo/Bajando/Estable)
+- Colores: verde subiendo, naranja bajando
+
+### Pantalla Tides actualizada (`app/tides.tsx`)
+- `useTideDirection()` para indicador en tiempo real
+- `deriveTideForecasts()` para horarios de pleamar/bajamar por día
+- `TideTimesCard` integrado entre DaySelector y TideChart
+- Cambio de día actualiza tanto TideChart como TideTimesCard
+
+### Versión app
+- `app.json` version: `1.0.0` → `2.0.0`
+
+### plan.md actualizado
+- Fases 5, 6, 7 marcadas como completadas

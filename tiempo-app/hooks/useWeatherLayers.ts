@@ -13,6 +13,7 @@ import { useSettingsStore } from "@/stores/cityStore";
 const OWM_LAYER_MAP: Record<string, { layer: string; v2?: boolean }> = {
   temperature: { layer: "temp_new" },
   wind: { layer: "wind_new" },
+  clouds: { layer: "clouds_new" },
   humidity: { layer: "HRD0", v2: true },
   pressure: { layer: "pressure_new" },
 };
@@ -67,6 +68,8 @@ export function useWeatherLayers() {
     return layers;
   }, [owmApiKey]);
 
+  const useOwmClouds = !!owmApiKey;
+
   return {
     radarUrl,
     satelliteUrl,
@@ -78,5 +81,6 @@ export function useWeatherLayers() {
     loading,
     hasRadar: (data?.radarPast.length ?? 0) > 0,
     hasSatellite: true,
+    useOwmClouds,
   };
 }

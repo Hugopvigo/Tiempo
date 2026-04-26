@@ -2,17 +2,17 @@ import { View, ScrollView, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DynamicBackground, ThemedText, ThemedCard, useThemeContext } from "@/components/theme";
 import { screenBackground } from "@/constants/theme";
-import { TideChart, TideTable, SeaConditionCard } from "@/components/tides";
+import { TideChart, TideTable, SeaConditionCard, TideTimesCard } from "@/components/tides";
 import { SeaConditionSkeleton, TideChartSkeleton, TideTableSkeleton } from "@/components/ui/Skeleton";
-import { useTides, useCurrentSeaCondition } from "@/hooks/useTides";
+import { useTides, useCurrentSeaCondition, useTideDirection, deriveTideForecasts } from "@/hooks/useTides";
 import { useCities } from "@/hooks/useCities";
 import { isCoastalCity } from "@/utils/coastal";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { CitySelector } from "@/components/city";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { TouchableOpacity } from "react-native";
 import { ChevronDown, Waves, MapPinOff } from "lucide-react-native";
-import type { MarineData } from "@/types/weather";
+import type { MarineData, TideForecast } from "@/types/weather";
 
 export default function TidesScreen() {
   const { isDark } = useThemeContext();
@@ -28,10 +28,24 @@ export default function TidesScreen() {
     activeCity.lon,
     coastal
   );
+  const tideDirection = useTideDirection(
+    activeCity.lat,
+    activeCity.lon,
+    coastal
+  );
   const [showCitySelector, setShowCitySelector] = useState(false);
   const [selectedDay, setSelectedDay] = useState(0);
 
   const iconColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)";
+
+  const tideForecasts = useMemo<TideForecast[]>(() => {
+    if (!data) return [];
+    return deriveTideForecasts(
+      data.hourly.seaLevelHeight,
+      data.hourly.time,
+      data.daily.date
+    );
+  }, [data]);
 
   if (!coastal) {
     return (
@@ -179,21 +193,25 @@ export default function TidesScreen() {
             </View>
           )}
 
-{data && seaCondition && (
-    <View style={{ gap: 16, marginTop: 12 }}>
-              <SeaConditionCard condition={seaCondition} />
+      {data && seaCondition && (
+        <View style={{ gap: 16, marginTop: 12 }}>
+          <SeaConditionCard condition={seaCondition} tideDirection={tideDirection} />
 
-              <DaySelector
-                data={data}
-                selectedDay={selectedDay}
-                onSelect={setSelectedDay}
-              />
+          <DaySelector
+            data={data}
+            selectedDay={selectedDay}
+            onSelect={setSelectedDay}
+          />
 
-              <TideChart data={data} dayIndex={selectedDay} />
-
-              <TideTable data={data} />
-            </View>
+          {tideForecasts.length > 0 && (
+            <TideTimesCard forecast={tideForecasts[selectedDay] ?? tideForecasts[0]} />
           )}
+
+          <TideChart data={data} dayIndex={selectedDay} />
+
+          <TideTable data={data} />
+        </View>
+      )}
         </ScrollView>
 
         <BottomNavBar />

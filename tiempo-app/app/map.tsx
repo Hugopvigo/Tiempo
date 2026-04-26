@@ -15,7 +15,7 @@ export default function MapScreen() {
   const { cities, activeCity, setActiveCity } = useCities();
   const insets = useSafeAreaInsets();
   const [selectedLayer, setSelectedLayer] = useState<MapLayer>("precipitation");
-  const { radarUrl, satelliteUrl, owmLayers, availableLayers, loading: layersLoading } = useWeatherLayers();
+  const { radarUrl, satelliteUrl, owmLayers, availableLayers, loading: layersLoading, useOwmClouds } = useWeatherLayers();
 
   const handleCityPress = useCallback((city: typeof cities[0]) => {
     setActiveCity(city);
@@ -24,15 +24,16 @@ export default function MapScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: isDark ? screenBackground.dark : screenBackground.light }}>
       <View style={{ flex: 1, paddingTop: insets.top }}>
-        <WeatherMap
-          cities={cities}
-          activeCity={activeCity}
-          onCityPress={handleCityPress}
-          radarTileUrl={radarUrl}
-          satelliteTileUrl={satelliteUrl}
-          owmLayers={owmLayers}
-          activeLayer={selectedLayer}
-        />
+      <WeatherMap
+        cities={cities}
+        activeCity={activeCity}
+        onCityPress={handleCityPress}
+        radarTileUrl={radarUrl}
+        satelliteTileUrl={satelliteUrl}
+        owmLayers={owmLayers}
+        activeLayer={selectedLayer}
+        useOwmClouds={useOwmClouds}
+      />
       </View>
 
       <LayerInfo layer={selectedLayer} />

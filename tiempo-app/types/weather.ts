@@ -70,6 +70,7 @@ export interface MarineData {
     waveHeight: number[];
     waveDirection: number[];
     wavePeriod: number[];
+    seaLevelHeight: number[];
   };
   daily: {
     date: string[];
@@ -77,6 +78,13 @@ export interface MarineData {
     waveDirectionDominant: number[];
     wavePeriodMax: number[];
   };
+}
+
+export type TideDirection = "rising" | "falling" | "stable";
+
+export interface TideDirectionInfo {
+  height: number;
+  direction: TideDirection;
 }
 
 export interface SeaCondition {

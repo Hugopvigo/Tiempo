@@ -15,16 +15,21 @@ interface WeatherMapProps {
   satelliteTileUrl: string | null;
   owmLayers: Record<string, string | null>;
   activeLayer: string;
+  useOwmClouds?: boolean;
 }
 
 function resolveTileUrl(
   layer: string,
   radarUrl: string | null,
   satUrl: string | null,
-  owmLayers: Record<string, string | null>
+  owmLayers: Record<string, string | null>,
+  useOwmClouds: boolean
 ): string | null {
   if (layer === "precipitation" || layer === "rain") return radarUrl;
-  if (layer === "clouds") return satUrl;
+  if (layer === "clouds") {
+    if (useOwmClouds && owmLayers["clouds"]) return owmLayers["clouds"];
+    return satUrl;
+  }
   if (owmLayers[layer]) return owmLayers[layer];
   return null;
 }
@@ -37,6 +42,7 @@ export function WeatherMap({
   satelliteTileUrl,
   owmLayers,
   activeLayer,
+  useOwmClouds = false,
 }: WeatherMapProps) {
   const { isDark } = useThemeContext();
   const webviewRef = useRef<RNWebView>(null);
@@ -70,29 +76,32 @@ export function WeatherMap({
 
   const injectLayer = useCallback(() => {
     if (!webviewRef.current) return;
-    const tileUrl = resolveTileUrl(activeLayer, radarTileUrl, satelliteTileUrl, owmLayers);
+    const tileUrl = resolveTileUrl(activeLayer, radarTileUrl, satelliteTileUrl, owmLayers, useOwmClouds);
     if (!tileUrl) return;
-  const js = `
-  (function(){
-    if(!window._map) return;
-    if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
-    var isSat = "${activeLayer}" === "clouds";
-    window._overlay = L.tileLayer("${tileUrl}", {
-      opacity: isSat ? 0.9 : 0.7,
-      maxZoom: 13,
-      minZoom: isSat ? 4 : 3,
-    }).addTo(window._map);
-  })();
-  `;
+    const isCloudsSat = activeLayer === "clouds" && !useOwmClouds;
+    const overlayOpacity = isCloudsSat ? 0.9 : (isDark ? 0.85 : 0.7);
+    const overlayMaxZoom = isCloudsSat ? 13 : 18;
+    const js = `
+(function(){
+  if(!window._map) return;
+  if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
+  window._overlay = L.tileLayer("${tileUrl}", {
+    opacity: ${overlayOpacity},
+    maxZoom: ${overlayMaxZoom},
+    minZoom: ${isCloudsSat ? 4 : 3},
+    errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+  }).addTo(window._map);
+})();
+`;
     webviewRef.current.injectJavaScript(js);
-  }, [activeLayer, radarTileUrl, satelliteTileUrl, owmLayers]);
+  }, [activeLayer, radarTileUrl, satelliteTileUrl, owmLayers, useOwmClouds, isDark]);
 
   const html = useMemo(() => {
     const markersJson = JSON.stringify(cityMarkers);
     const tileLayer = isDark
       ? "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
       : "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png";
-    const initialTileUrl = resolveTileUrl(activeLayer, radarTileUrl, satelliteTileUrl, owmLayers) || "";
+    const initialTileUrl = resolveTileUrl(activeLayer, radarTileUrl, satelliteTileUrl, owmLayers, useOwmClouds) || "";
 
     return `<!DOCTYPE html>
 <html>
@@ -147,11 +156,13 @@ subdomains:"abcd"
 window._map=map;
 window._overlay=null;
 
-  var initUrl="${initialTileUrl}";
-  if(initUrl){
-    var isInitSat="${activeLayer}"==="clouds";
-    window._overlay=L.tileLayer(initUrl,{opacity:isInitSat?0.9:0.7,maxZoom:13,minZoom:isInitSat?4:3}).addTo(map);
-  }
+      var initUrl="${initialTileUrl}";
+      if(initUrl){
+        var isInitSat="${activeLayer}"==="clouds"&&!${useOwmClouds};
+        var initOp=isInitSat?0.9:${isDark ? 0.85 : 0.7};
+        var initMaxZoom=isInitSat?13:18;
+        window._overlay=L.tileLayer(initUrl,{opacity:initOp,maxZoom:initMaxZoom,minZoom:isInitSat?4:3,errorTileUrl:"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"}).addTo(map);
+      }
 
 var markers=${markersJson};
 for(var i=0;i<markers.length;i++){
@@ -183,7 +194,7 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
 </script>
 </body>
 </html>`;
-  }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteTileUrl, owmLayers, activeLayer]);
+    }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteTileUrl, owmLayers, activeLayer, useOwmClouds]);
 
   const current = weather?.current;
   const condition = current?.condition;

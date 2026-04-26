@@ -1,4 +1,4 @@
-# Tiempo — Tu Clima en Tiempo Real - Version 2.0
+# Tiempo — Tu Clima en Tiempo Real - Version 2.2
 
 [![Expo](https://img.shields.io/badge/Expo-54+-000020.svg?style=flat&logo=expo&logoColor=white)](https://expo.dev)
 [![React Native](https://img.shields.io/badge/React_Native-0.81+-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactnative.dev)
@@ -16,6 +16,9 @@
 <img src="tiempo-app/assets/screen-1.jpg" width="280" alt="Screen 1" style="border-radius: 20px; margin: 10px;" />
 <img src="tiempo-app/assets/screen-2.jpg" width="280" alt="Screen 2" style="border-radius: 20px; margin: 10px;" />
 <img src="tiempo-app/assets/screen-3.jpg" width="280" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
+<img src="tiempo-app/assets/screen-4.jpg" width="280" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
+<img src="tiempo-app/assets/screen-5.jpg" width="280" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
+<img src="tiempo-app/assets/screen-6.jpg" width="280" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
 </div>
 
 ---
@@ -23,9 +26,9 @@
 ## Caracteristicas Principales
 
 - **Pronostico Detallado:** Tiempo actual, prevision por horas (24h) y a 7 dias.
-- **Mareas Dinamicas:** Gráficos sinusoidales con **Skia** para zonas costeras. Deteccion automatica de ciudades costeras vs interiores con datos de la Open-Meteo Marine API.
+- **Mareas Dinamicas:** Gráficos sinusoidales con **Skia** para zonas costeras. Deteccion automatica de ciudades costeras vs interiores con datos de la Open-Meteo Marine API. Indicador de marea subiendo/bajando en tiempo real y horarios de pleamar/bajamar.
 - **Alertas Oficiales:** Integracion directa con avisos de la AEMET (lluvia, tormenta, nieve, viento, calor, frio, costera).
-- **Mapa Interactivo:** Capas de radar de lluvia (RainViewer), satelite infrarrojo de nubes, y capas adicionales de temperatura, viento, visibilidad y oleaje via OpenWeatherMap.
+- **Mapa Interactivo:** Capas de radar de lluvia (RainViewer), satelite infrarrojo de nubes, y capas adicionales de temperatura, viento, humedad y presion via OpenWeatherMap. Modo oscuro con opacidad mejorada para mayor visibilidad.
 - **Notificaciones Push:** Alertas meteorologicas en segundo plano con configuracion por tipo de alerta.
 - **Interfaz Adaptativa:** Fondos degradados dinamicos que cambian segun la condicion climatica y el modo (claro/oscuro).
 - **Gestion de Ciudades:** Busqueda con autocompletado y almacenamiento local ultra rapido con **MMKV**.
@@ -76,10 +79,10 @@ tiempo-app/
 | API | Uso | Requiere Key |
 |-----|-----|-------------|
 | **AEMET API** | Datos oficiales para Espana, avisos meteorologicos | Si (`.env`) |
-| **Open-Meteo** | Pronostico global, datos marinos (`/v1/marine`), fallback | No |
+| **Open-Meteo** | Pronostico global, datos marinos (`/v1/marine` con mareas), fallback | No |
 | **Open-Meteo Geocoding** | Motor de busqueda de localizaciones y ciudades | No |
 | **RainViewer** | Tiles de radar de precipitacion y satelite infrarrojo | No |
-| **OpenWeatherMap** | Tiles de temperatura, viento, visibilidad, oleaje | Si (Ajustes app) |
+| **OpenWeatherMap** | Tiles de temperatura, viento, humedad, presion | Si (Ajustes app) |
 
 ---
 
@@ -113,7 +116,7 @@ npm run android
 
 La app permite configurar claves API desde **Ajustes > Claves API** sin necesidad de recompilar:
 
-- **OpenWeatherMap API Key:** Necesaria para desbloquear las capas adicionales del mapa (temperatura, viento, visibilidad, oleaje). Sin esta key, solo estaran disponibles las capas de lluvia y nubes (que usan RainViewer, gratuito y sin key).
+- **OpenWeatherMap API Key:** Necesaria para desbloquear las capas adicionales del mapa (temperatura, viento, humedad, presion). Sin esta key, solo estaran disponibles las capas de lluvia y nubes (que usan RainViewer, gratuito y sin key).
 
 Como obtener una API Key gratuita de OpenWeatherMap:
 1. Registrate en [openweathermap.org](https://home.openweathermap.org/users/sign_up)
@@ -130,9 +133,10 @@ Como obtener una API Key gratuita de OpenWeatherMap:
 - [x] **Fase 3:** Integracion de Mareas con Skia y Open-Meteo Marine API.
 - [x] **Fase 4:** Notificaciones Push y Alertas AEMET.
 - [x] **Fase 5:** Mapas meteorologicos interactivos (RainViewer + OpenWeatherMap tiles).
-- [x] **Fase 6:** Capas adicionales del mapa (temperatura, viento, visibilidad, oleaje) con API Key configurable.
-- [ ] **Fase 7:** Animacion de radar en tiempo real (timeline de frames RainViewer).
-- [ ] **Fase 8:** Widgets de pantalla de inicio.
+- [x] **Fase 6:** Capas adicionales del mapa (temperatura, viento, humedad, presion) con API Key configurable.
+- [x] **Fase 7:** Mareas v2 — Indicador de marea subiendo/bajando, horarios de pleamar/bajamar via sea_level_height_msl.
+- [ ] **Fase 8:** Animacion de radar en tiempo real (timeline de frames RainViewer).
+- [ ] **Fase 9:** Widgets de pantalla de inicio.
 
 ---
 

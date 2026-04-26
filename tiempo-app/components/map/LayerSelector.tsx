@@ -12,7 +12,7 @@ interface LayerSelectorProps {
 
 const layers: { id: MapLayer; label: string; icon: any; desc: string }[] = [
   { id: "precipitation", label: "Lluvia", icon: CloudRain, desc: "Radar de precipitación" },
-  { id: "clouds", label: "Nubes", icon: Cloud, desc: "Satélite infrarrojo" },
+  { id: "clouds", label: "Nubes", icon: Cloud, desc: "Cobertura de nubes" },
   { id: "temperature", label: "Temp", icon: Thermometer, desc: "Temperatura superficial" },
   { id: "wind", label: "Viento", icon: Wind, desc: "Velocidad del viento" },
   { id: "humidity", label: "Humedad", icon: Droplets, desc: "Humedad relativa" },
@@ -55,19 +55,19 @@ export function LayerSelector({ selected, onSelect, availableLayers }: LayerSele
                 paddingHorizontal: 14,
                 paddingVertical: 10,
                 borderRadius: 20,
-                backgroundColor: isActive
-                  ? isDark
-                    ? "rgba(90,200,250,0.2)"
-                    : "rgba(0,122,255,0.15)"
-                  : isDark
-                    ? "rgba(0,0,0,0.6)"
-                    : "rgba(255,255,255,0.85)",
+        backgroundColor: isActive
+          ? isDark
+            ? "rgba(90,200,250,0.2)"
+            : "rgba(0,122,255,0.15)"
+          : isDark
+            ? "rgba(255,255,255,0.1)"
+            : "rgba(255,255,255,0.85)",
                 borderWidth: 1,
-                borderColor: isActive
-                  ? activeColor
-                  : isDark
-                    ? "rgba(255,255,255,0.1)"
-                    : "rgba(0,0,0,0.08)",
+        borderColor: isActive
+          ? activeColor
+          : isDark
+            ? "rgba(255,255,255,0.15)"
+            : "rgba(0,0,0,0.08)",
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.15,
@@ -80,14 +80,18 @@ export function LayerSelector({ selected, onSelect, availableLayers }: LayerSele
                 size={16}
                 color={isActive ? activeColor : isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"}
               />
-              <ThemedText
-                style={{
-                  fontSize: 13,
-                  fontWeight: isActive ? "600" : "400",
-                  color: isActive ? activeColor : undefined,
-                }}
-                secondary={!isActive}
-              >
+        <ThemedText
+          style={{
+            fontSize: 13,
+            fontWeight: isActive ? "600" : "400",
+            color: isActive
+              ? activeColor
+              : isDark
+                ? "rgba(255,255,255,0.85)"
+                : undefined,
+          }}
+          secondary={!isActive && !isDark}
+        >
                 {layer.label}
               </ThemedText>
             </TouchableOpacity>
@@ -109,15 +113,15 @@ export function LayerInfo({ layer }: { layer: MapLayer }) {
         position: "absolute",
         top: 60,
         left: 16,
-        backgroundColor: isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.85)",
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
-      }}
-    >
-      <ThemedText style={{ fontSize: 12, fontWeight: "500" }}>
+      backgroundColor: isDark ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.85)",
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.06)",
+    }}
+  >
+    <ThemedText style={{ fontSize: 12, fontWeight: "500" }}>
         {info.desc}
       </ThemedText>
     </View>

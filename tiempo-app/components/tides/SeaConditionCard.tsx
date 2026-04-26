@@ -1,14 +1,15 @@
 import { View } from "react-native";
 import { ThemedCard, ThemedText, useThemeContext } from "@/components/theme";
-import type { SeaCondition } from "@/types/weather";
+import type { SeaCondition, TideDirectionInfo } from "@/types/weather";
 import { windDirectionLabel } from "@/constants/weather";
-import { Waves, Compass, Timer, AlertTriangle } from "lucide-react-native";
+import { Waves, Compass, Timer, AlertTriangle, TrendingUp, TrendingDown, Minus } from "lucide-react-native";
 
 interface SeaConditionCardProps {
   condition: SeaCondition;
+  tideDirection?: TideDirectionInfo | null;
 }
 
-export function SeaConditionCard({ condition }: SeaConditionCardProps) {
+export function SeaConditionCard({ condition, tideDirection }: SeaConditionCardProps) {
   const { isDark } = useThemeContext();
   const iconColor = isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.5)";
   const accentColor = isDark ? "#5AC8FA" : "#007AFF";
@@ -59,35 +60,48 @@ export function SeaConditionCard({ condition }: SeaConditionCardProps) {
         </View>
       )}
 
-      <View style={{ flexDirection: "row", gap: 0 }}>
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <Waves size={18} color={iconColor} />
-          <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
-            {condition.waveHeight.toFixed(1)} m
-          </ThemedText>
-<ThemedText secondary style={{ fontSize: 13, marginTop: 2 }}>
-        Altura
-      </ThemedText>
-    </View>
+  <View style={{ flexDirection: "row", gap: 0 }}>
+  <View style={{ flex: 1, alignItems: "center" }}>
+    <Waves size={18} color={iconColor} />
+    <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
+      {condition.waveHeight.toFixed(1)} m
+    </ThemedText>
+    <ThemedText secondary style={{ fontSize: 13, marginTop: 2 }}>
+      Altura
+    </ThemedText>
+  </View>
+  <View style={{ flex: 1, alignItems: "center" }}>
+    <Compass size={18} color={iconColor} />
+    <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
+      {windDirectionLabel(condition.waveDirection)}
+    </ThemedText>
+    <ThemedText secondary style={{ fontSize: 13, marginTop: 2 }}>
+      Dirección
+    </ThemedText>
+  </View>
+  <View style={{ flex: 1, alignItems: "center" }}>
+    <Timer size={18} color={iconColor} />
+    <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
+      {condition.wavePeriod.toFixed(0)} s
+    </ThemedText>
+    <ThemedText secondary style={{ fontSize: 13, marginTop: 2 }}>
+      Periodo
+    </ThemedText>
+  </View>
+  {tideDirection && (
     <View style={{ flex: 1, alignItems: "center" }}>
-      <Compass size={18} color={iconColor} />
+      {tideDirection.direction === "rising" && <TrendingUp size={18} color="#34C759" />}
+      {tideDirection.direction === "falling" && <TrendingDown size={18} color="#FF9500" />}
+      {tideDirection.direction === "stable" && <Minus size={18} color={iconColor} />}
       <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
-        {windDirectionLabel(condition.waveDirection)}
+        {tideDirection.height.toFixed(2)} m
       </ThemedText>
       <ThemedText secondary style={{ fontSize: 13, marginTop: 2 }}>
-        Dirección
+        {tideDirection.direction === "rising" ? "Subiendo" : tideDirection.direction === "falling" ? "Bajando" : "Estable"}
       </ThemedText>
     </View>
-    <View style={{ flex: 1, alignItems: "center" }}>
-      <Timer size={18} color={iconColor} />
-      <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
-        {condition.wavePeriod.toFixed(0)} s
-      </ThemedText>
-      <ThemedText secondary style={{ fontSize: 13, marginTop: 2 }}>
-        Periodo
-          </ThemedText>
-        </View>
-      </View>
+  )}
+  </View>
     </ThemedCard>
   );
 }

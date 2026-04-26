@@ -161,6 +161,7 @@ interface MarineApiResponse {
     wave_height: number[];
     wave_direction: number[];
     wave_period: number[];
+    sea_level_height_msl: number[];
   };
   daily: {
     time: string[];
@@ -174,7 +175,7 @@ export async function getMarineWeather(lat: number, lon: number): Promise<Marine
   const params = new URLSearchParams({
     latitude: lat.toString(),
     longitude: lon.toString(),
-    hourly: "wave_height,wave_direction,wave_period",
+    hourly: "wave_height,wave_direction,wave_period,sea_level_height_msl",
     daily: "wave_height_max,wave_direction_dominant,wave_period_max",
     timezone: "auto",
     forecast_days: "7",
@@ -191,6 +192,7 @@ export async function getMarineWeather(lat: number, lon: number): Promise<Marine
       waveHeight: data.hourly.wave_height,
       waveDirection: data.hourly.wave_direction,
       wavePeriod: data.hourly.wave_period,
+      seaLevelHeight: data.hourly.sea_level_height_msl,
     },
     daily: {
       date: data.daily.time,
