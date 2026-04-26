@@ -53,6 +53,11 @@ export function getOpenWeatherMapTileUrl(layer: string, apiKey: string): string 
   return `https://tile.openweathermap.org/map/${layer}/{z}/{x}/{y}.png?appid=${apiKey}`;
 }
 
+export function getOpenWeatherMapV2TileUrl(operation: string, apiKey: string): string | null {
+  if (!apiKey) return null;
+  return `https://maps.openweathermap.org/maps/2.0/weather/${operation}/{z}/{x}/{y}?appid=${apiKey}`;
+}
+
 export function getRadarTimestamps(data: RainViewerData): number[] {
   return [...data.radarPast, ...data.radarNowcast].map((f) => f.time);
 }

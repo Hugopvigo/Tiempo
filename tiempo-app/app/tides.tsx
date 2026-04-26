@@ -38,7 +38,7 @@ export default function TidesScreen() {
       <DynamicBackground condition="clear">
         <SafeAreaView style={{ flex: 1 }}>
           <ScrollView
-            contentContainerStyle={{ padding: 20, paddingBottom: 32, flexGrow: 1 }}
+            contentContainerStyle={{ padding: 16, paddingBottom: 100, flexGrow: 1 }}
           >
             <TouchableOpacity
               onPress={() => setShowCitySelector(true)}
@@ -120,7 +120,7 @@ export default function TidesScreen() {
     <DynamicBackground condition="clear">
       <SafeAreaView style={{ flex: 1 }}>
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -153,8 +153,8 @@ export default function TidesScreen() {
           </TouchableOpacity>
 
           {isLoading && (
-            <View style={{ gap: 12, marginTop: 12 }}>
-              <SeaConditionSkeleton />
+<View style={{ gap: 16, marginTop: 12 }}>
+        <SeaConditionSkeleton />
               <TideChartSkeleton />
               <TideTableSkeleton />
             </View>
@@ -179,8 +179,8 @@ export default function TidesScreen() {
             </View>
           )}
 
-          {data && seaCondition && (
-            <View style={{ gap: 12, marginTop: 12 }}>
+{data && seaCondition && (
+    <View style={{ gap: 16, marginTop: 12 }}>
               <SeaConditionCard condition={seaCondition} />
 
               <DaySelector

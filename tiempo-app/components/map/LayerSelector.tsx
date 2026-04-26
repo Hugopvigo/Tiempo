@@ -1,8 +1,8 @@
 import { View, TouchableOpacity, ScrollView } from "react-native";
 import { ThemedText, useThemeContext } from "@/components/theme";
-import { CloudRain, Cloud, Thermometer, Wind, Eye, Waves } from "lucide-react-native";
+import { CloudRain, Cloud, Thermometer, Wind, Droplets, Gauge } from "lucide-react-native";
 
-export type MapLayer = "precipitation" | "clouds" | "temperature" | "wind" | "visibility" | "waves";
+export type MapLayer = "precipitation" | "clouds" | "temperature" | "wind" | "humidity" | "pressure";
 
 interface LayerSelectorProps {
   selected: MapLayer;
@@ -15,8 +15,8 @@ const layers: { id: MapLayer; label: string; icon: any; desc: string }[] = [
   { id: "clouds", label: "Nubes", icon: Cloud, desc: "Satélite infrarrojo" },
   { id: "temperature", label: "Temp", icon: Thermometer, desc: "Temperatura superficial" },
   { id: "wind", label: "Viento", icon: Wind, desc: "Velocidad del viento" },
-  { id: "visibility", label: "Vis", icon: Eye, desc: "Visibilidad" },
-  { id: "waves", label: "Oleaje", icon: Waves, desc: "Altura de olas" },
+  { id: "humidity", label: "Humedad", icon: Droplets, desc: "Humedad relativa" },
+  { id: "pressure", label: "Presión", icon: Gauge, desc: "Presión a nivel del mar" },
 ];
 
 export function LayerSelector({ selected, onSelect, availableLayers }: LayerSelectorProps) {

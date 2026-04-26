@@ -50,7 +50,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? screenBackground.dark : screenBackground.light }}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 32 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
         <ThemedText style={{ fontSize: 34, fontWeight: "600", marginBottom: 24 }}>
           Ajustes
         </ThemedText>
@@ -124,12 +124,12 @@ export default function SettingsScreen() {
           ))}
         </ThemedCard>
 
-        <ThemedCard>
-          <ThemedText
-            secondary
-            style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 16, letterSpacing: 0.5 }}
-          >
-            Unidades
+<ThemedCard style={{ marginBottom: 16 }}>
+      <ThemedText
+        secondary
+        style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 16, letterSpacing: 0.5 }}
+      >
+        Unidades
           </ThemedText>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <Thermometer size={16} color={iconColor} />

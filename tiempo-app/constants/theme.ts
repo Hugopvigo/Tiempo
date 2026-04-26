@@ -20,26 +20,26 @@ export const themeGradients: ThemeGradients = {
     night_cloudy: ["#CBD5E0", "#A0AEC0"], // Noche nublada (Gris suave)
   },
   dark: {
-    clear: ["#1A202C", "#2D3748"],      // Noche profunda
-    partly_cloudy: ["#2D3748", "#1A202C"],
-    cloudy: ["#171923", "#2D3748"],
-    rain: ["#1A365D", "#2A4365"],
-    storm: ["#171923", "#2C5282"],
-    snow: ["#2D3748", "#4A5568"],
-    fog: ["#2D3748", "#1A202C"],
-    night_clear: ["#0F172A", "#1E293B"], // Noche premium
-    night_cloudy: ["#1E293B", "#334155"],
+    clear: ["#0A0A0A", "#1A1A1E"],
+    partly_cloudy: ["#0E0E12", "#1C1C22"],
+    cloudy: ["#111115", "#1E1E24"],
+    rain: ["#0A0E14", "#161C24"],
+    storm: ["#0A0A10", "#14141E"],
+    snow: ["#0E0E12", "#1A1A22"],
+    fog: ["#0E0E12", "#1A1A20"],
+    night_clear: ["#050508", "#0A0A10"],
+    night_cloudy: ["#08080C", "#111116"],
   },
 };
 
 export const cardBackground = {
   light: "rgba(255, 255, 255, 0.7)",
-  dark: "rgba(30, 41, 59, 0.4)",
+  dark: "rgba(255, 255, 255, 0.06)",
 };
 
 export const cardBorder = {
   light: "rgba(255, 255, 255, 0.3)",
-  dark: "rgba(255, 255, 255, 0.05)",
+  dark: "rgba(255, 255, 255, 0.08)",
 };
 
 export const textColor = {

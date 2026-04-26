@@ -33,17 +33,17 @@ export function TideTable({ data }: TideTableProps) {
           borderBottomColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
         }}
       >
-        <ThemedText secondary style={{ flex: 1.2, fontSize: 11, fontWeight: "600" }}>
-          Día
-        </ThemedText>
-        <ThemedText secondary style={{ flex: 1, fontSize: 11, fontWeight: "600", textAlign: "center" }}>
-          Oleaje
-        </ThemedText>
-        <ThemedText secondary style={{ flex: 1, fontSize: 11, fontWeight: "600", textAlign: "center" }}>
-          Dir
-        </ThemedText>
-        <ThemedText secondary style={{ flex: 1, fontSize: 11, fontWeight: "600", textAlign: "center" }}>
-          Periodo
+<ThemedText secondary style={{ flex: 1.2, fontSize: 12, fontWeight: "600" }}>
+        Día
+      </ThemedText>
+      <ThemedText secondary style={{ flex: 1, fontSize: 12, fontWeight: "600", textAlign: "center" }}>
+        Oleaje
+      </ThemedText>
+      <ThemedText secondary style={{ flex: 1, fontSize: 12, fontWeight: "600", textAlign: "center" }}>
+        Dir
+      </ThemedText>
+      <ThemedText secondary style={{ flex: 1, fontSize: 12, fontWeight: "600", textAlign: "center" }}>
+        Periodo
         </ThemedText>
       </View>
 

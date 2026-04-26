@@ -111,9 +111,9 @@ export function TideChart({ data, dayIndex = 0 }: TideChartProps) {
                   y={y + 4}
                   textAnchor="end"
                   fill={labelColor}
-                  fontSize={10}
-                >
-                  {val.toFixed(1)}m
+fontSize={12}
+                    >
+                      {val.toFixed(1)}m
                 </SvgText>
               </React.Fragment>
             );
@@ -136,9 +136,9 @@ export function TideChart({ data, dayIndex = 0 }: TideChartProps) {
                   y={padT + chartH + 16}
                   textAnchor="middle"
                   fill={labelColor}
-                  fontSize={10}
-                >
-                  {hourLabels[i]}
+fontSize={12}
+                    >
+                      {hourLabels[i]}
                 </SvgText>
               </React.Fragment>
             );

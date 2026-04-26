@@ -72,17 +72,18 @@ export function WeatherMap({
     if (!webviewRef.current) return;
     const tileUrl = resolveTileUrl(activeLayer, radarTileUrl, satelliteTileUrl, owmLayers);
     if (!tileUrl) return;
-    const js = `
-(function(){
-if(!window._map) return;
-if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
-window._overlay = L.tileLayer("${tileUrl}", {
-  opacity: 0.7,
-  maxZoom: 13,
-  minZoom: 3,
-}).addTo(window._map);
-})();
-`;
+  const js = `
+  (function(){
+    if(!window._map) return;
+    if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
+    var isSat = "${activeLayer}" === "clouds";
+    window._overlay = L.tileLayer("${tileUrl}", {
+      opacity: isSat ? 0.9 : 0.7,
+      maxZoom: 13,
+      minZoom: isSat ? 4 : 3,
+    }).addTo(window._map);
+  })();
+  `;
     webviewRef.current.injectJavaScript(js);
   }, [activeLayer, radarTileUrl, satelliteTileUrl, owmLayers]);
 
@@ -146,10 +147,11 @@ subdomains:"abcd"
 window._map=map;
 window._overlay=null;
 
-var initUrl="${initialTileUrl}";
-if(initUrl){
-window._overlay=L.tileLayer(initUrl,{opacity:0.7,maxZoom:13,minZoom:3}).addTo(map);
-}
+  var initUrl="${initialTileUrl}";
+  if(initUrl){
+    var isInitSat="${activeLayer}"==="clouds";
+    window._overlay=L.tileLayer(initUrl,{opacity:isInitSat?0.9:0.7,maxZoom:13,minZoom:isInitSat?4:3}).addTo(map);
+  }
 
 var markers=${markersJson};
 for(var i=0;i<markers.length;i++){
@@ -198,22 +200,22 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
             bottom: 0,
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: isDark ? "#1a1a2e" : "#F5F7FA",
-            zIndex: 10,
-          }}
-        >
-          <ActivityIndicator
-            size="large"
-            color={isDark ? "#5AC8FA" : "#007AFF"}
-          />
-        </View>
-      )}
+      backgroundColor: isDark ? "#0A0A0A" : "#F5F7FA",
+      zIndex: 10,
+    }}
+  >
+    <ActivityIndicator
+      size="large"
+      color={isDark ? "#5AC8FA" : "#007AFF"}
+      />
+    </View>
+    )}
 
-      {!mapError && (
-        <RNWebView
-          ref={webviewRef}
-          source={{ html }}
-          style={{ flex: 1, backgroundColor: isDark ? "#1a1a2e" : "#F5F7FA" }}
+    {!mapError && (
+    <RNWebView
+      ref={webviewRef}
+      source={{ html }}
+      style={{ flex: 1, backgroundColor: isDark ? "#0A0A0A" : "#F5F7FA" }}
           originWhitelist={["*"]}
           onMessage={(e) => {
             try {
@@ -244,8 +246,8 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
             flex: 1,
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: isDark ? "#1a1a2e" : "#F5F7FA",
-            padding: 24,
+      backgroundColor: isDark ? "#0A0A0A" : "#F5F7FA",
+      padding: 24,
           }}
         >
           <Text style={{ fontSize: 48, marginBottom: 8 }}>🗺️</Text>

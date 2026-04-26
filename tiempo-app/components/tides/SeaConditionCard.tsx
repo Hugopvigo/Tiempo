@@ -65,26 +65,26 @@ export function SeaConditionCard({ condition }: SeaConditionCardProps) {
           <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
             {condition.waveHeight.toFixed(1)} m
           </ThemedText>
-          <ThemedText secondary style={{ fontSize: 11, marginTop: 2 }}>
-            Altura
-          </ThemedText>
-        </View>
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <Compass size={18} color={iconColor} />
-          <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
-            {windDirectionLabel(condition.waveDirection)}
-          </ThemedText>
-          <ThemedText secondary style={{ fontSize: 11, marginTop: 2 }}>
-            Dirección
-          </ThemedText>
-        </View>
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <Timer size={18} color={iconColor} />
-          <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
-            {condition.wavePeriod.toFixed(0)} s
-          </ThemedText>
-          <ThemedText secondary style={{ fontSize: 11, marginTop: 2 }}>
-            Periodo
+<ThemedText secondary style={{ fontSize: 13, marginTop: 2 }}>
+        Altura
+      </ThemedText>
+    </View>
+    <View style={{ flex: 1, alignItems: "center" }}>
+      <Compass size={18} color={iconColor} />
+      <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
+        {windDirectionLabel(condition.waveDirection)}
+      </ThemedText>
+      <ThemedText secondary style={{ fontSize: 13, marginTop: 2 }}>
+        Dirección
+      </ThemedText>
+    </View>
+    <View style={{ flex: 1, alignItems: "center" }}>
+      <Timer size={18} color={iconColor} />
+      <ThemedText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
+        {condition.wavePeriod.toFixed(0)} s
+      </ThemedText>
+      <ThemedText secondary style={{ fontSize: 13, marginTop: 2 }}>
+        Periodo
           </ThemedText>
         </View>
       </View>

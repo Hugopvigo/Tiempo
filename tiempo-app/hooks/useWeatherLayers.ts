@@ -5,15 +5,16 @@ import {
   getSatelliteTileUrl,
   getRadarTimestamps,
   getOpenWeatherMapTileUrl,
+  getOpenWeatherMapV2TileUrl,
   type RainViewerData,
 } from "@/services/weatherLayers";
 import { useSettingsStore } from "@/stores/cityStore";
 
-const OWM_LAYER_MAP: Record<string, string> = {
-  temperature: "temp_new",
-  wind: "wind_new",
-  visibility: "clouds_new",
-  waves: "precipitation_new",
+const OWM_LAYER_MAP: Record<string, { layer: string; v2?: boolean }> = {
+  temperature: { layer: "temp_new" },
+  wind: { layer: "wind_new" },
+  humidity: { layer: "HRD0", v2: true },
+  pressure: { layer: "pressure_new" },
 };
 
 export function useWeatherLayers() {
@@ -50,8 +51,10 @@ export function useWeatherLayers() {
 
   const owmLayers = useMemo(() => {
     const result: Record<string, string | null> = {};
-    for (const [layer, owmId] of Object.entries(OWM_LAYER_MAP)) {
-      result[layer] = getOpenWeatherMapTileUrl(owmId, owmApiKey);
+    for (const [layer, config] of Object.entries(OWM_LAYER_MAP)) {
+      result[layer] = config.v2
+        ? getOpenWeatherMapV2TileUrl(config.layer, owmApiKey)
+        : getOpenWeatherMapTileUrl(config.layer, owmApiKey);
     }
     return result;
   }, [owmApiKey]);
@@ -59,7 +62,7 @@ export function useWeatherLayers() {
   const availableLayers = useMemo(() => {
     const layers: string[] = ["precipitation", "clouds"];
     if (owmApiKey) {
-      layers.push("temperature", "wind", "visibility", "waves");
+      layers.push("temperature", "wind", "humidity", "pressure");
     }
     return layers;
   }, [owmApiKey]);
