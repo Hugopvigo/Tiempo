@@ -13,13 +13,13 @@
 ## Vista Previa
 
 <div align="center">
-<img src="tiempo-app/assets/screen-1.jpg" width="280" alt="Screen 1" style="border-radius: 20px; margin: 10px;" />
-<img src="tiempo-app/assets/screen-2.jpg" width="280" alt="Screen 2" style="border-radius: 20px; margin: 10px;" />
-<img src="tiempo-app/assets/screen-3.jpg" width="280" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
-<img src="tiempo-app/assets/screen-4.jpg" width="280" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
-<img src="tiempo-app/assets/screen-5.jpg" width="280" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
-<img src="tiempo-app/assets/screen-6.jpg" width="280" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
-</div>
+  <img src="tiempo-app/assets/screen-1.jpg" width="200" alt="Screen 1" style="border-radius: 20px; margin: 10px;" />
+  <img src="tiempo-app/assets/screen-2.jpg" width="200" alt="Screen 2" style="border-radius: 20px; margin: 10px;" />
+  <img src="tiempo-app/assets/screen-3.jpg" width="200" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
+  <img src="tiempo-app/assets/screen-4.jpg" width="200" alt="Screen 1" style="border-radius: 20px; margin: 10px;" />
+  <img src="tiempo-app/assets/screen-5.jpg" width="200" alt="Screen 2" style="border-radius: 20px; margin: 10px;" />
+  <img src="tiempo-app/assets/screen-6.jpg" width="200" alt="Screen 3" style="border-radius: 20px; margin: 10px;" />
+  </div>
 
 ---
 
