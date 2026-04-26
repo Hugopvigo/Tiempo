@@ -287,6 +287,7 @@ h1 {
 .f-icon.purple { background: #a855f7; }
 .f-icon.blue { background: #3b82f6; }
 .f-icon.orange { background: #f59e0b; }
+.f-icon.green { background: #10b981; }
 
 .f-card h3 { margin-bottom: 0.75rem; font-weight: 700; }
 .f-card p { color: var(--text-muted); font-size: 0.95rem; }
@@ -297,6 +298,28 @@ footer {
     border-top: 1px solid rgba(0,0,0,0.05);
     text-align: center;
     color: var(--text-muted);
+}
+
+/* --- Buttons --- */
+.btn-secondary {
+    background: white;
+    color: var(--text-main);
+    text-decoration: none;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #fdfdfd;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
 
 /* --- Animations --- */

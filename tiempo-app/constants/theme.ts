@@ -9,57 +9,57 @@ interface ThemeGradients {
 
 export const themeGradients: ThemeGradients = {
   light: {
-    clear: ["#FFC86B", "#FFDAB9"],      // Atardecer/Día claro cálido
-    partly_cloudy: ["#82C1FF", "#BEE3F8"], // Azul cielo suave
+    clear: ["#7DD3FC", "#FDBA74"],      // Cielo azul a naranja suave (Día)
+    partly_cloudy: ["#BAE6FD", "#E0F2FE"], // Azul cielo muy suave
     cloudy: ["#E2E8F0", "#CBD5E0"],      // Gris azulado claro
-    rain: ["#90CDF4", "#A3BFFA"],        // Lluvia suave/azulada
-    storm: ["#BEE3F8", "#90CDF4"],       // Tormenta (más claro para contraste)
-    snow: ["#EDF2F7", "#E2E8F0"],        // Nieve muy suave
-    fog: ["#CBD5E0", "#E2E8F0"],         // Niebla clara
-    night_clear: ["#E2E8F0", "#CBD5E0"], // Noche clara (Grisáceo muy suave)
+    rain: ["#93C5FD", "#BFDBFE"],        // Lluvia azulada clara
+    storm: ["#94A3B8", "#CBD5E0"],       // Gris tormenta suave
+    snow: ["#F1F5F9", "#E2E8F0"],        // Nieve (Blanco/Gris)
+    fog: ["#D1D5DB", "#E5E7EB"],         // Niebla
+    night_clear: ["#E2E8F0", "#CBD5E0"], // Noche clara (Gris perla suave para contraste con texto negro)
     night_cloudy: ["#CBD5E0", "#A0AEC0"], // Noche nublada (Gris suave)
   },
   dark: {
-    clear: ["#0A0A0A", "#1A1A1E"],
-    partly_cloudy: ["#0E0E12", "#1C1C22"],
-    cloudy: ["#111115", "#1E1E24"],
-    rain: ["#0A0E14", "#161C24"],
-    storm: ["#0A0A10", "#14141E"],
-    snow: ["#0E0E12", "#1A1A22"],
-    fog: ["#0E0E12", "#1A1A20"],
-    night_clear: ["#050508", "#0A0A10"],
-    night_cloudy: ["#08080C", "#111116"],
+    clear: ["#0F172A", "#1E293B"],       // Azul medianoche (Slate)
+    partly_cloudy: ["#0F172A", "#334155"], // Azul/Gris oscuro
+    cloudy: ["#1E293B", "#334155"],       // Gris pizarra oscuro
+    rain: ["#0F172A", "#1E1E2C"],         // Azul muy oscuro
+    storm: ["#080C14", "#1E293B"],        // Tormenta profunda
+    snow: ["#1E293B", "#475569"],         // Gris frío
+    fog: ["#1E293B", "#334155"],          // Niebla oscura
+    night_clear: ["#020617", "#0F172A"],  // Noche profunda
+    night_cloudy: ["#0F172A", "#1E293B"], // Noche con nubes
   },
 };
 
 export const cardBackground = {
-  light: "rgba(255, 255, 255, 0.7)",
-  dark: "rgba(255, 255, 255, 0.06)",
+  light: "rgba(255, 255, 255, 0.8)", // Un poco más opaco para mejor lectura
+  dark: "rgba(30, 41, 59, 0.5)",    // Slate 800 con transparencia
 };
 
 export const cardBorder = {
-  light: "rgba(255, 255, 255, 0.3)",
-  dark: "rgba(255, 255, 255, 0.08)",
+  light: "rgba(0, 0, 0, 0.05)",      // Borde sutil oscuro para modo claro
+  dark: "rgba(255, 255, 255, 0.1)",  // Borde claro para modo oscuro
 };
 
 export const textColor = {
-  light: "#1A202C",
-  dark: "#F8FAFC",
+  light: "#0F172A", // Slate 900 (Casi negro, contraste máximo)
+  dark: "#F8FAFC",  // Slate 50 (Casi blanco, contraste máximo)
 };
 
 export const secondaryTextColor = {
-  light: "#4A5568",
-  dark: "#94A3B8",
+  light: "#475569", // Slate 600
+  dark: "#94A3B8",  // Slate 400
 };
 
 export const screenBackground = {
   light: "#F5F7FA",
-  dark: "#000000",
+  dark: "#020617", // Slate 950 en lugar de puro negro
 };
 
 export const navBarBackground = {
   light: "#FFFFFF",
-  dark: "#0A0A0A",
+  dark: "#0F172A", // Slate 900
 };
 
 export const alertColors = {
