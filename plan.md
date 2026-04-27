@@ -4,12 +4,12 @@
 
 | Capa | Tecnología | Razón |
 |------|-----------|-------|
-| Framework | **React Native + Expo SDK 52+** | Desarrollo rápido, OTA updates, EAS Build |
+| Framework | **React Native + Expo SDK 54** | Desarrollo rápido, OTA updates, EAS Build |
 | Lenguaje | **TypeScript** | Tipado estricto, menos bugs |
-| Navegación | **Expo Router v4** (file-based) | Lazy loading automático, deep linking |
+| Navegación | **Expo Router v6** (file-based) | Lazy loading automático, deep linking |
 | Estilo | **NativeWind v4** (Tailwind para RN) | CSS utility-first, responsive nativo |
 | Estado | **Zustand** + **TanStack Query v5** | Cache inteligente de API, estado mínimo |
-| Animaciones | **Reanimated 3** + **Skia** | Animaciones fluidas a 120fps, gráficos custom |
+| Animaciones | **Reanimated 4** + **Skia** | Animaciones fluidas a 120fps, gráficos custom |
 | Almacenamiento | **MMKV** | Key-value ultra-rápido para ciudades guardadas |
 | Iconos | **Lucide** | Consistentes, ligeros |
 | APIs | **AEMET** (oficial España) + **Open-Meteo** (fallback/global) | Datos oficiales + cobertura mundial |
@@ -143,13 +143,28 @@ tiempo-app/
 - [x] `AppSettings.notifications` ampliado con heat/cold/coastal
 
 ### Fase 5 — Mapa Meteorológico
-- [ ] `@rnmapbox/maps` con Mapbox
-- [ ] Capas: radar lluvia, nubes, temperatura, viento
-- [ ] Selector de capas (bottom sheet)
-- [ ] Animación timeline radar
-- [ ] Pins de ciudades guardadas
-- [ ] Estilo mapa adaptado a modo claro/oscuro
-- [ ] Leyenda interactiva
+- [x] Mapa WebView con Leaflet + CartoDB tiles (light_all / dark_all)
+- [x] Capas: radar lluvia (RainViewer), nubes (satélite/OWM), temperatura, viento, humedad, presión
+- [x] Selector de capas (`LayerSelector`) con 6 botones horizontales
+- [x] Marcadores de ciudades guardadas con divIcons personalizados
+- [x] Estilo mapa adaptado a modo claro/oscuro
+- [x] Clave API OpenWeatherMap configurable desde Settings
+- [x] Capas OWM V1 + V2 (HRD0 humedad)
+- [x] `useOwmClouds` alternancia entre satélite y tiles OWM para nubes
+- [x] Opacidad y zoom adaptativos por tipo de capa
+- [x] `errorTileUrl` para tiles fallidos
+
+## Versión Actual
+
+**v2.4.0** — Release estable con:
+- Previsión actual + 7 días (Open-Meteo + AEMET)
+- Gestión de ciudades con GPS y swipe-to-delete
+- Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
+- Alertas locales + AEMET con notificaciones push y background fetch
+- Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM)
+- Estilo de iconos configurable (color/monocromo)
+- Modo claro/oscuro con gradientes dinámicos
+- EAS Build configurado (development, preview, production — APK)
 
 ## Principios de Diseño (estilo Apple Weather)
 
@@ -203,11 +218,13 @@ tiempo-app/
 
 ## Orden de Ejecución
 
-1. **Fase 0**: Scaffolding + cleanup
-2. **Fase 1**: Previsión actual + 7 días
-3. **Fase 2**: Gestión de ciudades
-4. **Fase 3**: Mareas
-5. **Fase 4**: Notificaciones/Alertas
-6. **Fase 5**: Mapa meteorológico
+1. **Fase 0**: Scaffolding + cleanup ✅
+2. **Fase 1**: Previsión actual + 7 días ✅
+3. **Fase 2**: Gestión de ciudades ✅
+4. **Fase 3**: Mareas ✅
+5. **Fase 4**: Notificaciones/Alertas ✅
+6. **Fase 5**: Mapa meteorológico ✅
+7. **Fase 6**: Capas adicionales OWM ✅
+8. **Fase 7**: Mareas v2 (pleamar/bajamar) ✅
 
-Cada fase incluye tests de integración y verificación en dispositivo Android.
+Cada fase incluye verificación en dispositivo Android vía EAS Build.
