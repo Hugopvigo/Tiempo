@@ -81,7 +81,7 @@ export const SwipeableCityRow = memo(function SwipeableCityRow({
               paddingVertical: 14,
               paddingHorizontal: 16,
               gap: 10,
-              backgroundColor: isDark ? "#1C1C1E" : "#FFF",
+              backgroundColor: isDark ? "rgba(90,200,250,0.1)" : "rgba(0,122,255,0.05)",
             }}
           >
             {isActive && (

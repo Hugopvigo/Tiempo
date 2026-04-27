@@ -278,9 +278,10 @@ function DaySelector({
                   ? isDark
                     ? "#5AC8FA"
                     : "#007AFF"
-                  : undefined,
+                  : isDark
+                    ? "rgba(255,255,255,0.6)"
+                    : "rgba(0,0,0,0.45)",
               }}
-              secondary={!active}
             >
               {label}
             </ThemedText>

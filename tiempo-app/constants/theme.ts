@@ -38,8 +38,8 @@ export const cardBackground = {
 };
 
 export const cardBorder = {
-  light: "rgba(0, 0, 0, 0.05)",      // Borde sutil oscuro para modo claro
-  dark: "rgba(255, 255, 255, 0.1)",  // Borde claro para modo oscuro
+  light: "rgba(0, 0, 0, 0.03)",
+  dark: "rgba(255, 255, 255, 0.06)",
 };
 
 export const textColor = {
