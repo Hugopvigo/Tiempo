@@ -548,3 +548,37 @@ tiempo-app/
 
 ### EAS Build production
 - Build de producción lanzada para Android (APK)
+
+---
+
+## v2.5 — Fase 8: Animaciones de Particulas Climaticas
+
+### Componente nuevo: `WeatherParticles` (`components/theme/WeatherParticles.tsx`)
+- Sistema de particulas animadas con Reanimated que se muestran segun la condicion climatica
+- 4 tipos de particulas:
+  - **Lluvia** (`rain`): 30 gotas cayendo con inclinacion por viento, color azul semitransparente
+  - **Tormenta** (`storm`): 40 gotas + flash de relampago periodico (secuencia de opacidad 0.7-0-0.4-0)
+  - **Nieve** (`snow`): 24 copos cayendo lentos con drift sinusoidal horizontal, color blanco
+  - **Niebla** (`fog`): 6 puffs grandes moviendose horizontalmente con baja opacidad
+- Condiciones sin particulas: `clear`, `partly_cloudy`, `cloudy`, `night_clear`, `night_cloudy`
+
+### Arquitectura de particulas
+- `RainDrop`: linea vertical animada con `useSharedValue` + `withRepeat(withTiming())` para Y (caida) y opacidad (fade in/out)
+- `SnowFlake`: circulo pequeño con animacion Y (caida lenta) + X (drift sinusoidal con `withSequence`)
+- `FogPuff`: circulo grande borroso con animacion X (drift horizontal lento)
+- `LightningFlash`: overlay full-screen con `withSequence` para flash de relampago, intervalo 4-10s random
+- `seededRandom()`: generador pseudo-aleatorio deterministico para posiciones/offsets estables por render
+- Todas las particulas usan `pointerEvents="none"` para no bloquear interaccion
+- `cancelAnimation()` en `useEffect` cleanup para evitar leaks
+
+### Integracion en Home
+- `<WeatherParticles condition={condition} isDark={isDark} />` insertado dentro de `<DynamicBackground>` en `app/index.tsx`
+- Capa `position: absolute` entre el fondo degradado y el contenido
+- Exportado desde `components/theme/index.ts`
+
+### Colores adaptativos
+- Lluvia claro: `rgba(96,165,250,0.35)` / oscuro: `rgba(147,197,253,0.5)`
+- Lluvia tormenta claro: `rgba(59,130,246,0.4)` / oscuro: `rgba(147,197,253,0.6)`
+- Nieve claro: `rgba(255,255,255,0.85)` / oscuro: `rgba(255,255,255,0.7)`
+- Niebla claro: `rgba(203,213,225,0.25)` / oscuro: `rgba(148,163,184,0.12)`
+- Relampago: `rgba(255,255,255,0.9)`

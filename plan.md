@@ -154,15 +154,42 @@ tiempo-app/
 - [x] Opacidad y zoom adaptativos por tipo de capa
 - [x] `errorTileUrl` para tiles fallidos
 
-## Versión Actual
+### Fase 6 — Capas adicionales OWM
+- [x] Capas de temperatura, viento, humedad y presion via OpenWeatherMap
+- [x] Seccion "Claves API" en Settings con input de OpenWeatherMap API Key
+- [x] Capas V1 + V2 (HRD0 humedad) via Maps 2.0 endpoint
+- [x] Capas disponibles sin API key: precipitacion, nubes
+- [x] Capas disponibles con API key: temperatura, viento, humedad, presion
 
-**v2.4.0** — Release estable con:
+### Fase 7 — Mareas v2
+- [x] `sea_level_height_msl` integrado en `getMarineWeather()`
+- [x] `useTideDirection()`: altura actual + direccion (subiendo/bajando/estable)
+- [x] `deriveTideForecasts()`: horarios de pleamar/bajamar detectando picos/valles
+- [x] `TideTimesCard`: pleamar (verde) / bajamar (naranja) con alturas
+- [x] Indicador de marea en `SeaConditionCard` (4a columna)
+
+### Fase 8 — Animaciones de Particulas Climaticas
+- [x] Componente `WeatherParticles` con Reanimated (`useSharedValue` + `withRepeat`)
+- [x] `RainDrop`: 30 gotas cayendo con inclinacion por viento (rain), 40 gotas (storm)
+- [x] `SnowFlake`: 24 copos con drift sinusoidal horizontal
+- [x] `FogPuff`: 6 puffs grandes con drift horizontal lento
+- [x] `LightningFlash`: overlay con flash periodico (storm)
+- [x] `seededRandom()`: offsets deterministas por render
+- [x] Colores adaptativos claro/oscuro por tipo de particula
+- [x] `pointerEvents="none"` + `cancelAnimation()` en cleanup
+- [x] Integracion en Home (`app/index.tsx`) dentro de `DynamicBackground`
+- [x] Export desde `components/theme/index.ts`
+
+## Version Actual
+
+**v2.5.0** — Release estable con:
 - Previsión actual + 7 días (Open-Meteo + AEMET)
 - Gestión de ciudades con GPS y swipe-to-delete
 - Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
 - Alertas locales + AEMET con notificaciones push y background fetch
 - Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM)
 - Estilo de iconos configurable (color/monocromo)
+- Animaciones de partículas climáticas (lluvia, nieve, niebla, relámpagos)
 - Modo claro/oscuro con gradientes dinámicos
 - EAS Build configurado (development, preview, production — APK)
 
@@ -226,5 +253,8 @@ tiempo-app/
 6. **Fase 5**: Mapa meteorológico ✅
 7. **Fase 6**: Capas adicionales OWM ✅
 8. **Fase 7**: Mareas v2 (pleamar/bajamar) ✅
+9. **Fase 8**: Animaciones de particulas climaticas (lluvia, nieve, niebla, relampagos) ✅
+10. **Fase 9**: Animacion de radar en tiempo real (timeline RainViewer)
+11. **Fase 10**: Widgets de pantalla de inicio
 
 Cada fase incluye verificación en dispositivo Android vía EAS Build.

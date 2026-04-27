@@ -1,4 +1,4 @@
-# Tiempo — Tu Clima en Tiempo Real - Version 2.4
+# Tiempo — Tu Clima en Tiempo Real - Version 2.5
 
 [![Expo](https://img.shields.io/badge/Expo-54+-000020.svg?style=flat&logo=expo&logoColor=white)](https://expo.dev)
 [![React Native](https://img.shields.io/badge/React_Native-0.81+-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactnative.dev)
@@ -135,8 +135,9 @@ Como obtener una API Key gratuita de OpenWeatherMap:
 - [x] **Fase 5:** Mapas meteorologicos interactivos (RainViewer + OpenWeatherMap tiles).
 - [x] **Fase 6:** Capas adicionales del mapa (temperatura, viento, humedad, presion) con API Key configurable.
 - [x] **Fase 7:** Mareas v2 — Indicador de marea subiendo/bajando, horarios de pleamar/bajamar via sea_level_height_msl.
-- [ ] **Fase 8:** Animacion de radar en tiempo real (timeline de frames RainViewer).
-- [ ] **Fase 9:** Widgets de pantalla de inicio.
+- [ ] **Fase 8:** Animaciones de particulas climaticas en la Home (lluvia, nieve, niebla, relampagos con Reanimated).
+- [ ] **Fase 9:** Animacion de radar en tiempo real (timeline de frames RainViewer).
+- [ ] **Fase 10:** Widgets de pantalla de inicio.
 
 ---
 
