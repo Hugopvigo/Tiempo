@@ -411,3 +411,140 @@ tiempo-app/
 
 ### plan.md actualizado
 - Fases 5, 6, 7 marcadas como completadas
+
+---
+
+## v1.0 — Primera Release (Beta)
+
+### EAS Build configurado
+- `eas.json` con 3 perfiles: `development`, `preview`, `production`
+- Todos los perfiles generan APK para Android
+- `appVersionSource: "remote"` — versión gestionada desde EAS
+- Proyecto registrado en EAS con ID `9829422f-1608-4ad5-b622-67aecada466f`
+
+### Mapa meteorológico (WebView + Leaflet)
+- `WeatherMap` con Leaflet embebido en WebView + CartoDB tiles
+- `LayerSelector`: 6 capas (Lluvia, Nubes, Temp, Viento, Humedad, Presión)
+- Soporte para RainViewer (radar precipitación), satélite infrarrojo y OpenWeatherMap tiles
+- `useWeatherLayers` hook para gestión de URLs y capas
+- `weatherLayers.ts`: servicio de capas con cache RainViewer 10min TTL
+- Marcadores de ciudades guardadas en el mapa
+- Adaptación automática claro/oscuro (CartoDB light_all / dark_all)
+
+### Dependenecias actualizadas
+- `.npmrc` con `legacy-peer-deps=true`
+- `package-lock.json` actualizado
+
+### Nuevos assets
+- Iconos adaptativos actualizados (adaptive-icon, icon, splash-icon, favicon)
+
+---
+
+## v1.1 — Beta 1.1
+
+### Mejoras del mapa
+- `WeatherMap` refactorizado con mejor manejo de capas
+- Interactividad mejorada en WebView
+- Correcciones de estilo y layout
+
+### UI mejorada
+- `BottomNavBar` rediseñado con mejor distribución y estilo
+- Pantalla Home con mejor layout y espaciado
+- Ajustes y búsqueda con micro-mejoras visuales
+
+---
+
+## v2.0 — Release Estable
+
+### Animaciones fluidas y rediseño
+- `AnimatedView`: nuevo componente de animaciones con Reanimated
+- `ThemedCard` mejorado con soporte para animaciones de entrada
+- Gradientes de fondo refinados en `constants/theme.ts`
+- `CitySelector` rediseñado con transiciones suaves
+- Home screen con layout optimizado y animaciones de entrada
+
+### App icons y splash actualizados
+- Iconos de alta resolución (adaptive-icon: 476KB, icon: 476KB)
+- Splash icon actualizado
+- Favicon actualizado
+
+### UI general
+- `BottomNavBar` totalmente rediseñado con nuevos estilos
+- `WeatherIcon` con soporte para variante day/night
+- `CurrentWeather`, `HourlyForecast`, `DailyForecast` con ajustes visuales
+- `ThemedCard` con soporte de animación y blur mejorado
+- Modo oscuro refinado en toda la app
+
+### Versión
+- `app.json` version: `1.0.0` → `2.0.0`
+- `app.json` ampliado con `newArchEnabled`, `edgeToEdgeEnabled`, `predictiveBackGestureEnabled`
+- Permisos Android declarados: `ACCESS_COARSE_LOCATION`, `ACCESS_FINE_LOCATION`
+- Plugins configurados: `expo-router`, `expo-location`, `expo-notifications`
+
+---
+
+## v2.1 — OpenWeatherMaps
+
+### Mapa con capas OWM
+- Capas de temperatura, viento, humedad y presión vía OpenWeatherMap
+- `getOpenWeatherMapTileUrl()` y `getOpenWeatherMapV2TileUrl()` en `weatherLayers.ts`
+- Capas V2: HRD0 (humedad) vía Maps 2.0 endpoint
+- Capas disponibles sin API key: precipitación, nubes
+- Capas disponibles con API key: temperatura, viento, humedad, presión
+
+### Clave API configurable
+- Sección "Claves API" en Settings con input de OpenWeatherMap API Key
+- Clave ofuscada en display (4 primeros chars + asteriscos)
+- Botones Editar/Añadir/Guardar/Cancelar
+
+---
+
+## v2.2 — Release 2.2
+
+- README.md actualizado con nuevas capturas y descripción
+
+---
+
+## v2.3 — Release 2.3
+
+- Landing page actualizada (index.html)
+- README actualizado
+
+---
+
+## v2.4 — Release 2.4
+
+### Estilo de iconos configurable
+- Nuevo tipo `IconStyle`: `"colored" | "monochrome"` en `types/weather.ts`
+- `AppSettings.iconStyle`: preferencia de iconos del usuario
+- `settingsStore` default: `iconStyle: "colored"`
+- `WeatherIcon` soporta prop `colored` y lee `settings.iconStyle`
+  - **Color**: iconos climáticos con colores por condición (soleado=#FFB800, lluvia=#5AC8FA, tormenta=#7C3AED, etc.)
+  - **Monocromo**: iconos en gris adaptativo (como versión anterior)
+- `WeatherDetails` iconos con colores temáticos (sensación=#FF6B6B, humedad=#5AC8FA, viento=#34D399, UV=#FFB800, presión=#A78BFA, visibilidad=#60A5FA)
+- Sección "Iconos" en Settings con selector Color/Monocromo (iconos Palette + CircleDot)
+
+### Mejoras en mapa
+- `useOwmClouds` prop en `WeatherMap`: permite usar tiles OWM para nubes en lugar de satélite
+- Opacidad adaptativa por capa: satélite 0.9, OWM 0.7 (claro) / 0.85 (oscuro)
+- `maxZoom` dinámico: 13 para satélite, 18 para OWM
+- `minZoom` diferenciado: 4 para satélite, 3 para OWM
+- `errorTileUrl`: GIF transparente 1x1 para tiles fallidos
+
+### Correcciones
+- Botón de ciudad en Settings corregido
+- `SwipeableCityRow` con estilo corregido
+- Tides: corrección en lógica de mareas
+- Modo oscuro: `ThemedCard` y gradientes refinados
+- `constants/theme.ts`: colores de fondo ajustados
+
+### Assets
+- Nuevas capturas de pantalla: screen-4, screen-5, screen-6
+- Capturas existentes actualizadas
+
+### Versión
+- `app.json` version: `2.0.0` → `2.4.0`
+- `package.json` version: `1.0.0` → `2.4.0`
+
+### EAS Build production
+- Build de producción lanzada para Android (APK)
