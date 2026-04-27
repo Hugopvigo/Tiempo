@@ -1,4 +1,4 @@
-# Tiempo — Tu Clima en Tiempo Real - Version 2.3
+# Tiempo — Tu Clima en Tiempo Real - Version 2.4
 
 [![Expo](https://img.shields.io/badge/Expo-54+-000020.svg?style=flat&logo=expo&logoColor=white)](https://expo.dev)
 [![React Native](https://img.shields.io/badge/React_Native-0.81+-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactnative.dev)
