@@ -1,6 +1,6 @@
 import { View, ScrollView, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { DynamicBackground, ThemedText, AnimatedView } from "@/components/theme";
+import { DynamicBackground, ThemedText, AnimatedView, WeatherParticles } from "@/components/theme";
 import { CurrentWeather, HourlyForecastCard, DailyForecastCard, WeatherDetails } from "@/components/weather";
 import { CurrentWeatherSkeleton, HourlyForecastSkeleton, DailyForecastSkeleton, WeatherDetailsSkeleton } from "@/components/ui/Skeleton";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
@@ -52,8 +52,9 @@ export default function HomeScreen() {
   }, [alerts.length, settings.notifications.enabled]);
 
   return (
-    <DynamicBackground condition={condition}>
-      <View style={{ flex: 1 }}>
+  <DynamicBackground condition={condition}>
+    <WeatherParticles condition={condition} isDark={isDark} />
+    <View style={{ flex: 1 }}>
         <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
           <ScrollView
             contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
