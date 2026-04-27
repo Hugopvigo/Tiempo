@@ -6,11 +6,11 @@ import { useSettingsStore, useCityStore } from "@/stores/cityStore";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { SwipeableCityRow } from "@/components/city";
 import { useRouter } from "expo-router";
-import { Moon, Sun, Monitor, Plus, Navigation, Thermometer, Bell, CloudRain, CloudLightning, Snowflake, Wind, ThermometerSun, ThermometerSnowflake, Waves, Key } from "lucide-react-native";
+import { Moon, Sun, Monitor, Plus, Navigation, Thermometer, Bell, CloudRain, CloudLightning, Snowflake, Wind, ThermometerSun, ThermometerSnowflake, Waves, Key, Palette, CircleDot } from "lucide-react-native";
 import { useLocation } from "@/hooks/useLocation";
 import { requestNotificationPermissions, setupNotificationChannel } from "@/services/notifications";
 import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
-import type { ThemeMode } from "@/types/weather";
+import type { ThemeMode, IconStyle } from "@/types/weather";
 import { useEffect, useState } from "react";
 
 export default function SettingsScreen() {
@@ -24,6 +24,11 @@ export default function SettingsScreen() {
     { label: "Auto", value: "system", icon: Monitor },
     { label: "Claro", value: "light", icon: Sun },
     { label: "Oscuro", value: "dark", icon: Moon },
+  ];
+
+  const iconStyleOptions: { label: string; value: IconStyle; icon: any }[] = [
+    { label: "Color", value: "colored", icon: Palette },
+    { label: "Monocromo", value: "monochrome", icon: CircleDot },
   ];
 
   const activeColor = isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.08)";
@@ -62,32 +67,65 @@ export default function SettingsScreen() {
           >
             Apariencia
           </ThemedText>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {themeOptions.map((opt) => {
-              const isActive = settings.theme === opt.value;
-              return (
-                <TouchableOpacity
-                  key={opt.value}
-                  onPress={() => updateSettings({ theme: opt.value })}
-                  style={{
-                    flex: 1,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    paddingVertical: 10,
-                    borderRadius: 10,
-                    backgroundColor: isActive ? activeColor : "transparent",
-                  }}
-                >
-                  <opt.icon size={16} color={iconColor} />
-                  <ThemedText style={{ fontSize: 14, fontWeight: isActive ? "600" : "400" }}>
-                    {opt.label}
-                  </ThemedText>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        {themeOptions.map((opt) => {
+          const isActive = settings.theme === opt.value;
+          return (
+            <TouchableOpacity
+              key={opt.value}
+              onPress={() => updateSettings({ theme: opt.value })}
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                paddingVertical: 10,
+                borderRadius: 10,
+                backgroundColor: isActive ? activeColor : "transparent",
+              }}
+            >
+              <opt.icon size={16} color={iconColor} />
+              <ThemedText style={{ fontSize: 14, fontWeight: isActive ? "600" : "400" }}>
+                {opt.label}
+              </ThemedText>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <ThemedText
+        secondary
+        style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginTop: 16, marginBottom: 12, letterSpacing: 0.5 }}
+      >
+        Iconos
+      </ThemedText>
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        {iconStyleOptions.map((opt) => {
+          const isActive = settings.iconStyle === opt.value;
+          return (
+            <TouchableOpacity
+              key={opt.value}
+              onPress={() => updateSettings({ iconStyle: opt.value })}
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                paddingVertical: 10,
+                borderRadius: 10,
+                backgroundColor: isActive ? activeColor : "transparent",
+              }}
+            >
+              <opt.icon size={16} color={isActive ? (opt.value === "colored" ? "#FFB800" : iconColor) : iconColor} />
+              <ThemedText style={{ fontSize: 14, fontWeight: isActive ? "600" : "400" }}>
+                {opt.label}
+              </ThemedText>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
         </ThemedCard>
 
         <ThemedCard style={{ marginBottom: 16 }}>

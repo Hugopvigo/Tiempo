@@ -2,6 +2,7 @@ import { Sun, CloudSun, Cloud, CloudRain, CloudLightning, Snowflake, CloudFog, M
 import type { WeatherCondition } from "@/types/weather";
 import type { LucideIcon } from "lucide-react-native";
 import { useThemeContext } from "@/components/theme";
+import { useSettingsStore } from "@/stores/cityStore";
 
 const iconMap: Record<WeatherCondition, LucideIcon> = {
   clear: Sun,
@@ -35,10 +36,12 @@ interface WeatherIconProps {
   colored?: boolean;
 }
 
-export function WeatherIcon({ condition, size = 24, color, strokeWidth = 2, colored = false }: WeatherIconProps) {
+export function WeatherIcon({ condition, size = 24, color, strokeWidth = 2, colored }: WeatherIconProps) {
   const { isDark } = useThemeContext();
+  const { settings } = useSettingsStore();
   const defaultColor = isDark ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.55)";
-  const resolvedColor = color ?? (colored ? colorMap[condition] : defaultColor);
+  const useColor = colored ?? (settings.iconStyle === "colored");
+  const resolvedColor = color ?? (useColor ? colorMap[condition] : defaultColor);
   const Icon = iconMap[condition] ?? Cloud;
   return <Icon size={size} color={resolvedColor} strokeWidth={strokeWidth} />;
 }

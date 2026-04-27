@@ -49,7 +49,7 @@ export const SwipeableCityRow = memo(function SwipeableCityRow({
   };
 
   return (
-    <View style={{ borderTopWidth: 0.5, borderTopColor: separator }}>
+    <View style={{ borderTopWidth: 0.5, borderTopColor: separator, overflow: "hidden" }}>
       <View style={{ flexDirection: "row" }}>
         {canDelete && (
           <TouchableOpacity
@@ -70,7 +70,11 @@ export const SwipeableCityRow = memo(function SwipeableCityRow({
         )}
 
         <Animated.View
-          style={{ transform: [{ translateX }], flex: 1 }}
+          style={{
+            transform: [{ translateX }],
+            flex: 1,
+            backgroundColor: isDark ? "#1C1C1E" : "#FFFFFF",
+          }}
           {...panResponder.panHandlers}
         >
           <TouchableOpacity

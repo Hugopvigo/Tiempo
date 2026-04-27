@@ -71,6 +71,7 @@ export const useCityStore = create<CityState>((set, get) => ({
 const savedSettings = storage.getString("settings");
 const defaultSettings: AppSettings = {
   theme: "system",
+  iconStyle: "colored",
   notifications: {
     enabled: true,
     rain: true,

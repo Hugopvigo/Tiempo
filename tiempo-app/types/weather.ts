@@ -135,9 +135,11 @@ export interface WeatherAlert {
 }
 
 export type ThemeMode = "system" | "light" | "dark";
+export type IconStyle = "colored" | "monochrome";
 
 export interface AppSettings {
   theme: ThemeMode;
+  iconStyle: IconStyle;
   notifications: {
     enabled: boolean;
     rain: boolean;
