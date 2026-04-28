@@ -16,6 +16,7 @@ import { ChevronDown } from "lucide-react-native";
 import { requestNotificationPermissions, setupNotificationChannel, setBadgeCount } from "@/services/notifications";
 import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
 import { useSettingsStore } from "@/stores/cityStore";
+import { useWidgetUpdater } from "@/hooks/useWidgetUpdater";
 
 export default function HomeScreen() {
   const { isDark } = useThemeContext();
@@ -28,6 +29,9 @@ export default function HomeScreen() {
   );
   const alerts = useLocalAlerts(weather);
   const [showCitySelector, setShowCitySelector] = useState(false);
+
+  const cityName = activeCity.isLocation ? "Mi ubicación" : activeCity.name;
+  useWidgetUpdater(cityName, weather);
 
   const condition = weather?.current.condition ?? "clear";
   const iconColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)";

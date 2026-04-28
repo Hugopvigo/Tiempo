@@ -291,7 +291,7 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
 </script>
 </body>
 </html>`;
-    }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteUrl, owmLayers, activeLayer, useOwmClouds, radarFrameUrls, isPlaying, frameIndex, pastCount]);
+    }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteTileUrl, owmLayers, activeLayer, useOwmClouds, radarFrameUrls, isPlaying, frameIndex, pastCount]);
 
   const current = weather?.current;
   const condition = current?.condition;

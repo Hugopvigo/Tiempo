@@ -1,6 +1,6 @@
 {
   "name": "tiempo-app",
-  "version": "2.5.1",
+  "version": "2.6.1",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
@@ -23,6 +23,7 @@
     "expo-router": "~6.0.23",
     "expo-status-bar": "~3.0.9",
     "expo-task-manager": "~14.0.9",
+    "expo-widgets": "^55.0.14",
     "lucide-react-native": "^1.9.0",
     "nativewind": "^4.2.3",
     "react": "19.1.0",

@@ -180,14 +180,45 @@ tiempo-app/
 - [x] Integracion en Home (`app/index.tsx`) dentro de `DynamicBackground`
 - [x] Export desde `components/theme/index.ts`
 
+### Fase 9 — Animacion de Radar en Tiempo Real
+- [x] `useWeatherLayers` ampliado: `isPlaying`, `togglePlay`, `stopPlay`, `radarFrameUrls`, `pastCount`
+- [x] Auto-play con interval 800ms, ciclo frames past+nowcast
+- [x] `RadarTimeline` componente: play/pause, skip-back, slider, etiqueta hora + indicador pasado/prediccion
+- [x] Slider con `@react-native-community/slider` para scrub manual de frames
+- [x] Animacion ejecutada en WebView (Leaflet) via `injectRadarAnimation()` — loop nativo JS sin bridge
+- [x] `injectRadarPause()` + `injectRadarFrame()` para pausa y seleccion manual
+- [x] Separacion visual pasado (azul) vs prediccion (naranja) en timeline
+- [x] Comunicacion WebView→RN: `frameChange` message para sincronizar indice
+- [x] Timeline visible solo en capa precipitation
+- [x] Al cambiar capa no-radar, auto-stop de animacion
+- [x] `LayerSelector` recibe `showRadarTimeline` prop para ajustar posicion
+
+### Fase 10 — Widgets de Pantalla de Inicio
+- [x] Widget pequeno (2x1): ciudad + temperatura + condicion + max/min
+- [x] Widget mediano (4x2): ciudad + temperatura + condicion + prevision 4 dias
+- [x] Layouts XML: `widget_weather_small.xml`, `widget_weather_medium.xml`
+- [x] Backgrounds adaptativos claro/oscuro: `widget_bg_dark.xml`, `widget_bg_light.xml`
+- [x] `WeatherWidgetProvider` (Kotlin): lee datos de SharedPreferences, actualiza RemoteViews
+- [x] `WeatherWidgetMediumProvider` (Kotlin): extiende provider para widget mediano
+- [x] Modulo nativo Expo `tiempo-widget`: `TiempoWidgetModule` escribe en SharedPreferences + broadcast
+- [x] Hook `useWidgetUpdater`: escribe datos del clima en widget cada 5 min (debounce)
+- [x] Integracion en Home: `useWidgetUpdater(cityName, weather)`
+- [x] Declaracion en AndroidManifest.xml con APPWIDGET_UPDATE + custom broadcast
+- [x] `widget_weather_small_info.xml` + `widget_weather_medium_info.xml` (AppWidgetProviderInfo)
+- [x] Auto-update cada 30 min via `updatePeriodMillis`
+- [x] Click en widget abre la app (PendingIntent → MainActivity)
+- [x] Colores de texto adaptativos segun modo del sistema (isDarkMode)
+
 ## Version Actual
 
-**v2.5.0** — Release estable con:
+**v2.6.1** — Release estable con:
 - Previsión actual + 7 días (Open-Meteo + AEMET)
 - Gestión de ciudades con GPS y swipe-to-delete
 - Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
 - Alertas locales + AEMET con notificaciones push y background fetch
 - Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM)
+- Animación de radar en tiempo real con timeline de frames (play/pause/scrub)
+- Widgets de pantalla de inicio (compacto + previsión 4 días)
 - Estilo de iconos configurable (color/monocromo)
 - Animaciones de partículas climáticas (lluvia, nieve, niebla, relámpagos)
 - Modo claro/oscuro con gradientes dinámicos
@@ -253,8 +284,66 @@ tiempo-app/
 6. **Fase 5**: Mapa meteorológico ✅
 7. **Fase 6**: Capas adicionales OWM ✅
 8. **Fase 7**: Mareas v2 (pleamar/bajamar) ✅
-9. **Fase 8**: Animaciones de particulas climaticas (lluvia, nieve, niebla, relampagos) ✅
-10. **Fase 9**: Animacion de radar en tiempo real (timeline RainViewer)
-11. **Fase 10**: Widgets de pantalla de inicio
+9. **Fase 8**: Animaciones de particulas climaticas ✅
+10. **Fase 9**: Animacion de radar en tiempo real (timeline RainViewer) ✅
+11. **Fase 10**: Widgets de pantalla de inicio ✅
+12. **Fase 11**: Calidad del Aire (AQI) — card en Home
+13. **Fase 12**: Fase Lunar + orto/ocaso lunar — card en Home
+14. **Fase 13**: Nowcasting — "Lluvia en los próximos 60 min"
+15. **Fase 14**: Swipe horizontal entre ciudades en Home
+16. **Fase 15**: Internacionalización — unidades de distancia (km/mi), presión, más
 
 Cada fase incluye verificación en dispositivo Android vía EAS Build.
+
+---
+
+## Fases Futuras (Plan Detallado)
+
+### Fase 11 — Calidad del Aire (AQI)
+- [ ] Servicio `airQuality.ts`: `getAirQuality(lat, lon)` → Open-Meteo `/v1/air-quality`
+- [ ] Parametros: `pm2_5`, `pm10`, `ozone`, `nitrogen_dioxide`, `european_aqi`
+- [ ] Hook `useAirQuality(lat, lon)` con TanStack Query (stale 30min)
+- [ ] Componente `AirQualityCard`: AQI europeo con color semaforo (0-20 bueno, 20-40 moderado, etc.)
+- [ ] Detalle expandible: PM2.5, PM10, O3, NO2 con barras de progreso
+- [ ] Integracion en Home como nueva card debajo de `WeatherDetails`
+- [ ] Adaptacion visual modo claro/oscuro
+- [ ] API gratuita y sin key — sin configuracion extra
+
+### Fase 12 — Fase Lunar + Orto/Ocaso Lunar
+- [ ] Open-Meteo ya devuelve `sunrise`/`sunset` — ampliar para datos lunares
+- [ ] Parametros adicionales: `moonrise`, `moonset`, `moon_phase` (si disponibles via Open-Meteo)
+- [ ] Si Open-Meteo no los da: calculo local con algoritmo lunar (no requiere API)
+- [ ] Componente `MoonPhaseCard`: icono de luna animado con Skia (creciente, llena, menguante, nueva)
+- [ ] Card compacta en Home: fase lunar + orto/ocaso + icono
+- [ ] Calculo de iluminacion porcentual
+- [ ] Adaptacion visual modo claro/oscuro
+
+### Fase 13 — Nowcasting: "Lluvia en los próximos 60 min"
+- [ ] Analisis de frames RainViewer para inferir precipitacion acercandose
+- [ ] Algoritmo: comparar intensidad de radar en frames sucesivos alrededor de la ubicacion
+- [ ] Componente `NowcastingBanner`: "Empieza a llover en ~15 min" / "Lluvia disminuyendo"
+- [ ] Banner contextual en Home (debajo de ciudad, arriba de alerts)
+- [ ] Notificacion tipo DarkSky: alerta proactiva de lluvia inminente
+- [ ] Configurable en ajustes de notificaciones (toggle "Nowcasting")
+- [ ] Solo activo cuando hay datos de radar disponibles y GPS activo
+
+### Fase 14 — Swipe Horizontal entre Ciudades en Home
+- [ ] `FlatList` horizontal con `pagingEnabled` envolviendo el contenido de Home
+- [ ] Cada "pagina" = la Home completa para una ciudad guardada
+- [ ] Indicador de puntos (dots) en la parte inferior mostrando ciudad activa
+- [ ] Transicion suave entre ciudades con `Animated` o Reanimated
+- [ ] Cambio de ciudad en store al hacer swipe
+- [ ] Los datos del clima se cargan con `useWeather` por cada ciudad (pre-caching con TanStack Query)
+- [ ] Optimizacion: precargar datos de ciudades adyacentes en background
+- [ ] Solo en Home — resto de pantallas usan ciudad activa normal
+
+### Fase 15 — Internacionalización: Unidades Adicionales
+- [ ] `AppSettings` ampliado: `distanceUnit: "km" | "mi"`, `pressureUnit: "hPa" | "inHg" | "mmHg"`
+- [ ] Seccion "Unidades" ampliada en Settings con todos los selectores
+- [ ] Distancia: km (metrico) vs mi (imperial) — afecta visibilidad
+- [ ] Presion: hPa (default) vs inHg (imperial) vs mmHg
+- [ ] Velocidad del viento: ya tiene kmh/mph/ms/knots — mantener
+- [ ] Temperatura: ya tiene celsius/fahrenheit — mantener
+- [ ] Funciones helper: `formatDistance()`, `formatPressure()` en `utils/units.ts`
+- [ ] Aplicar formato en `WeatherDetails` y `AirQualityCard`
+- [ ] Widget respeta unidades configuradas

@@ -56,7 +56,7 @@ export function useWeatherLayers() {
   const radarFrameUrls = useMemo(() => {
     if (!data) return [];
     const count = data.radarPast.length + data.radarNowcast.length;
-    return Array.from({ length: count }, (_, i) => getRadarTileUrl(data, i));
+    return Array.from({ length: count }, (_, i) => getRadarTileUrl(data, i)).filter((u): u is string => u !== null);
   }, [data]);
 
   const pastCount = data?.radarPast.length ?? 0;
