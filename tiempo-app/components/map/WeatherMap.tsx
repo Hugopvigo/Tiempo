@@ -1,4 +1,4 @@
-import { useRef, useCallback, useMemo, useState } from "react";
+import { useRef, useCallback, useMemo, useState, useEffect } from "react";
 import { View, ActivityIndicator, Text, TouchableOpacity } from "react-native";
 import { WebView as RNWebView } from "react-native-webview";
 import type { City } from "@/types/weather";
@@ -16,6 +16,11 @@ interface WeatherMapProps {
   owmLayers: Record<string, string | null>;
   activeLayer: string;
   useOwmClouds?: boolean;
+  radarFrameUrls?: string[];
+  isPlaying?: boolean;
+  frameIndex?: number;
+  pastCount?: number;
+  onFrameChange?: (index: number) => void;
 }
 
 function resolveTileUrl(
@@ -43,6 +48,11 @@ export function WeatherMap({
   owmLayers,
   activeLayer,
   useOwmClouds = false,
+  radarFrameUrls = [],
+  isPlaying = false,
+  frameIndex = -1,
+  pastCount = 0,
+  onFrameChange,
 }: WeatherMapProps) {
   const { isDark } = useThemeContext();
   const webviewRef = useRef<RNWebView>(null);
@@ -68,11 +78,15 @@ export function WeatherMap({
         if (data.type === "cityPress") {
           const city = cities.find((c) => c.id === data.cityId);
           if (city) onCityPress(city);
+        } else if (data.type === "frameChange" && onFrameChange) {
+          onFrameChange(data.index);
         }
       } catch {}
     },
-    [cities, onCityPress]
+    [cities, onCityPress, onFrameChange]
   );
+
+  const isRadarLayer = activeLayer === "precipitation" || activeLayer === "rain";
 
   const injectLayer = useCallback(() => {
     if (!webviewRef.current) return;
@@ -83,18 +97,101 @@ export function WeatherMap({
     const overlayMaxZoom = isCloudsSat ? 13 : 18;
     const js = `
 (function(){
-  if(!window._map) return;
-  if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
-  window._overlay = L.tileLayer("${tileUrl}", {
-    opacity: ${overlayOpacity},
-    maxZoom: ${overlayMaxZoom},
-    minZoom: ${isCloudsSat ? 4 : 3},
-    errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-  }).addTo(window._map);
+if(!window._map) return;
+if(window._radarAnim) { clearInterval(window._radarAnim); window._radarAnim = null; }
+window._radarFrames = null;
+if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
+window._overlay = L.tileLayer("${tileUrl}", {
+opacity: ${overlayOpacity},
+maxZoom: ${overlayMaxZoom},
+minZoom: ${isCloudsSat ? 4 : 3},
+errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+}).addTo(window._map);
 })();
 `;
     webviewRef.current.injectJavaScript(js);
   }, [activeLayer, radarTileUrl, satelliteTileUrl, owmLayers, useOwmClouds, isDark]);
+
+  const injectRadarAnimation = useCallback(() => {
+    if (!webviewRef.current || radarFrameUrls.length === 0) return;
+    const framesJson = JSON.stringify(radarFrameUrls);
+    const overlayOpacity = isDark ? 0.85 : 0.7;
+    const startIdx = frameIndex >= 0 ? frameIndex : radarFrameUrls.length - 1;
+    const js = `
+(function(){
+if(!window._map) return;
+if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
+window._radarFrames = ${framesJson};
+window._radarIdx = ${startIdx};
+window._radarOpacity = ${overlayOpacity};
+window._overlay = L.tileLayer(window._radarFrames[window._radarIdx], {
+opacity: ${overlayOpacity},
+maxZoom: 18,
+minZoom: 3,
+errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+}).addTo(window._map);
+if(window._radarAnim) clearInterval(window._radarAnim);
+window._radarAnim = setInterval(function(){
+window._radarIdx = (window._radarIdx + 1) % window._radarFrames.length;
+if(window._overlay) window._map.removeLayer(window._overlay);
+window._overlay = L.tileLayer(window._radarFrames[window._radarIdx], {
+opacity: ${overlayOpacity},
+maxZoom: 18,
+minZoom: 3,
+errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+}).addTo(window._map);
+window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({type:"frameChange",index:window._radarIdx}));
+}, 800);
+})();
+`;
+    webviewRef.current.injectJavaScript(js);
+  }, [radarFrameUrls, isDark, frameIndex]);
+
+  const injectRadarPause = useCallback(() => {
+    if (!webviewRef.current) return;
+    const js = `
+(function(){
+if(window._radarAnim) { clearInterval(window._radarAnim); window._radarAnim = null; }
+})();
+`;
+    webviewRef.current.injectJavaScript(js);
+  }, []);
+
+  const injectRadarFrame = useCallback(() => {
+    if (!webviewRef.current || frameIndex < 0 || !radarFrameUrls.length) return;
+    const clamped = Math.max(0, Math.min(frameIndex, radarFrameUrls.length - 1));
+    const url = radarFrameUrls[clamped];
+    const overlayOpacity = isDark ? 0.85 : 0.7;
+    const js = `
+(function(){
+if(!window._map) return;
+window._radarIdx = ${clamped};
+if(window._overlay) window._map.removeLayer(window._overlay);
+window._overlay = L.tileLayer("${url}", {
+opacity: ${overlayOpacity},
+maxZoom: 18,
+minZoom: 3,
+errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+}).addTo(window._map);
+})();
+`;
+    webviewRef.current.injectJavaScript(js);
+  }, [frameIndex, radarFrameUrls, isDark]);
+
+  useEffect(() => {
+    if (!isRadarLayer || radarFrameUrls.length === 0) return;
+    if (isPlaying) {
+      injectRadarAnimation();
+    } else {
+      injectRadarPause();
+      if (frameIndex >= 0) injectRadarFrame();
+    }
+  }, [isPlaying, isRadarLayer, radarFrameUrls.length]);
+
+  useEffect(() => {
+    if (!isRadarLayer || isPlaying || !radarFrameUrls.length) return;
+    if (frameIndex >= 0) injectRadarFrame();
+  }, [frameIndex, isRadarLayer, isPlaying, radarFrameUrls.length]);
 
   const html = useMemo(() => {
     const markersJson = JSON.stringify(cityMarkers);
@@ -194,7 +291,7 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
 </script>
 </body>
 </html>`;
-    }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteTileUrl, owmLayers, activeLayer, useOwmClouds]);
+    }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteUrl, owmLayers, activeLayer, useOwmClouds, radarFrameUrls, isPlaying, frameIndex, pastCount]);
 
   const current = weather?.current;
   const condition = current?.condition;
@@ -228,17 +325,21 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
       source={{ html }}
       style={{ flex: 1, backgroundColor: isDark ? "#0A0A0A" : "#F5F7FA" }}
           originWhitelist={["*"]}
-          onMessage={(e) => {
-            try {
-              const data = JSON.parse(e.nativeEvent.data);
-              if (data.type === "mapReady") {
-                setLoading(false);
+        onMessage={(e) => {
+          try {
+            const data = JSON.parse(e.nativeEvent.data);
+            if (data.type === "mapReady") {
+              setLoading(false);
+              if (isRadarLayer && radarFrameUrls.length > 0 && isPlaying) {
+                injectRadarAnimation();
+              } else {
                 injectLayer();
               }
-              else if (data.type === "mapError") setMapError(true);
-              else handleMessage(e as any);
-            } catch {}
-          }}
+            }
+            else if (data.type === "mapError") setMapError(true);
+            else handleMessage(e as any);
+          } catch {}
+        }}
           onError={() => setMapError(true)}
           onHttpError={() => setMapError(true)}
           javaScriptEnabled

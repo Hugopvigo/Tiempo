@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   getRainViewerData,
   getRadarTileUrl,
@@ -24,9 +24,11 @@ export function useWeatherLayers() {
   const [satelliteUrl, setSatelliteUrl] = useState<string | null>(null);
   const [timestamps, setTimestamps] = useState<number[]>([]);
   const [frameIndex, setFrameIndex] = useState<number>(-1);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(true);
   const { settings } = useSettingsStore();
   const owmApiKey = settings.openWeatherMapApiKey ?? "";
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     getRainViewerData().then((d) => {
@@ -44,11 +46,46 @@ export function useWeatherLayers() {
     });
   }, []);
 
-  const selectFrame = (idx: number) => {
+  const selectFrame = useCallback((idx: number) => {
     if (!data) return;
-    setFrameIndex(idx);
-    setRadarUrl(getRadarTileUrl(data, idx));
-  };
+    const clamped = Math.max(0, Math.min(idx, timestamps.length - 1));
+    setFrameIndex(clamped);
+    setRadarUrl(getRadarTileUrl(data, clamped));
+  }, [data, timestamps.length]);
+
+  const radarFrameUrls = useMemo(() => {
+    if (!data) return [];
+    const count = data.radarPast.length + data.radarNowcast.length;
+    return Array.from({ length: count }, (_, i) => getRadarTileUrl(data, i));
+  }, [data]);
+
+  const pastCount = data?.radarPast.length ?? 0;
+
+  useEffect(() => {
+    if (isPlaying && timestamps.length > 1) {
+      intervalRef.current = setInterval(() => {
+        setFrameIndex((prev) => {
+          const next = (prev + 1) % timestamps.length;
+          if (data) setRadarUrl(getRadarTileUrl(data, next));
+          return next;
+        });
+      }, 800);
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isPlaying, timestamps.length, data]);
+
+  const togglePlay = useCallback(() => {
+    setIsPlaying((prev) => !prev);
+  }, []);
+
+  const stopPlay = useCallback(() => {
+    setIsPlaying(false);
+  }, []);
 
   const owmLayers = useMemo(() => {
     const result: Record<string, string | null> = {};
@@ -82,5 +119,10 @@ export function useWeatherLayers() {
     hasRadar: (data?.radarPast.length ?? 0) > 0,
     hasSatellite: true,
     useOwmClouds,
+    isPlaying,
+    togglePlay,
+    stopPlay,
+    radarFrameUrls,
+    pastCount,
   };
 }

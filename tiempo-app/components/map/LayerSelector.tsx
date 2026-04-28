@@ -8,6 +8,7 @@ interface LayerSelectorProps {
   selected: MapLayer;
   onSelect: (layer: MapLayer) => void;
   availableLayers?: MapLayer[];
+  showRadarTimeline?: boolean;
 }
 
 const layers: { id: MapLayer; label: string; icon: any; desc: string }[] = [
@@ -19,7 +20,7 @@ const layers: { id: MapLayer; label: string; icon: any; desc: string }[] = [
   { id: "pressure", label: "Presión", icon: Gauge, desc: "Presión a nivel del mar" },
 ];
 
-export function LayerSelector({ selected, onSelect, availableLayers }: LayerSelectorProps) {
+export function LayerSelector({ selected, onSelect, availableLayers, showRadarTimeline }: LayerSelectorProps) {
   const { isDark } = useThemeContext();
   const activeColor = isDark ? "#5AC8FA" : "#007AFF";
   const available = new Set(availableLayers ?? ["precipitation", "clouds"]);
@@ -28,7 +29,7 @@ export function LayerSelector({ selected, onSelect, availableLayers }: LayerSele
     <View
       style={{
         position: "absolute",
-        bottom: 100,
+        bottom: showRadarTimeline ? 100 : 100,
         left: 0,
         right: 0,
         paddingHorizontal: 12,

@@ -1,7 +1,7 @@
 import { View, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeContext } from "@/components/theme";
-import { WeatherMap, LayerSelector, LayerInfo } from "@/components/map";
+import { WeatherMap, LayerSelector, LayerInfo, RadarTimeline } from "@/components/map";
 import type { MapLayer } from "@/components/map";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { useCities } from "@/hooks/useCities";
@@ -15,32 +15,81 @@ export default function MapScreen() {
   const { cities, activeCity, setActiveCity } = useCities();
   const insets = useSafeAreaInsets();
   const [selectedLayer, setSelectedLayer] = useState<MapLayer>("precipitation");
-  const { radarUrl, satelliteUrl, owmLayers, availableLayers, loading: layersLoading, useOwmClouds } = useWeatherLayers();
+  const {
+    radarUrl,
+    satelliteUrl,
+    owmLayers,
+    availableLayers,
+    loading: layersLoading,
+    useOwmClouds,
+    timestamps,
+    frameIndex,
+    selectFrame,
+    isPlaying,
+    togglePlay,
+    stopPlay,
+    radarFrameUrls,
+    pastCount,
+  } = useWeatherLayers();
+
+  const isRadarLayer = selectedLayer === "precipitation";
 
   const handleCityPress = useCallback((city: typeof cities[0]) => {
     setActiveCity(city);
   }, [setActiveCity]);
 
+  const handleFrameChange = useCallback((idx: number) => {
+    selectFrame(idx);
+  }, [selectFrame]);
+
+  const handleSelectFrame = useCallback((idx: number) => {
+    stopPlay();
+    selectFrame(idx);
+  }, [stopPlay, selectFrame]);
+
+  const handleLayerChange = useCallback((layer: MapLayer) => {
+    setSelectedLayer(layer);
+    if (layer !== "precipitation") stopPlay();
+  }, [stopPlay]);
+
   return (
     <View style={{ flex: 1, backgroundColor: isDark ? screenBackground.dark : screenBackground.light }}>
       <View style={{ flex: 1, paddingTop: insets.top }}>
-      <WeatherMap
-        cities={cities}
-        activeCity={activeCity}
-        onCityPress={handleCityPress}
-        radarTileUrl={radarUrl}
-        satelliteTileUrl={satelliteUrl}
-        owmLayers={owmLayers}
-        activeLayer={selectedLayer}
-        useOwmClouds={useOwmClouds}
-      />
+        <WeatherMap
+          cities={cities}
+          activeCity={activeCity}
+          onCityPress={handleCityPress}
+          radarTileUrl={radarUrl}
+          satelliteTileUrl={satelliteUrl}
+          owmLayers={owmLayers}
+          activeLayer={selectedLayer}
+          useOwmClouds={useOwmClouds}
+          radarFrameUrls={isRadarLayer ? radarFrameUrls : []}
+          isPlaying={isRadarLayer && isPlaying}
+          frameIndex={frameIndex}
+          pastCount={pastCount}
+          onFrameChange={handleFrameChange}
+        />
       </View>
 
       <LayerInfo layer={selectedLayer} />
+
+      {isRadarLayer && (
+        <RadarTimeline
+          timestamps={timestamps}
+          frameIndex={frameIndex}
+          pastCount={pastCount}
+          isPlaying={isPlaying}
+          onTogglePlay={togglePlay}
+          onSelectFrame={handleSelectFrame}
+        />
+      )}
+
       <LayerSelector
         selected={selectedLayer}
-        onSelect={setSelectedLayer}
+        onSelect={handleLayerChange}
         availableLayers={availableLayers as MapLayer[]}
+        showRadarTimeline={isRadarLayer && timestamps.length > 0}
       />
 
       <TouchableOpacity
