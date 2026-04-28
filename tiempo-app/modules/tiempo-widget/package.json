@@ -1,8 +1,0 @@
-{
-  "name": "tiempo-widget",
-  "version": "1.0.0",
-  "description": "Native module for Tiempo home screen widgets",
-  "main": "src/index.ts",
-  "author": "Hugo Perez-Vigo",
-  "license": "MIT"
-}

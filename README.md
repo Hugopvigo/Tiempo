@@ -1,4 +1,4 @@
-# Tiempo — Tu Clima en Tiempo Real - Version 2.6.1
+# Tiempo — Tu Clima en Tiempo Real - Version 2.5.1
 
 [![Expo](https://img.shields.io/badge/Expo-54+-000020.svg?style=flat&logo=expo&logoColor=white)](https://expo.dev)
 [![React Native](https://img.shields.io/badge/React_Native-0.81+-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactnative.dev)
@@ -29,7 +29,7 @@
 - **Mareas Dinamicas:** Gráficos sinusoidales con **Skia** para zonas costeras. Deteccion automatica de ciudades costeras vs interiores con datos de la Open-Meteo Marine API. Indicador de marea subiendo/bajando en tiempo real y horarios de pleamar/bajamar.
 - **Alertas Oficiales:** Integracion directa con avisos de la AEMET (lluvia, tormenta, nieve, viento, calor, frio, costera).
 - **Mapa Interactivo:** Capas de radar de lluvia (RainViewer), satelite infrarrojo de nubes, y capas adicionales de temperatura, viento, humedad y presion via OpenWeatherMap. Modo oscuro con opacidad mejorada para mayor visibilidad. Animacion de radar en tiempo real con timeline de frames (play/pause/scrub).
-- **Widgets:** Widget compacto (2x1) y widget de prevision (4x2) para pantalla de inicio con datos actualizados automaticamente.
+- **Widgets:** *(Postpuesto)* Requiere Expo SDK 55+. Widget compacto (2x1) y widget de previsión (4x2) para pantalla de inicio. Se retomará al migrar a Expo 55.
 - **Notificaciones Push:** Alertas meteorologicas en segundo plano con configuracion por tipo de alerta.
 - **Interfaz Adaptativa:** Fondos degradados dinamicos que cambian segun la condicion climatica y el modo (claro/oscuro).
 - **Gestion de Ciudades:** Busqueda con autocompletado y almacenamiento local ultra rapido con **MMKV**.
@@ -49,7 +49,7 @@
 | **Animaciones** | [Reanimated 3](https://docs.swmansion.com/react-native-reanimated/) + [Skia](https://shopify.github.io/react-native-skia/) |
 | **Persistencia** | [MMKV](https://github.com/mrousavy/react-native-mmkv) |
 | **Iconos** | [Lucide React Native](https://lucide.dev) |
-| **Mapas** | [Leaflet](https://leafletjs.com/) via WebView + [RainViewer API](https://www.rainviewer.com/api.html) + [Slider](https://github.com/callstack/react-native-slider) |
+| **Mapas** | [Leaflet](https://leafletjs.com/) via WebView + [RainViewer API](https://www.rainviewer.com/api.html) |
 
 ---
 
@@ -138,7 +138,7 @@ Como obtener una API Key gratuita de OpenWeatherMap:
 - [x] **Fase 7:** Mareas v2 — Indicador de marea subiendo/bajando, horarios de pleamar/bajamar via sea_level_height_msl.
 - [x] **Fase 8:** Animaciones de particulas climaticas en la Home (lluvia, nieve, niebla, relampagos con Reanimated).
 - [x] **Fase 9:** Animacion de radar en tiempo real (timeline de frames RainViewer).
-- [x] **Fase 10:** Widgets de pantalla de inicio (compacto + prevision 4 dias).
+- [ ] **Fase 10:** Widgets de pantalla de inicio — **POSTPUESTO** (requiere Expo SDK 55+, actual en 54).
 - [ ] **Fase 11:** Calidad del Aire (AQI) — card en Home con Open-Meteo Air Quality API.
 - [ ] **Fase 12:** Fase Lunar + orto/ocaso lunar — card en Home con icono animado Skia.
 - [ ] **Fase 13:** Nowcasting — "Lluvia en los proximos 60 min" via analisis de frames RainViewer.

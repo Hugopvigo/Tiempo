@@ -193,32 +193,35 @@ tiempo-app/
 - [x] Al cambiar capa no-radar, auto-stop de animacion
 - [x] `LayerSelector` recibe `showRadarTimeline` prop para ajustar posicion
 
-### Fase 10 — Widgets de Pantalla de Inicio
-- [x] Widget pequeno (2x1): ciudad + temperatura + condicion + max/min
-- [x] Widget mediano (4x2): ciudad + temperatura + condicion + prevision 4 dias
-- [x] Layouts XML: `widget_weather_small.xml`, `widget_weather_medium.xml`
-- [x] Backgrounds adaptativos claro/oscuro: `widget_bg_dark.xml`, `widget_bg_light.xml`
-- [x] `WeatherWidgetProvider` (Kotlin): lee datos de SharedPreferences, actualiza RemoteViews
-- [x] `WeatherWidgetMediumProvider` (Kotlin): extiende provider para widget mediano
-- [x] Modulo nativo Expo `tiempo-widget`: `TiempoWidgetModule` escribe en SharedPreferences + broadcast
-- [x] Hook `useWidgetUpdater`: escribe datos del clima en widget cada 5 min (debounce)
-- [x] Integracion en Home: `useWidgetUpdater(cityName, weather)`
-- [x] Declaracion en AndroidManifest.xml con APPWIDGET_UPDATE + custom broadcast
-- [x] `widget_weather_small_info.xml` + `widget_weather_medium_info.xml` (AppWidgetProviderInfo)
-- [x] Auto-update cada 30 min via `updatePeriodMillis`
-- [x] Click en widget abre la app (PendingIntent → MainActivity)
-- [x] Colores de texto adaptativos segun modo del sistema (isDarkMode)
+### Fase 10 — Widgets de Pantalla de Inicio *(POSTPUESTO — requiere Expo SDK 55+, actual en 54)*
+- [ ] Widget pequeno (2x1): ciudad + temperatura + condicion + max/min
+- [ ] Widget mediano (4x2): ciudad + temperatura + condicion + prevision 4 dias
+- [ ] Layouts XML: `widget_weather_small.xml`, `widget_weather_medium.xml`
+- [ ] Backgrounds adaptativos claro/oscuro: `widget_bg_dark.xml`, `widget_bg_light.xml`
+- [ ] `WeatherWidgetProvider` (Kotlin): lee datos de SharedPreferences, actualiza RemoteViews
+- [ ] `WeatherWidgetMediumProvider` (Kotlin): extiende provider para widget mediano
+- [ ] Modulo nativo Expo `tiempo-widget`: `TiempoWidgetModule` escribe en SharedPreferences + broadcast
+- [ ] Hook `useWidgetUpdater`: escribe datos del clima en widget cada 5 min (debounce)
+- [ ] Integracion en Home: `useWidgetUpdater(cityName, weather)`
+- [ ] Declaracion en AndroidManifest.xml con APPWIDGET_UPDATE + custom broadcast
+- [ ] `widget_weather_small_info.xml` + `widget_weather_medium_info.xml` (AppWidgetProviderInfo)
+- [ ] Auto-update cada 30 min via `updatePeriodMillis`
+- [ ] Click en widget abre la app (PendingIntent → MainActivity)
+- [ ] Colores de texto adaptativos segun modo del sistema (isDarkMode)
+> **NOTA:** `expo-widgets` y `@expo/ui` (que incluye `ComposeViewFunctionDefinitionBuilder`) requieren Expo 55.
+> La app usa Expo 54, por lo que la integracion crashea con `ClassNotFoundException`.
+> Se retomara esta fase al migrar a Expo SDK 55.
 
 ## Version Actual
 
-**v2.6.1** — Release estable con:
+**v2.5.1** — Release estable con:
 - Previsión actual + 7 días (Open-Meteo + AEMET)
 - Gestión de ciudades con GPS y swipe-to-delete
 - Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
 - Alertas locales + AEMET con notificaciones push y background fetch
 - Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM)
 - Animación de radar en tiempo real con timeline de frames (play/pause/scrub)
-- Widgets de pantalla de inicio (compacto + previsión 4 días)
+- *(Widgets postpuesto — requiere Expo 55)*
 - Estilo de iconos configurable (color/monocromo)
 - Animaciones de partículas climáticas (lluvia, nieve, niebla, relámpagos)
 - Modo claro/oscuro con gradientes dinámicos
@@ -286,7 +289,7 @@ tiempo-app/
 8. **Fase 7**: Mareas v2 (pleamar/bajamar) ✅
 9. **Fase 8**: Animaciones de particulas climaticas ✅
 10. **Fase 9**: Animacion de radar en tiempo real (timeline RainViewer) ✅
-11. **Fase 10**: Widgets de pantalla de inicio ✅
+11. **Fase 10**: Widgets de pantalla de inicio *(postpuesto — requiere Expo 55)*
 12. **Fase 11**: Calidad del Aire (AQI) — card en Home
 13. **Fase 12**: Fase Lunar + orto/ocaso lunar — card en Home
 14. **Fase 13**: Nowcasting — "Lluvia en los próximos 60 min"

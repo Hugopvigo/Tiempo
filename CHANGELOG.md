@@ -582,3 +582,25 @@ tiempo-app/
 - Nieve claro: `rgba(255,255,255,0.85)` / oscuro: `rgba(255,255,255,0.7)`
 - Niebla claro: `rgba(203,213,225,0.25)` / oscuro: `rgba(148,163,184,0.12)`
 - Relampago: `rgba(255,255,255,0.9)`
+
+---
+
+## v2.5.1 — Revert de Widgets
+
+### Widgets eliminados (postpuesto a Expo 55)
+- **Razon:** `expo-widgets` y `@expo/ui` (dependencia transitoria) requieren Expo SDK 55. La app usa Expo 54, causando `ClassNotFoundException: ComposeViewFunctionDefinitionBuilder` al iniciar.
+- Eliminado `expo-widgets` de `package.json`
+- `@react-native-community/slider` **mantenido** (se usa en RadarTimeline, Fase 9)
+- Eliminado `modules/tiempo-widget/` (modulo nativo Expo con Kotlin + JS)
+- Eliminado `hooks/useWidgetUpdater.ts`
+- Eliminado import y llamada a `useWidgetUpdater` en `app/index.tsx`
+- Eliminados `WeatherWidgetProvider.kt` y `WeatherWidgetMediumProvider.kt` (Kotlin)
+- Eliminados layouts XML: `widget_weather_small.xml`, `widget_weather_medium.xml`
+- Eliminados drawables: `widget_bg_dark.xml`, `widget_bg_light.xml`
+- Eliminados metadatos: `widget_weather_small_info.xml`, `widget_weather_medium_info.xml`
+- Eliminados receivers de `AndroidManifest.xml`
+- `package.json` y `package-lock.json` restaurados a Version 2.5
+
+### Nota
+- Los widgets de pantalla de inicio se retomaran en la Fase 10 al migrar a Expo SDK 55+
+- Las animaciones de radar (Fase 9) se mantienen intactas
