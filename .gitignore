@@ -61,4 +61,4 @@ credentials.json
 /android
 
 # Root config files
-../.androidStudio.md
+.androidStudio.md
