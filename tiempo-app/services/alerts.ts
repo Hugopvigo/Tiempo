@@ -7,66 +7,65 @@ const FOG_CODES = new Set([45, 48]);
 
 export function generateAlerts(weather: WeatherData): WeatherAlert[] {
   const alerts: WeatherAlert[] = [];
-  const now = new Date();
   const today = weather.daily[0];
   if (!today) return alerts;
 
-  const windMax = weather.hourly.reduce(
-    (max, h) => Math.max(max, h.precipitationChance > 60 ? 0 : 0),
-    0
-  );
+  const dateStr = new Date().toISOString().slice(0, 10);
 
   if (weather.current.windSpeed >= 70) {
-    alerts.push(makeAlert("wind", "red", weather));
+    alerts.push(makeAlert("wind", "red", weather, dateStr));
   } else if (weather.current.windSpeed >= 50) {
-    alerts.push(makeAlert("wind", "orange", weather));
+    alerts.push(makeAlert("wind", "orange", weather, dateStr));
   } else if (weather.current.windSpeed >= 38) {
-    alerts.push(makeAlert("wind", "yellow", weather));
+    alerts.push(makeAlert("wind", "yellow", weather, dateStr));
   }
 
-  if (weather.current.uvIndex >= 11) {
-    alerts.push(makeAlert("heat", "red", weather));
-  } else if (weather.current.uvIndex >= 8) {
-    alerts.push(makeAlert("heat", "orange", weather));
-  } else if (weather.current.uvIndex >= 6) {
-    alerts.push(makeAlert("heat", "yellow", weather));
+  let heatSev: WeatherAlert["severity"] | null = null;
+  if (weather.current.uvIndex >= 11) heatSev = "red";
+  else if (weather.current.uvIndex >= 8) heatSev = "orange";
+  else if (weather.current.uvIndex >= 6) heatSev = "yellow";
+
+  if (weather.current.temperature >= 42) {
+    if (heatSev !== "red") heatSev = "red";
+  } else if (weather.current.temperature >= 38) {
+    if (heatSev === null || heatSev === "yellow") heatSev = "orange";
+  }
+
+  if (heatSev) {
+    alerts.push(makeAlert("heat", heatSev, weather, dateStr));
   }
 
   const hasStorm = weather.hourly.some((h) =>
     STORM_CODES.has(getWeatherCodeFromCondition(h.condition))
   );
   if (hasStorm) {
-    alerts.push(makeAlert("storm", "orange", weather));
+    alerts.push(makeAlert("storm", "orange", weather, dateStr));
   }
 
   const maxPrecip = Math.max(...weather.hourly.map((h) => h.precipitationChance));
   if (maxPrecip >= 90) {
-    alerts.push(makeAlert("rain", "orange", weather));
+    alerts.push(makeAlert("rain", "orange", weather, dateStr));
   } else if (maxPrecip >= 70) {
-    alerts.push(makeAlert("rain", "yellow", weather));
+    alerts.push(makeAlert("rain", "yellow", weather, dateStr));
   }
 
   const hasSnow = weather.hourly.some((h) =>
     SNOW_CODES.has(getWeatherCodeFromCondition(h.condition))
   );
   if (hasSnow) {
-    alerts.push(makeAlert("snow", "yellow", weather));
+    alerts.push(makeAlert("snow", "yellow", weather, dateStr));
   }
 
   if (weather.current.temperature <= -10) {
-    alerts.push(makeAlert("cold", "orange", weather));
+    alerts.push(makeAlert("cold", "orange", weather, dateStr));
   } else if (weather.current.temperature <= -5) {
-    alerts.push(makeAlert("cold", "yellow", weather));
+    alerts.push(makeAlert("cold", "yellow", weather, dateStr));
   }
 
-  if (weather.current.temperature >= 42) {
-    alerts.push(makeAlert("heat", "red", weather));
-  } else if (weather.current.temperature >= 38) {
-    alerts.push(makeAlert("heat", "orange", weather));
-  }
-
-  if (weather.current.visibility < 1000) {
-    alerts.push(makeAlert("rain", "yellow", weather, "Niebla densa"));
+  const hasFog = FOG_CODES.has(getWeatherCodeFromCondition(weather.current.condition))
+    || weather.current.visibility < 1000;
+  if (hasFog) {
+    alerts.push(makeAlert("fog", "yellow", weather, dateStr));
   }
 
   alerts.sort((a, b) => severityOrder(a.severity) - severityOrder(b.severity));
@@ -78,7 +77,7 @@ function makeAlert(
   type: WeatherAlert["type"],
   severity: WeatherAlert["severity"],
   weather: WeatherData,
-  customTitle?: string
+  dateStr: string
 ): WeatherAlert {
   const titles: Record<WeatherAlert["type"], Record<WeatherAlert["severity"], string>> = {
     rain: {
@@ -116,6 +115,11 @@ function makeAlert(
       orange: "Alerta costera",
       red: "Alerta costera extrema",
     },
+    fog: {
+      yellow: "Niebla densa",
+      orange: "Niebla muy densa",
+      red: "Niebla extrema",
+    },
   };
 
   const descriptions: Record<WeatherAlert["type"], string> = {
@@ -128,11 +132,12 @@ function makeAlert(
       : `Temperaturas extremas en ${weather.cityName}. Mantente hidratado y evita la exposición al sol.`,
     cold: `Temperaturas bajo cero en ${weather.cityName}. Protege tuberías y toma medidas ante heladas.`,
     coastal: `Condiciones adversas en la costa de ${weather.cityName}. Consulta el estado del mar.`,
+    fog: `Visibilidad reducida por niebla en ${weather.cityName}. Extrema precaución al conducir.`,
   };
 
   return {
-    id: `local-${type}-${severity}-${weather.lat}-${weather.lon}`,
-    title: customTitle ?? titles[type][severity],
+    id: `local-${type}-${severity}-${weather.lat}-${weather.lon}-${dateStr}`,
+    title: titles[type][severity],
     description: descriptions[type],
     severity,
     type,

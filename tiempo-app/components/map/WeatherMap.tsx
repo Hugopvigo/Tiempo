@@ -23,6 +23,11 @@ interface WeatherMapProps {
   onFrameChange?: (index: number) => void;
 }
 
+function sanitizeUrl(url: string): string {
+  if (url.startsWith("https://") || url.startsWith("data:")) return url;
+  return "";
+}
+
 function resolveTileUrl(
   layer: string,
   radarUrl: string | null,
@@ -101,7 +106,7 @@ if(!window._map) return;
 if(window._radarAnim) { clearInterval(window._radarAnim); window._radarAnim = null; }
 window._radarFrames = null;
 if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
-window._overlay = L.tileLayer("${tileUrl}", {
+  window._overlay = L.tileLayer("${sanitizeUrl(tileUrl)}", {
 opacity: ${overlayOpacity},
 maxZoom: ${overlayMaxZoom},
 minZoom: ${isCloudsSat ? 4 : 3},
@@ -167,7 +172,7 @@ if(window._radarAnim) { clearInterval(window._radarAnim); window._radarAnim = nu
 if(!window._map) return;
 window._radarIdx = ${clamped};
 if(window._overlay) window._map.removeLayer(window._overlay);
-window._overlay = L.tileLayer("${url}", {
+  window._overlay = L.tileLayer("${sanitizeUrl(url)}", {
 opacity: ${overlayOpacity},
 maxZoom: 18,
 minZoom: 3,
@@ -204,8 +209,8 @@ errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAA
 <html>
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body,#map{width:100%;height:100%;overflow:hidden}
@@ -253,7 +258,7 @@ subdomains:"abcd"
 window._map=map;
 window._overlay=null;
 
-      var initUrl="${initialTileUrl}";
+      var initUrl="${sanitizeUrl(initialTileUrl)}";
       if(initUrl){
         var isInitSat="${activeLayer}"==="clouds"&&!${useOwmClouds};
         var initOp=isInitSat?0.9:${isDark ? 0.85 : 0.7};
@@ -324,7 +329,7 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
       ref={webviewRef}
       source={{ html }}
       style={{ flex: 1, backgroundColor: isDark ? "#0A0A0A" : "#F5F7FA" }}
-          originWhitelist={["*"]}
+          originWhitelist={["about", "data", "https"]}
         onMessage={(e) => {
           try {
             const data = JSON.parse(e.nativeEvent.data);

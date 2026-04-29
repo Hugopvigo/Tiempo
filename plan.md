@@ -214,13 +214,15 @@ tiempo-app/
 
 ## Version Actual
 
-**v2.5.1** — Release estable con:
+**v3.0** — Release estable con:
 - Previsión actual + 7 días (Open-Meteo + AEMET)
 - Gestión de ciudades con GPS y swipe-to-delete
 - Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
 - Alertas locales + AEMET con notificaciones push y background fetch
 - Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM)
 - Animación de radar en tiempo real con timeline de frames (play/pause/scrub)
+- Calidad del Aire (AQI europeo) con detalle expandible (PM2.5, PM10, O3, NO2)
+- Fase Lunar con SVGs custom + orto/ocaso lunar + amanecer/atardecer
 - *(Widgets postpuesto — requiere Expo 55)*
 - Estilo de iconos configurable (color/monocromo)
 - Animaciones de partículas climáticas (lluvia, nieve, niebla, relámpagos)
@@ -303,23 +305,29 @@ Cada fase incluye verificación en dispositivo Android vía EAS Build.
 ## Fases Futuras (Plan Detallado)
 
 ### Fase 11 — Calidad del Aire (AQI)
-- [ ] Servicio `airQuality.ts`: `getAirQuality(lat, lon)` → Open-Meteo `/v1/air-quality`
-- [ ] Parametros: `pm2_5`, `pm10`, `ozone`, `nitrogen_dioxide`, `european_aqi`
-- [ ] Hook `useAirQuality(lat, lon)` con TanStack Query (stale 30min)
-- [ ] Componente `AirQualityCard`: AQI europeo con color semaforo (0-20 bueno, 20-40 moderado, etc.)
-- [ ] Detalle expandible: PM2.5, PM10, O3, NO2 con barras de progreso
-- [ ] Integracion en Home como nueva card debajo de `WeatherDetails`
-- [ ] Adaptacion visual modo claro/oscuro
-- [ ] API gratuita y sin key — sin configuracion extra
+- [x] Tipos `AirQualityData` + helpers `getAQILabel/getAQIDescription/getAQIColor` en `types/weather.ts`
+- [x] Servicio `getAirQuality(lat, lon)` en `services/openmeteo.ts` → Open-Meteo `/v1/air-quality`
+- [x] Parametros: `pm2_5`, `pm10`, `ozone`, `nitrogen_dioxide`, `european_aqi`
+- [x] Hook `useAirQuality(lat, lon)` con TanStack Query (stale 30min, gcTime 60min, retry 1)
+- [x] Componente `AirQualityCard`: AQI europeo con color semaforo EAQI (0-20 bueno, 20-40 moderado, 40-60 deficiente, 60-80 malo, 80-100 muy malo, >100 extremo)
+- [x] Barra de progreso horizontal con gradiente EAQI y marcador
+- [x] Detalle expandible (tap): PM2.5, PM10, O3, NO2 con barras de progreso
+- [x] Integracion en Home como nueva card debajo de `WeatherDetails` (delay 400)
+- [x] Adaptacion visual modo claro/oscuro + iconos colored/monochrome
+- [x] API gratuita y sin key — sin configuracion extra
 
 ### Fase 12 — Fase Lunar + Orto/Ocaso Lunar
-- [ ] Open-Meteo ya devuelve `sunrise`/`sunset` — ampliar para datos lunares
-- [ ] Parametros adicionales: `moonrise`, `moonset`, `moon_phase` (si disponibles via Open-Meteo)
-- [ ] Si Open-Meteo no los da: calculo local con algoritmo lunar (no requiere API)
-- [ ] Componente `MoonPhaseCard`: icono de luna animado con Skia (creciente, llena, menguante, nueva)
-- [ ] Card compacta en Home: fase lunar + orto/ocaso + icono
-- [ ] Calculo de iluminacion porcentual
-- [ ] Adaptacion visual modo claro/oscuro
+- [x] Calculo local con algoritmo lunar (sin API externa) en `utils/lunar.ts`
+- [x] `calculateMoonPhase(date)`: edad lunar, fase (8 fases), iluminacion %
+- [x] `calculateMoonTimes(date, lat, lon)`: orto/ocaso lunar aproximado
+- [x] Hook `useLunarPhase(lat, lon, daily)` con `useMemo` (sin query API)
+- [x] Tipo `LunarPhaseData` en `types/weather.ts`
+- [x] Componente `MoonPhaseCard`: 8 SVGs custom con `react-native-svg`
+- [x] Fases lunares: Luna nueva, Creciente, Cuarto creciente, Gibosa creciente, Luna llena, Gibosa menguante, Cuarto menguante, Menguante
+- [x] Amanecer/Atardecer con iconos Sunrise/Sunset (lucide)
+- [x] Orto/Ocaso lunar con iconos Moon (lucide)
+- [x] Integracion en Home debajo de AirQualityCard (delay 500)
+- [x] Adaptacion visual modo claro/oscuro + iconos colored/monochrome
 
 ### Fase 13 — Nowcasting: "Lluvia en los próximos 60 min"
 - [ ] Analisis de frames RainViewer para inferir precipitacion acercandose
@@ -350,3 +358,11 @@ Cada fase incluye verificación en dispositivo Android vía EAS Build.
 - [ ] Funciones helper: `formatDistance()`, `formatPressure()` en `utils/units.ts`
 - [ ] Aplicar formato en `WeatherDetails` y `AirQualityCard`
 - [ ] Widget respeta unidades configuradas
+
+### Seguridad — Hardening v3.0
+- [x] Eliminados `react-native-windows` (4 HIGH CVEs), `@types/react-native` (deprecated), `react-native-web` (innecesaria como dep directa)
+- [x] AndroidManifest: eliminados permisos peligrosos (`SYSTEM_ALERT_WINDOW`, `READ/WRITE_EXTERNAL_STORAGE`), `allowBackup=false`
+- [x] WeatherMap WebView: SRI hashes en Leaflet CDN, `originWhitelist` restringido a `["about", "data", "https"]`, `sanitizeUrl()` para URLs inyectadas
+- [x] `react-native-worklets` 0.5.1 → 0.8.1 (requerido por reanimated 4.3.0)
+- [x] Deps actualizadas dentro de SDK 54 (expo, metro-config, linking, notifications, tanstack, lucide, svg, nitro-modules, slider, safe-area, reanimated, screens)
+- [x] Vulnerabilidades: 24 → 13 (0 HIGH, 13 moderate transitivos de Expo SDK 54)

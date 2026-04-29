@@ -1,7 +1,8 @@
-import type { WeatherData, MarineData } from "@/types/weather";
+import type { WeatherData, MarineData, AirQualityData } from "@/types/weather";
 import { weatherCodeToCondition, conditionToDescription, conditionToIcon } from "@/constants/weather";
 
 const BASE_URL = "https://api.open-meteo.com/v1";
+const AQ_BASE_URL = "https://air-quality-api.open-meteo.com/v1";
 
 interface OpenMeteoResponse {
   latitude: number;
@@ -199,6 +200,58 @@ export async function getMarineWeather(lat: number, lon: number): Promise<Marine
       waveHeightMax: data.daily.wave_height_max,
       waveDirectionDominant: data.daily.wave_direction_dominant,
       wavePeriodMax: data.daily.wave_period_max,
+    },
+  };
+}
+
+interface AirQualityApiResponse {
+  latitude: number;
+  longitude: number;
+  current: {
+    pm2_5: number;
+    pm10: number;
+    ozone: number;
+    nitrogen_dioxide: number;
+    european_aqi: number;
+  };
+  hourly: {
+    time: string[];
+    european_aqi: number[];
+    pm2_5: number[];
+    pm10: number[];
+    ozone: number[];
+    nitrogen_dioxide: number[];
+  };
+}
+
+export async function getAirQuality(lat: number, lon: number): Promise<AirQualityData> {
+  const params = new URLSearchParams({
+    latitude: lat.toString(),
+    longitude: lon.toString(),
+    current: "pm2_5,pm10,ozone,nitrogen_dioxide,european_aqi",
+    hourly: "european_aqi,pm2_5,pm10,ozone,nitrogen_dioxide",
+    timezone: "auto",
+    forecast_days: "1",
+  });
+
+  const res = await fetch(`${AQ_BASE_URL}/air-quality?${params}`);
+  if (!res.ok) throw new Error(`Air Quality API error: ${res.status}`);
+
+  const data: AirQualityApiResponse = await res.json();
+
+  return {
+    current: {
+      europeanAqi: data.current.european_aqi,
+      pm25: data.current.pm2_5,
+      pm10: data.current.pm10,
+      ozone: data.current.ozone,
+      nitrogenDioxide: data.current.nitrogen_dioxide,
+    },
+    hourly: {
+      time: data.hourly.time,
+      europeanAqi: data.hourly.european_aqi,
+      pm25: data.hourly.pm2_5,
+      pm10: data.hourly.pm10,
     },
   };
 }

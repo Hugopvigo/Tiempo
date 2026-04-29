@@ -28,8 +28,8 @@ export async function scheduleAlertNotification(alert: WeatherAlert): Promise<st
       title: `${color} ${alert.title}`,
       body: alert.description,
       sound: alert.severity === "red" || alert.severity === "orange",
-      badge: 1,
       data: { alertId: alert.id, type: alert.type },
+      ...(Platform.OS === "android" ? { channelId: "weather-alerts" } : {}),
     },
     trigger: null,
   });
@@ -59,12 +59,16 @@ function typeEmoji(type: WeatherAlert["type"]): string {
       return "🥶";
     case "coastal":
       return "🌊";
+    case "fog":
+      return "🌫️";
+    default:
+      return "⚠️";
   }
 }
 
-export function setupNotificationChannel(): void {
+export async function setupNotificationChannel(): Promise<void> {
   if (Platform.OS === "android") {
-    Notifications.setNotificationChannelAsync("weather-alerts", {
+    await Notifications.setNotificationChannelAsync("weather-alerts", {
       name: "Alertas meteorológicas",
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],

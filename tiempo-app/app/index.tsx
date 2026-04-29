@@ -1,19 +1,21 @@
 import { View, ScrollView, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DynamicBackground, ThemedText, AnimatedView, WeatherParticles } from "@/components/theme";
-import { CurrentWeather, HourlyForecastCard, DailyForecastCard, WeatherDetails } from "@/components/weather";
+import { CurrentWeather, HourlyForecastCard, DailyForecastCard, WeatherDetails, AirQualityCard, LunarPhaseCard } from "@/components/weather";
 import { CurrentWeatherSkeleton, HourlyForecastSkeleton, DailyForecastSkeleton, WeatherDetailsSkeleton } from "@/components/ui/Skeleton";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { CitySelector } from "@/components/city";
 import { AlertBanner } from "@/components/alerts";
 import { useWeather } from "@/hooks/useWeather";
+import { useAirQuality } from "@/hooks/useAirQuality";
+import { useLunarPhase } from "@/hooks/useLunarPhase";
 import { useLocalAlerts } from "@/hooks/useAlerts";
 import { useCities } from "@/hooks/useCities";
 import { useThemeContext } from "@/components/theme";
 import { useState, useCallback, useEffect } from "react";
 import { TouchableOpacity } from "react-native";
 import { ChevronDown } from "lucide-react-native";
-import { requestNotificationPermissions, setupNotificationChannel, setBadgeCount } from "@/services/notifications";
+import { requestNotificationPermissions, setupNotificationChannel, setBadgeCount, cancelAllAlertNotifications } from "@/services/notifications";
 import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
 import { useSettingsStore } from "@/stores/cityStore";
 
@@ -27,6 +29,8 @@ export default function HomeScreen() {
     activeCity.name
   );
   const alerts = useLocalAlerts(weather);
+  const { data: airQuality } = useAirQuality(activeCity.lat, activeCity.lon);
+  const lunarPhase = useLunarPhase(activeCity.lat, activeCity.lon, weather?.daily);
   const [showCitySelector, setShowCitySelector] = useState(false);
 
   const condition = weather?.current.condition ?? "clear";
@@ -37,9 +41,11 @@ export default function HomeScreen() {
     if (settings.notifications.enabled) {
       requestNotificationPermissions().then((granted) => {
         if (granted) registerBackgroundFetch();
-      });
+      }).catch(() => {});
     } else {
       unregisterBackgroundFetch();
+      cancelAllAlertNotifications();
+      setBadgeCount(0);
     }
   }, [settings.notifications.enabled]);
 
@@ -128,17 +134,29 @@ export default function HomeScreen() {
                   <DailyForecastCard daily={weather.daily} />
                 </AnimatedView>
 
-                <AnimatedView delay={300}>
-                  <WeatherDetails
-                    feelsLike={weather.current.feelsLike}
-                    humidity={weather.current.humidity}
-                    windSpeed={weather.current.windSpeed}
-                    windDirection={weather.current.windDirection}
-                    uvIndex={weather.current.uvIndex}
-                    pressure={weather.current.pressure}
-                    visibility={weather.current.visibility}
-                  />
-                </AnimatedView>
+          <AnimatedView delay={300}>
+            <WeatherDetails
+              feelsLike={weather.current.feelsLike}
+              humidity={weather.current.humidity}
+              windSpeed={weather.current.windSpeed}
+              windDirection={weather.current.windDirection}
+              uvIndex={weather.current.uvIndex}
+              pressure={weather.current.pressure}
+              visibility={weather.current.visibility}
+            />
+          </AnimatedView>
+
+          {airQuality && (
+            <AnimatedView delay={400}>
+              <AirQualityCard data={airQuality} />
+            </AnimatedView>
+          )}
+
+          {lunarPhase && (
+            <AnimatedView delay={500}>
+              <LunarPhaseCard data={lunarPhase} />
+            </AnimatedView>
+          )}
               </View>
             )}
           </ScrollView>

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Tiempo",
     "slug": "tiempo-app",
-    "version": "2.5.1",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",

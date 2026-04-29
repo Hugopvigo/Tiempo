@@ -6,9 +6,9 @@ import { useSettingsStore, useCityStore } from "@/stores/cityStore";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { SwipeableCityRow } from "@/components/city";
 import { useRouter } from "expo-router";
-import { Moon, Sun, Monitor, Plus, Navigation, Thermometer, Bell, CloudRain, CloudLightning, Snowflake, Wind, ThermometerSun, ThermometerSnowflake, Waves, Key, Palette, CircleDot } from "lucide-react-native";
+import { Moon, Sun, Monitor, Plus, Navigation, Thermometer, Bell, CloudRain, CloudLightning, Snowflake, Wind, ThermometerSun, ThermometerSnowflake, Waves, CloudFog, Key, Palette, CircleDot } from "lucide-react-native";
 import { useLocation } from "@/hooks/useLocation";
-import { requestNotificationPermissions, setupNotificationChannel } from "@/services/notifications";
+import { requestNotificationPermissions, setupNotificationChannel, cancelAllAlertNotifications, setBadgeCount } from "@/services/notifications";
 import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
 import type { ThemeMode, IconStyle } from "@/types/weather";
 import { useEffect, useState } from "react";
@@ -211,18 +211,22 @@ export default function SettingsScreen() {
               onValueChange={(enabled) => {
                 if (enabled) {
                   requestNotificationPermissions().then((granted) => {
-                    if (granted) {
-                      setupNotificationChannel();
-                      registerBackgroundFetch();
-                      updateSettings({ notifications: { ...settings.notifications, enabled: true } });
-                    } else {
-                      Alert.alert("Permiso denegado", "Activa las notificaciones en los ajustes del sistema.");
-                    }
-                  });
-                } else {
-                  unregisterBackgroundFetch();
-                  updateSettings({ notifications: { ...settings.notifications, enabled: false } });
-                }
+          if (granted) {
+            setupNotificationChannel();
+            registerBackgroundFetch();
+            updateSettings({ notifications: { ...settings.notifications, enabled: true } });
+          } else {
+            Alert.alert("Permiso denegado", "Activa las notificaciones en los ajustes del sistema.");
+          }
+        }).catch(() => {
+          Alert.alert("Error", "No se pudieron solicitar los permisos de notificación.");
+        });
+      } else {
+        unregisterBackgroundFetch();
+        cancelAllAlertNotifications();
+        setBadgeCount(0);
+        updateSettings({ notifications: { ...settings.notifications, enabled: false } });
+      }
               }}
               trackColor={{ false: isDark ? "#333" : "#E0E0E0", true: isDark ? "#5AC8FA" : "#007AFF" }}
               thumbColor="#FFF"
@@ -279,16 +283,24 @@ export default function SettingsScreen() {
                 iconColor={iconColor}
                 isDark={isDark}
               />
-              <NotificationToggle
-                label="Costera"
-                icon={Waves}
-                value={settings.notifications.coastal}
-                onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, coastal: v } })}
-                iconColor={iconColor}
-                isDark={isDark}
-              />
-            </View>
-          )}
+        <NotificationToggle
+          label="Costera"
+          icon={Waves}
+          value={settings.notifications.coastal}
+          onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, coastal: v } })}
+          iconColor={iconColor}
+          isDark={isDark}
+        />
+        <NotificationToggle
+          label="Niebla"
+          icon={CloudFog}
+          value={settings.notifications.fog}
+          onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, fog: v } })}
+          iconColor={iconColor}
+          isDark={isDark}
+        />
+      </View>
+    )}
       </ThemedCard>
 
       <ThemedCard style={{ marginBottom: 16 }}>

@@ -144,6 +144,7 @@ function AlertRow({ alert }: { alert: WeatherAlert }) {
     heat: "🌡️",
     cold: "🥶",
     coastal: "🌊",
+    fog: "🌫️",
   };
 
   return (

@@ -2,14 +2,37 @@ import * as TaskManager from "expo-task-manager";
 import * as BackgroundFetch from "expo-background-fetch";
 import { getWeather } from "@/services/openmeteo";
 import { generateAlerts } from "@/services/alerts";
-import { scheduleAlertNotification } from "@/services/notifications";
+import { scheduleAlertNotification, setBadgeCount } from "@/services/notifications";
 import { createMMKV } from "react-native-mmkv";
 import type { City, AppSettings } from "@/types/weather";
 
 const storage = createMMKV({ id: "tiempo-storage" });
 const BACKGROUND_TASK = "background-alerts";
 
-const lastAlertIds = new Set<string>();
+const ALERT_DEDUP_TTL = 24 * 60 * 60 * 1000;
+
+interface DedupEntry {
+  id: string;
+  timestamp: number;
+}
+
+function loadLastAlertIds(): DedupEntry[] {
+  try {
+    const json = storage.getString("lastAlertIds");
+    if (!json) return [];
+    const entries: DedupEntry[] = JSON.parse(json);
+    const cutoff = Date.now() - ALERT_DEDUP_TTL;
+    return entries.filter((e) => e.timestamp > cutoff);
+  } catch {
+    return [];
+  }
+}
+
+function saveLastAlertIds(entries: DedupEntry[]): void {
+  const cutoff = Date.now() - ALERT_DEDUP_TTL;
+  const filtered = entries.filter((e) => e.timestamp > cutoff);
+  storage.set("lastAlertIds", JSON.stringify(filtered));
+}
 
 TaskManager.defineTask(BACKGROUND_TASK, async () => {
   try {
@@ -23,6 +46,8 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
     if (!settings.notifications.enabled) return BackgroundFetch.BackgroundFetchResult.NoData;
 
     let newAlerts = 0;
+    const dedupEntries = loadLastAlertIds();
+    const dedupIds = new Set(dedupEntries.map((e) => e.id));
 
     for (const city of cities.slice(0, 3)) {
       try {
@@ -32,10 +57,11 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
         for (const alert of alerts) {
           const typeKey = alert.type as keyof typeof settings.notifications;
           if (typeKey !== "enabled" && !settings.notifications[typeKey]) continue;
-          if (lastAlertIds.has(alert.id)) continue;
+          if (dedupIds.has(alert.id)) continue;
 
           await scheduleAlertNotification(alert);
-          lastAlertIds.add(alert.id);
+          dedupEntries.push({ id: alert.id, timestamp: Date.now() });
+          dedupIds.add(alert.id);
           newAlerts++;
         }
       } catch {
@@ -43,8 +69,11 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
       }
     }
 
+    saveLastAlertIds(dedupEntries);
+
     if (newAlerts > 0) {
       storage.set("lastAlertCheck", Date.now());
+      await setBadgeCount(newAlerts);
     }
 
     return newAlerts > 0

@@ -129,9 +129,62 @@ export interface WeatherAlert {
   title: string;
   description: string;
   severity: "yellow" | "orange" | "red";
-  type: "rain" | "storm" | "snow" | "wind" | "heat" | "cold" | "coastal";
+  type: "rain" | "storm" | "snow" | "wind" | "heat" | "cold" | "coastal" | "fog";
   startTime: string;
   endTime: string;
+}
+
+export interface AirQualityData {
+  current: {
+    europeanAqi: number;
+    pm25: number;
+    pm10: number;
+    ozone: number;
+    nitrogenDioxide: number;
+  };
+  hourly: {
+    time: string[];
+    europeanAqi: number[];
+    pm25: number[];
+    pm10: number[];
+  };
+}
+
+export function getAQILabel(aqi: number): string {
+  if (aqi <= 20) return "Bueno";
+  if (aqi <= 40) return "Moderado";
+  if (aqi <= 60) return "Deficiente";
+  if (aqi <= 80) return "Malo";
+  if (aqi <= 100) return "Muy malo";
+  return "Extremo";
+}
+
+export function getAQIDescription(aqi: number): string {
+  if (aqi <= 20) return "Calidad del aire excelente";
+  if (aqi <= 40) return "Calidad del aire aceptable";
+  if (aqi <= 60) return "Posible afectación para grupos sensibles";
+  if (aqi <= 80) return "Afectación para la población general";
+  if (aqi <= 100) return "Afectación grave para la salud";
+  return "Afectación muy grave para la salud";
+}
+
+export function getAQIColor(aqi: number): string {
+  if (aqi <= 20) return "#50F0E6";
+  if (aqi <= 40) return "#50CCAA";
+  if (aqi <= 60) return "#F0E641";
+  if (aqi <= 80) return "#FF5050";
+  if (aqi <= 100) return "#960032";
+  return "#7D2181";
+}
+
+export interface LunarPhaseData {
+  phase: string;
+  phaseIndex: number;
+  illumination: number;
+  moonrise?: string;
+  moonset?: string;
+  sunrise: string;
+  sunset: string;
 }
 
 export type ThemeMode = "system" | "light" | "dark";
@@ -149,6 +202,7 @@ export interface AppSettings {
     heat: boolean;
     cold: boolean;
     coastal: boolean;
+    fog: boolean;
   };
   temperatureUnit: "celsius" | "fahrenheit";
   windUnit: "kmh" | "mph" | "ms" | "knots";

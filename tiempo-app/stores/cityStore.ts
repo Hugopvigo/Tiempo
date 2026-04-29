@@ -81,6 +81,7 @@ const defaultSettings: AppSettings = {
     heat: true,
     cold: true,
     coastal: false,
+    fog: true,
   },
   temperatureUnit: "celsius",
   windUnit: "kmh",

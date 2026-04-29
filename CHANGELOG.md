@@ -604,3 +604,82 @@ tiempo-app/
 ### Nota
 - Los widgets de pantalla de inicio se retomaran en la Fase 10 al migrar a Expo SDK 55+
 - Las animaciones de radar (Fase 9) se mantienen intactas
+
+---
+
+## v3.0 — Release Estable
+
+- Version actualizada a 3.0 en `app.json`, `package.json`, `README.md` y `plan.md`
+- EAS Build perfil `production` configurado con `autoIncrement: true`
+- Widgets eliminados (postpuesto a Expo 55)
+- Build de produccion via EAS (APK firmado)
+
+### Notificaciones — 8 bugs corregidos
+- **Canal Android**: `channelId: "weather-alerts"` ahora referenciado en `scheduleAlertNotification()`
+- **typeEmoji**: añadido `default: return "⚠️"` para tipos desconocidos
+- **typeEmoji**: añadido caso `"fog"` → `"🌫️"`
+- **badge**: eliminado `badge: 1` hardcodeado del content; ahora gestionado con `setBadgeCount()`
+- **Deduplicación persistente**: `lastAlertIds` migrado de `Set<string>` en memoria a MMKV con TTL 24h
+- **IDs con fecha**: `` `local-${type}-${severity}-${lat}-${lon}-${dateStr}` `` para evitar duplicados entre días
+- **Niebla como tipo propio**: `makeAlert("fog", ...)` en lugar de `makeAlert("rain", ...)`
+- **FOG_CODES**: uso de códigos WMO 45/48 + visibilidad < 1000m para detección de niebla
+- **Código muerto eliminado**: `windMax` y `now` en `alerts.ts`
+- **Heat fusionado**: UV y temperatura combinados, tomando la severidad más alta
+- **Cleanup al desactivar**: `cancelAllAlertNotifications()` + `setBadgeCount(0)` al apagar notificaciones (settings + home)
+- **`.catch()`** en `requestNotificationPermissions()` (settings + home)
+- **`setupNotificationChannel()`** hecho async con `await`
+- **Toggle "Niebla"** en Settings con icono `CloudFog` (lucide)
+- **`fog: true`** en default settings + `fog` en tipo `WeatherAlert["type"]`
+- **`fog: "🌫️"`** en `AlertRow.iconMap`
+
+### Fase 11 — Calidad del Aire (AQI)
+- **Tipos**: `AirQualityData` + `getAQILabel()`, `getAQIDescription()`, `getAQIColor()` en `types/weather.ts`
+- **Escala EAQI**: 0-20 Bueno (#50F0E6), 20-40 Moderado (#50CCAA), 40-60 Deficiente (#F0E641), 60-80 Malo (#FF5050), 80-100 Muy malo (#960032), >100 Extremo (#7D2181)
+- **Servicio**: `getAirQuality(lat, lon)` en `services/openmeteo.ts` → `air-quality-api.open-meteo.com/v1`
+- **Hook**: `useAirQuality(lat, lon)` con TanStack Query (stale 30min, gcTime 60min, retry 1)
+- **Componente**: `AirQualityCard` en `components/weather/AirQualityCard.tsx`
+  - Header con icono Wind + AQI numérico en círculo coloreado
+  - Label + descripción del AQI actual
+  - Barra horizontal con gradiente EAQI (6 segmentos) y marcador
+  - Detalle expandible (tap): 4 barras de contaminantes (PM2.5 max=75, PM10 max=150, O3 max=200, NO2 max=200)
+  - Adaptación colored/monochrome
+- **Integración**: en Home debajo de WeatherDetails (AnimatedView delay 400)
+
+### Fase 12 — Fase Lunar + Orto/Ocaso Lunar
+- **Cálculo local**: `utils/lunar.ts` con algoritmo trigonométrico (sin API externa)
+  - `calculateMoonPhase(date)`: edad lunar desde luna nueva de referencia (6 ene 2000), 8 fases, iluminación %
+  - `calculateMoonTimes(date, lat, lon)`: orto/ocaso lunar aproximado
+- **Tipos**: `LunarPhaseData` en `types/weather.ts`
+- **Hook**: `useLunarPhase(lat, lon, daily)` con `useMemo` (sin query, instantáneo)
+- **Componente**: `LunarPhaseCard` en `components/weather/LunarPhaseCard.tsx`
+  - 8 SVGs custom con `react-native-svg` (NewMoon, WaxingCrescent, FirstQuarter, WaxingGibous, FullMoon, WaningGibous, LastQuarter, WaningCrescent)
+  - Luna coloreada (#FCD34D) o monocroma según preferencia de iconos
+  - Amanecer/Atardecer con iconos Sunrise/Sunset (lucide)
+  - Orto/Ocaso lunar con iconos Moon (lucide)
+  - Sección de tiempos con línea divisoria
+- **Integración**: en Home debajo de AirQualityCard (AnimatedView delay 500)
+- **Export**: ambos componentes en `components/weather/index.ts`
+
+### Seguridad — Hardening v3.0
+
+- **Paquetes eliminados**:
+  - `react-native-windows` (4 HIGH CVEs en `@xmldom/xmldom` ≤0.8.12, app es solo Android)
+  - `@types/react-native` (deprecated, React 19 incluye tipos propios)
+  - `react-native-web` (dep directa innecesaria, ya es transitive dep)
+- **AndroidManifest.xml**:
+  - Eliminados permisos peligrosos: `SYSTEM_ALERT_WINDOW`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`
+  - `allowBackup="false"` (claves API MMKV no deben copiarse en backup)
+- **WeatherMap WebView**:
+  - SRI hashes en Leaflet CDN (CSS + JS) — protege contra CDN comprometido/MITM
+  - `originWhitelist` restringido de `["*"]` a `["about", "data", "https"]`
+  - `sanitizeUrl()` añadida: solo permite `https://` y `data:`, rechaza todo lo demás
+  - URLs interpoladas en `injectJavaScript` pasan por `sanitizeUrl()` (tileUrl, initialTileUrl, url en radar)
+- **Dependencias actualizadas** (seguras dentro de SDK 54):
+  - `react-native-worklets` 0.5.1 → 0.8.1 (requerido por reanimated 4.3.0)
+  - `expo` → ~54.0.34, `@expo/metro-config` → ~54.0.15, `expo-linking` → ~8.0.12
+  - `expo-notifications` → ~0.32.17, `@tanstack/react-query` → ^5.100.6
+  - `lucide-react-native` → ^1.14.0, `react-native-svg` → ^15.15.4
+  - `react-native-nitro-modules` → ^0.35.6, `@react-native-community/slider` → ^5.2.0
+  - `react-native-safe-area-context` → ^5.7.0, `react-native-reanimated` → ~4.3.0
+  - `react-native-screens` → ~4.24.0
+- **Vulnerabilidades**: 24 → 13 (0 HIGH, 13 moderate transitivos de Expo SDK 54 — no fixeables sin SDK 55)
