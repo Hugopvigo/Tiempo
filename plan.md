@@ -362,7 +362,20 @@ Cada fase incluye verificación en dispositivo Android vía EAS Build.
 ### Seguridad — Hardening v3.0
 - [x] Eliminados `react-native-windows` (4 HIGH CVEs), `@types/react-native` (deprecated), `react-native-web` (innecesaria como dep directa)
 - [x] AndroidManifest: eliminados permisos peligrosos (`SYSTEM_ALERT_WINDOW`, `READ/WRITE_EXTERNAL_STORAGE`), `allowBackup=false`
-- [x] WeatherMap WebView: SRI hashes en Leaflet CDN, `originWhitelist` restringido a `["about", "data", "https"]`, `sanitizeUrl()` para URLs inyectadas
+- [x] WeatherMap WebView: SRI hashes en Leaflet CDN, `originWhitelist` restringido, `sanitizeUrl()` para URLs inyectadas; `data:image/*` único esquema `data:` permitido
+- [x] AEMET: `res.ok` en segundo fetch (`data.datos`) — errores HTTP ya no se parsean como datos válidos
+- [x] Search: `AbortController` en `search.tsx` + `signal` en `searchCities()` — race condition fix
 - [x] `react-native-worklets` 0.5.1 → 0.8.1 (requerido por reanimated 4.3.0)
 - [x] Deps actualizadas dentro de SDK 54 (expo, metro-config, linking, notifications, tanstack, lucide, svg, nitro-modules, slider, safe-area, reanimated, screens)
 - [x] Vulnerabilidades: 24 → 13 (0 HIGH, 13 moderate transitivos de Expo SDK 54)
+
+### Calidad v3.0 — Bugs, Rendimiento y Animaciones
+- [x] `formatTemperature()` aplicado en CurrentWeather, HourlyForecast, DailyForecast, WeatherDetails, WeatherMap; `formatWind()` en WeatherDetails
+- [x] GPS stale closure: `requestAndSet` devuelve `City | null` en settings y search
+- [x] AlertBanner: `dismissRef` (RN no tiene event bubbling)
+- [x] HourlyForecast: horas parseadas del string ISO (fix timezone del dispositivo)
+- [x] WeatherMap `html` en `useMemo` sin deps de animación — WebView no se destruye por cada frame de radar
+- [x] ThemeProvider `useMemo`; ThemedCard/ThemedText `StyleSheet.create`; HourlyForecast `ScrollView` → `FlatList`; TideChart SVG en `useMemo`
+- [x] SwipeableCityRow y Skeleton migrados a Reanimated + GestureHandler (UI thread)
+- [x] WeatherParticles: contadores reducidos (lluvia 30→20, tormenta 40→28, nieve 24→16)
+- [x] Eliminados `Original.png` (2,2 MB) + `assets/Old/` (464 KB); no-op `useEffect` en `useTheme`

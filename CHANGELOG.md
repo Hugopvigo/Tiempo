@@ -683,3 +683,12 @@ tiempo-app/
   - `react-native-safe-area-context` → ^5.7.0, `react-native-reanimated` → ~4.3.0
   - `react-native-screens` → ~4.24.0
 - **Vulnerabilidades**: 24 → 13 (0 HIGH, 13 moderate transitivos de Expo SDK 54 — no fixeables sin SDK 55)
+
+### Calidad y Seguridad (en desarrollo)
+- **Bugs**: `formatTemperature()` / `formatWind()` aplicados en todos los componentes; GPS stale closure fix; `dismissRef` en AlertBanner; HourlyForecast timezone fix
+- **Rendimiento**: WeatherMap `html` en `useMemo` sin deps de animación; ThemeProvider `useMemo`; ThemedCard/ThemedText `StyleSheet.create`; HourlyForecast `ScrollView` → `FlatList`; TideChart SVG en `useMemo`
+- **Animaciones**: SwipeableCityRow y Skeleton migrados a Reanimated + GestureHandler (UI thread); WeatherParticles contadores reducidos
+- **Limpieza**: Eliminados `Original.png` (2,2 MB) + `assets/Old/` (464 KB); no-op `useEffect` en `useTheme`
+- **WebView**: `sanitizeUrl` solo permite `data:image/*`; `originWhitelist` sin entrada `data`; `onShouldStartLoadWithRequest` más estricto
+- **AEMET**: `res.ok` añadido al segundo fetch (`data.datos`)
+- **Search**: `AbortController` cancela peticiones en vuelo al escribir nueva búsqueda (race condition fix)
