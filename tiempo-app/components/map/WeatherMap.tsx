@@ -102,8 +102,8 @@ export function WeatherMap({
 
     const base = dark ? 0.85 : 0.7;
     const lightSpecific: Record<string, { opacity: number; filter?: string }> = {
-      clouds: { opacity: 0.85 },
-      wind: { opacity: 0.8 },
+      clouds: { opacity: 0.9, filter: "brightness(0.75)" },
+      wind: { opacity: 0.85, filter: "brightness(0.8)" },
       humidity: { opacity: 0.85, filter: "brightness(0.65) saturate(1.5)" },
     };
 

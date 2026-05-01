@@ -13,7 +13,7 @@ const OWM_LAYER_MAP: Record<string, string> = {
   temperature: "temp_new",
   wind: "wind_new",
   clouds: "clouds_new",
-  humidity: "humidity_m",
+  humidity: "humidity",
   pressure: "pressure_new",
 };
 

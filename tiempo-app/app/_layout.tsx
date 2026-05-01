@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { screenBackground } from "@/constants/theme";
 import { useState, Component, type ReactNode, type ErrorInfo, useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { configureAEMET } from "@/services/aemet";
 import { useSettingsStore } from "@/stores/cityStore";
 
@@ -61,6 +62,7 @@ export default function RootLayout() {
   );
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider isDark={isDark}>
         <ErrorBoundary>
@@ -85,5 +87,6 @@ export default function RootLayout() {
         </ErrorBoundary>
       </ThemeProvider>
     </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
