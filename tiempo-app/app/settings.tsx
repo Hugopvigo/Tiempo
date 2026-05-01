@@ -10,6 +10,7 @@ import { Moon, Sun, Monitor, Plus, Navigation, Thermometer, Bell, CloudRain, Clo
 import { useLocation } from "@/hooks/useLocation";
 import { requestNotificationPermissions, setupNotificationChannel, cancelAllAlertNotifications, setBadgeCount } from "@/services/notifications";
 import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
+import { configureAEMET } from "@/services/aemet";
 import type { ThemeMode, IconStyle } from "@/types/weather";
 import { useEffect, useState } from "react";
 
@@ -323,28 +324,60 @@ export default function SettingsScreen() {
     )}
       </ThemedCard>
 
-      <ThemedCard style={{ marginBottom: 16 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <Key size={16} color={iconColor} />
+        <ThemedCard style={{ marginBottom: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <Key size={16} color={iconColor} />
+            <ThemedText
+              secondary
+              style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}
+            >
+              Claves API
+            </ThemedText>
+          </View>
+
           <ThemedText
             secondary
-            style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}
+            style={{ fontSize: 14, fontWeight: "500", marginBottom: 6 }}
           >
-            Claves API
+            OpenWeatherMap
           </ThemedText>
-        </View>
-        <ThemedText
-          secondary
-          style={{ fontSize: 12, lineHeight: 18, marginBottom: 12 }}
-        >
-          Introduce tu clave de OpenWeatherMap para activar las capas de temperatura, viento y más en el mapa.
-        </ThemedText>
-        <ApiKeyInput
-          value={settings.openWeatherMapApiKey ?? ""}
-          onSave={(key) => updateSettings({ openWeatherMapApiKey: key })}
-          isDark={isDark}
-        />
-      </ThemedCard>
+          <ThemedText
+            secondary
+            style={{ fontSize: 12, lineHeight: 18, marginBottom: 8 }}
+          >
+            Capas de temperatura, viento y más en el mapa.
+          </ThemedText>
+      <ApiKeyInput
+        value={settings.openWeatherMapApiKey ?? ""}
+        onSave={(key) => updateSettings({ openWeatherMapApiKey: key })}
+        placeholder="API Key de OpenWeatherMap"
+        isDark={isDark}
+      />
+
+          <View style={{ height: 1, backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", marginVertical: 16 }} />
+
+          <ThemedText
+            secondary
+            style={{ fontSize: 14, fontWeight: "500", marginBottom: 6 }}
+          >
+            AEMET OpenData
+          </ThemedText>
+          <ThemedText
+            secondary
+            style={{ fontSize: 12, lineHeight: 18, marginBottom: 8 }}
+          >
+            Alertas oficiales de la AEMET. Reemplazan las alertas locales del mismo tipo.
+          </ThemedText>
+          <ApiKeyInput
+            value={settings.aemetApiKey ?? ""}
+            onSave={(key) => {
+              updateSettings({ aemetApiKey: key });
+              configureAEMET(key);
+            }}
+            placeholder="API Key de AEMET"
+            isDark={isDark}
+          />
+        </ThemedCard>
     </ScrollView>
 
     <BottomNavBar />
@@ -386,10 +419,12 @@ function NotificationToggle({
 function ApiKeyInput({
   value,
   onSave,
+  placeholder,
   isDark,
 }: {
   value: string;
   onSave: (key: string) => void;
+  placeholder: string;
   isDark: boolean;
 }) {
   const [editing, setEditing] = useState(false);
