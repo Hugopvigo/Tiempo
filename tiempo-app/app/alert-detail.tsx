@@ -5,6 +5,7 @@ import { useLocalSearchParams, Stack } from "expo-router";
 import type { WeatherAlert } from "@/types/weather";
 import { alertColors } from "@/constants/theme";
 import { AlertTriangle, Clock, Shield, ExternalLink } from "lucide-react-native";
+import { isAEMETConfigured } from "@/services/aemet";
 import { TouchableOpacity } from "react-native";
 
 export default function AlertDetailScreen() {
@@ -114,23 +115,25 @@ export default function AlertDetailScreen() {
             </View>
           </ThemedCard>
 
-          <TouchableOpacity
-            onPress={() => Linking.openURL("https://www.aemet.es/es/eltiempo/prediccion/avisos")}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              paddingVertical: 12,
-              borderRadius: 12,
-              backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
-            }}
-          >
-            <ExternalLink size={16} color={isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)"} />
-            <ThemedText secondary style={{ fontSize: 14 }}>
-              Ver avisos AEMET
-            </ThemedText>
-          </TouchableOpacity>
+      {isAEMETConfigured() && (
+        <TouchableOpacity
+          onPress={() => Linking.openURL("https://www.aemet.es/es/eltiempo/prediccion/avisos")}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            paddingVertical: 12,
+            borderRadius: 12,
+            backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+          }}
+        >
+          <ExternalLink size={16} color={isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)"} />
+          <ThemedText secondary style={{ fontSize: 14 }}>
+            Ver avisos AEMET
+          </ThemedText>
+        </TouchableOpacity>
+      )}
         </ScrollView>
       </SafeAreaView>
     </DynamicBackground>
