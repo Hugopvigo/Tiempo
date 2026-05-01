@@ -5,8 +5,10 @@ import { StatusBar } from "expo-status-bar";
 import { useTheme } from "@/hooks/useTheme";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { screenBackground } from "@/constants/theme";
-import { useState, Component, type ReactNode, type ErrorInfo } from "react";
+import { useState, Component, type ReactNode, type ErrorInfo, useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import { configureAEMET } from "@/services/aemet";
+import { useSettingsStore } from "@/stores/cityStore";
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
@@ -38,6 +40,13 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
 
 export default function RootLayout() {
   const { isDark } = useTheme();
+  const { settings } = useSettingsStore();
+
+  useEffect(() => {
+    if (settings.aemetApiKey) {
+      configureAEMET(settings.aemetApiKey);
+    }
+  }, [settings.aemetApiKey]);
   const [queryClient] = useState(
     () =>
     new QueryClient({
