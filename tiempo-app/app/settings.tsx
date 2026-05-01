@@ -353,6 +353,7 @@ export default function SettingsScreen() {
         onSave={(key) => updateSettings({ openWeatherMapApiKey: key })}
         placeholder="API Key de OpenWeatherMap"
         isDark={isDark}
+        validate={validateOWMKey}
       />
 
           <View style={{ height: 1, backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", marginVertical: 16 }} />
@@ -377,6 +378,7 @@ export default function SettingsScreen() {
             }}
             placeholder="API Key de AEMET"
             isDark={isDark}
+            validate={validateAEMETKey}
           />
         </ThemedCard>
     </ScrollView>
@@ -384,6 +386,39 @@ export default function SettingsScreen() {
     <BottomNavBar />
     </SafeAreaView>
   );
+}
+
+async function validateOWMKey(key: string): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=Madrid&appid=${key}`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function validateAEMETKey(key: string): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(
+      "https://opendata.aemet.es/opendata/api/avisos_cap/AND",
+      {
+        headers: { api_key: key, Accept: "application/json" },
+        signal: controller.signal,
+      }
+    );
+    clearTimeout(timeout);
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 function NotificationToggle({
@@ -431,23 +466,45 @@ function ApiKeyInput({
   onSave,
   placeholder,
   isDark,
+  validate,
 }: {
   value: string;
   onSave: (key: string) => void;
   placeholder: string;
   isDark: boolean;
+  validate?: (key: string) => Promise<boolean>;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
+  const [validating, setValidating] = useState(false);
+  const [valid, setValid] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSave = () => {
-    onSave(draft.trim());
+  const handleSave = async () => {
+    const trimmed = draft.trim();
+    setError(null);
+
+    if (validate && trimmed) {
+      setValidating(true);
+      const isValid = await validate(trimmed);
+      setValidating(false);
+
+      if (!isValid) {
+        setValid(false);
+        setError("Clave API inválida. Comprueba que la has copiado correctamente.");
+        return;
+      }
+    }
+
+    setValid(true);
+    onSave(trimmed);
     setEditing(false);
   };
 
   const handleCancel = () => {
     setDraft(value);
     setEditing(false);
+    setError(null);
   };
 
   const hasKey = value.length > 0;
@@ -455,11 +512,15 @@ function ApiKeyInput({
   if (!editing) {
     return (
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <ThemedText style={{ fontSize: 14, flex: 1 }} numberOfLines={1}>
-          {hasKey ? `${value.slice(0, 4)}${"*".repeat(Math.max(0, value.length - 4))}` : "Sin configurar"}
-        </ThemedText>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
+          <ThemedText style={{ fontSize: 14 }} numberOfLines={1}>
+            {hasKey ? `${value.slice(0, 4)}${"*".repeat(Math.max(0, value.length - 4))}` : "Sin configurar"}
+          </ThemedText>
+          {valid === true && <ThemedText style={{ fontSize: 12 }}>✅</ThemedText>}
+          {valid === false && <ThemedText style={{ fontSize: 12 }}>❌</ThemedText>}
+        </View>
         <TouchableOpacity
-          onPress={() => { setDraft(value); setEditing(true); }}
+          onPress={() => { setDraft(value); setEditing(true); setValid(null); setError(null); }}
           style={{
             paddingHorizontal: 14,
             paddingVertical: 8,
@@ -479,8 +540,8 @@ function ApiKeyInput({
     <View style={{ gap: 10 }}>
       <TextInput
         value={draft}
-        onChangeText={setDraft}
-        placeholder="API Key de OpenWeatherMap"
+        onChangeText={(t) => { setDraft(t); setError(null); }}
+        placeholder={placeholder}
         placeholderTextColor={isDark ? "#666" : "#999"}
         autoCapitalize="none"
         autoCorrect={false}
@@ -495,6 +556,9 @@ function ApiKeyInput({
           fontFamily: "monospace",
         }}
       />
+      {error && (
+        <ThemedText style={{ fontSize: 12, color: "#FF3B30" }}>{error}</ThemedText>
+      )}
       <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
         <TouchableOpacity
           onPress={handleCancel}
@@ -504,14 +568,19 @@ function ApiKeyInput({
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleSave}
+          disabled={validating}
           style={{
             paddingHorizontal: 14,
             paddingVertical: 8,
             borderRadius: 8,
-            backgroundColor: isDark ? "#5AC8FA" : "#007AFF",
+            backgroundColor: validating
+              ? (isDark ? "rgba(90,200,250,0.4)" : "rgba(0,122,255,0.4)")
+              : (isDark ? "#5AC8FA" : "#007AFF"),
           }}
         >
-          <ThemedText style={{ fontSize: 13, fontWeight: "500", color: "#FFF" }}>Guardar</ThemedText>
+          <ThemedText style={{ fontSize: 13, fontWeight: "500", color: "#FFF" }}>
+            {validating ? "Verificando..." : "Guardar"}
+          </ThemedText>
         </TouchableOpacity>
       </View>
     </View>
