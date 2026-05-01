@@ -97,23 +97,47 @@ export function WeatherMap({
 
   const isRadarLayer = activeLayer === "precipitation" || activeLayer === "rain";
 
+  function getOverlayConfig(layer: string, dark: boolean, cloudsSat: boolean) {
+    if (cloudsSat) return { opacity: 0.9, maxZoom: 13, minZoom: 4, filter: "none" };
+
+    const base = dark ? 0.85 : 0.7;
+    const lightSpecific: Record<string, { opacity: number; filter?: string }> = {
+      clouds: { opacity: 0.85 },
+      wind: { opacity: 0.8 },
+      humidity: { opacity: 0.85, filter: "brightness(0.65) saturate(1.5)" },
+    };
+
+    const specific = lightSpecific[layer];
+    if (specific) {
+      return {
+        opacity: dark ? 0.85 : specific.opacity,
+        maxZoom: 18,
+        minZoom: 3,
+        filter: !dark && specific.filter ? specific.filter : "none",
+      };
+    }
+    return { opacity: base, maxZoom: 18, minZoom: 3, filter: "none" };
+  }
+
   const injectLayer = useCallback(() => {
     if (!webviewRef.current) return;
     const tileUrl = resolveTileUrl(activeLayer, radarTileUrl, satelliteTileUrl, owmLayers, useOwmClouds);
     if (!tileUrl) return;
     const isCloudsSat = activeLayer === "clouds" && !useOwmClouds;
-    const overlayOpacity = isCloudsSat ? 0.9 : (isDark ? 0.85 : 0.7);
-    const overlayMaxZoom = isCloudsSat ? 13 : 18;
+    const cfg = getOverlayConfig(activeLayer, isDark, isCloudsSat);
     const js = `
 (function(){
 if(!window._map) return;
 if(window._radarAnim) { clearInterval(window._radarAnim); window._radarAnim = null; }
 window._radarFrames = null;
 if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
-  window._overlay = L.tileLayer("${sanitizeUrl(tileUrl)}", {
-opacity: ${overlayOpacity},
-maxZoom: ${overlayMaxZoom},
-minZoom: ${isCloudsSat ? 4 : 3},
+var of=document.getElementById('overlay-filter');
+if(of) of.textContent='#leaflet-overlay-pane img{filter:${cfg.filter}!important}';
+window._overlay = L.tileLayer("${sanitizeUrl(tileUrl)}", {
+opacity: ${cfg.opacity},
+maxZoom: ${cfg.maxZoom},
+minZoom: ${cfg.minZoom},
+pane: 'overlay',
 errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
 }).addTo(window._map);
 })();
@@ -129,6 +153,8 @@ errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAA
     const js = `
 (function(){
 if(!window._map) return;
+var of=document.getElementById('overlay-filter');
+if(of) of.textContent='#leaflet-overlay-pane img{filter:none!important}';
 if(window._overlay) { window._map.removeLayer(window._overlay); window._overlay = null; }
 window._radarFrames = ${framesJson};
 window._radarIdx = ${startIdx};
@@ -137,6 +163,7 @@ window._overlay = L.tileLayer(window._radarFrames[window._radarIdx], {
 opacity: ${overlayOpacity},
 maxZoom: 18,
 minZoom: 3,
+pane: 'overlay',
 errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
 }).addTo(window._map);
 if(window._radarAnim) clearInterval(window._radarAnim);
@@ -147,6 +174,7 @@ window._overlay = L.tileLayer(window._radarFrames[window._radarIdx], {
 opacity: ${overlayOpacity},
 maxZoom: 18,
 minZoom: 3,
+pane: 'overlay',
 errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
 }).addTo(window._map);
 window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({type:"frameChange",index:window._radarIdx}));
@@ -175,11 +203,14 @@ if(window._radarAnim) { clearInterval(window._radarAnim); window._radarAnim = nu
 (function(){
 if(!window._map) return;
 window._radarIdx = ${clamped};
+var of=document.getElementById('overlay-filter');
+if(of) of.textContent='#leaflet-overlay-pane img{filter:none!important}';
 if(window._overlay) window._map.removeLayer(window._overlay);
   window._overlay = L.tileLayer("${sanitizeUrl(url)}", {
 opacity: ${overlayOpacity},
 maxZoom: 18,
 minZoom: 3,
+pane: 'overlay',
 errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
 }).addTo(window._map);
 })();
@@ -208,6 +239,8 @@ errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAA
       ? "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"
       : "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png";
     const initialTileUrl = resolveTileUrl(activeLayer, radarTileUrl, satelliteTileUrl, owmLayers, useOwmClouds) || "";
+    const isCloudsSatInit = activeLayer === "clouds" && !useOwmClouds;
+    const initCfg = getOverlayConfig(activeLayer, isDark, isCloudsSatInit);
 
     return `<!DOCTYPE html>
 <html>
@@ -215,6 +248,9 @@ errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAA
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<style id="overlay-filter">
+#leaflet-overlay-pane img{filter:none!important}
+</style>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body,#map{width:100%;height:100%;overflow:hidden}
@@ -261,13 +297,13 @@ subdomains:"abcd"
 
 window._map=map;
 window._overlay=null;
+var overlayPane=map.createPane('overlay');
 
       var initUrl="${sanitizeUrl(initialTileUrl)}";
       if(initUrl){
-        var isInitSat="${activeLayer}"==="clouds"&&!${useOwmClouds};
-        var initOp=isInitSat?0.9:${isDark ? 0.85 : 0.7};
-        var initMaxZoom=isInitSat?13:18;
-        window._overlay=L.tileLayer(initUrl,{opacity:initOp,maxZoom:initMaxZoom,minZoom:isInitSat?4:3,errorTileUrl:"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"}).addTo(map);
+        window._overlay=L.tileLayer(initUrl,{opacity:${initCfg.opacity},maxZoom:${initCfg.maxZoom},minZoom:${initCfg.minZoom},pane:'overlay',errorTileUrl:"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"}).addTo(map);
+        var of=document.getElementById('overlay-filter');
+        if(of) of.textContent='#leaflet-overlay-pane img{filter:${initCfg.filter}!important}';
       }
 
 var markers=${markersJson};

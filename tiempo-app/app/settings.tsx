@@ -311,6 +311,7 @@ export default function SettingsScreen() {
           onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, coastal: v } })}
           iconColor={iconColor}
           isDark={isDark}
+          note={!settings.aemetApiKey ? "Requiere API AEMET" : undefined}
         />
         <NotificationToggle
           label="Niebla"
@@ -392,6 +393,7 @@ function NotificationToggle({
   onValueChange,
   iconColor,
   isDark,
+  note,
 }: {
   label: string;
   icon: any;
@@ -399,12 +401,20 @@ function NotificationToggle({
   onValueChange: (v: boolean) => void;
   iconColor: string;
   isDark: boolean;
+  note?: string;
 }) {
   return (
     <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
         <Icon size={16} color={iconColor} />
-        <ThemedText style={{ fontSize: 14 }}>{label}</ThemedText>
+        <View style={{ flex: 1 }}>
+          <ThemedText style={{ fontSize: 14 }}>{label}</ThemedText>
+          {note && (
+            <ThemedText secondary style={{ fontSize: 11, marginTop: 1, fontStyle: "italic" }}>
+              {note}
+            </ThemedText>
+          )}
+        </View>
       </View>
       <Switch
         value={value}

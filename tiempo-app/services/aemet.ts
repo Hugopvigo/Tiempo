@@ -49,7 +49,7 @@ function parseAEMETSeverity(severity: string): WeatherAlert["severity"] {
   return "yellow";
 }
 
-function parseAEMETType(tipo: string): WeatherAlert["type"] {
+function parseAEMETType(tipo: string): WeatherAlert["type"] | null {
   const lower = tipo.toLowerCase();
   if (lower.includes("lluvia") || lower.includes("precipitación")) return "rain";
   if (lower.includes("tormenta") || lower.includes("rayos")) return "storm";
@@ -58,7 +58,10 @@ function parseAEMETType(tipo: string): WeatherAlert["type"] {
   if (lower.includes("calor") || lower.includes("temperatura máxima")) return "heat";
   if (lower.includes("frío") || lower.includes("temperatura mínima")) return "cold";
   if (lower.includes("costera") || lower.includes("marítimo")) return "coastal";
-  return "rain";
+  if (lower.includes("niebla")) return "fog";
+  if (lower.includes("polvo") || lower.includes("arena") || lower.includes("calima")) return "fog";
+  if (lower.includes("deshielo") || lower.includes("hielo")) return "cold";
+  return null;
 }
 
 export async function getAEMETAlerts(zonaCode: string): Promise<WeatherAlert[]> {
@@ -68,15 +71,23 @@ export async function getAEMETAlerts(zonaCode: string): Promise<WeatherAlert[]> 
     );
     if (!Array.isArray(raw)) return [];
 
-    return raw.map((alert, i) => ({
-      id: `aemet-${zonaCode}-${i}`,
-      title: alert.title ?? alert.tipo ?? "Aviso AEMET",
-      description: alert.description ?? "",
-      severity: parseAEMETSeverity(alert.severity),
-      type: parseAEMETType(alert.tipo ?? ""),
-      startTime: alert.onset ?? new Date().toISOString(),
-      endTime: alert.expires ?? new Date(Date.now() + 24 * 3600000).toISOString(),
-    }));
+    return raw
+      .map((alert) => {
+        const type = parseAEMETType(alert.tipo ?? "");
+        if (!type) return null;
+        const severity = parseAEMETSeverity(alert.severity);
+        const onset = alert.onset ?? new Date().toISOString();
+        return {
+          id: `aemet-${zonaCode}-${type}-${severity}-${onset.slice(0, 10)}`,
+          title: alert.title ?? alert.tipo ?? "Aviso AEMET",
+          description: alert.description ?? "",
+          severity,
+          type,
+          startTime: onset,
+          endTime: alert.expires ?? new Date(Date.now() + 24 * 3600000).toISOString(),
+        } as WeatherAlert;
+      })
+      .filter((a): a is WeatherAlert => a !== null);
   } catch {
     return [];
   }
