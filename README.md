@@ -30,7 +30,7 @@
 - **Fase Lunar:** 8 fases lunares con SVGs custom, iluminacion %, orto/ocaso lunar y amanecer/atardecer. Calculo local sin API externa.
 - **Mareas Dinamicas:** Gráficos sinusoidales con **Skia** para zonas costeras. Deteccion automatica de ciudades costeras vs interiores con datos de la Open-Meteo Marine API. Indicador de marea subiendo/bajando en tiempo real y horarios de pleamar/bajamar.
 - **Alertas Oficiales:** Integracion directa con avisos de la AEMET (lluvia, tormenta, nieve, viento, calor, frio, costera).
-- **Mapa Interactivo:** Capas de radar de lluvia (RainViewer), satelite infrarrojo de nubes, y capas adicionales de temperatura, viento, humedad y presion via OpenWeatherMap. Modo oscuro con opacidad mejorada para mayor visibilidad. Animacion de radar en tiempo real con timeline de frames (play/pause/scrub).
+- **Mapa Interactivo:** Capas de radar de lluvia (RainViewer), satelite infrarrojo de nubes, y capas adicionales de temperatura, viento, humedad y presion via OpenWeatherMap. Opacidad optimizada por capa y filtro CSS para mejorar visibilidad de humedad en modo claro. Animacion de radar en tiempo real con timeline de frames (play/pause/scrub).
 - **Widgets:** *(Postpuesto)* Requiere Expo SDK 55+. Widget compacto (2x1) y widget de previsión (4x2) para pantalla de inicio. Se retomará al migrar a Expo 55.
 - **Notificaciones Push:** Alertas meteorologicas en segundo plano con configuracion por tipo de alerta.
 - **Interfaz Adaptativa:** Fondos degradados dinamicos que cambian segun la condicion climatica y el modo (claro/oscuro).
@@ -138,7 +138,7 @@ Como obtener una API Key gratuita de OpenWeatherMap:
 - [x] **Fase 5:** Mapas meteorologicos interactivos (RainViewer + OpenWeatherMap tiles).
 - [x] **Fase 6:** Capas adicionales del mapa (temperatura, viento, humedad, presion) con API Key configurable.
 - [x] **Fase 7:** Mareas v2 — Indicador de marea subiendo/bajando, horarios de pleamar/bajamar via sea_level_height_msl.
-- [x] **Fase 8:** Animaciones de particulas climaticas en la Home (lluvia, nieve, niebla, relampagos con Reanimated).
+- [x] **Fase 8:** Animaciones de particulas climaticas en la Home (lluvia, nieve, niebla, relampagos, nubes, destellos solares/estelares con Reanimated). Transicion suave entre condiciones. Correcciones de visibilidad en modo claro.
 - [x] **Fase 9:** Animacion de radar en tiempo real (timeline de frames RainViewer).
 - [x] **Fase 10:** Widgets de pantalla de inicio — **POSTPUESTO** (requiere Expo SDK 55+, actual en 54).
 - [x] **Fase 11:** Calidad del Aire (AQI) — card en Home con Open-Meteo Air Quality API. Índice EAQI europeo con barra de progreso y detalle expandible (PM2.5, PM10, O3, NO2).

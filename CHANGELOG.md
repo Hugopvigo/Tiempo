@@ -607,6 +607,37 @@ tiempo-app/
 
 ---
 
+## v3.1 — Mejoras en particulas y mapa
+
+### WeatherParticles — Nuevas particulas y correcciones
+- **Bug: `runOnJS` eliminado** en `LightningFlash` — el `setInterval` ya corre en JS thread, el wrapper era redundante y anadia un salto de hilo innecesario.
+- **Visibilidad de nieve en modo claro**: color cambiado de `rgba(255,255,255,0.85)` a `rgba(200,215,240,0.9)` (azul-gris claro) para contrastar con el fondo casi blanco `#F1F5F9`.
+- **Visibilidad de niebla en modo claro**: opacidad aumentada y tono cambiado a azul-gris (`rgba(180,200,220,0.35)`) para mejor contraste.
+- **Visibilidad de lluvia en modo claro**: color mas saturado (`rgba(59,130,246,0.45)`) para destacar del fondo.
+- **Transicion fade**: el contenedor de particulas ahora hace fade in/out al aparecer/desaparecer (500ms/300ms), eliminando cortes abruptos al cambiar de condicion.
+- **Nuevas particulas "Sparkle"**: 6-10 puntitos pulsantes para `clear` (amarillo-dorado, simulan reflejos de sol) y `night_clear` (blancos, simulan estrellas titilantes).
+- **Nuevas particulas "CloudPuff"**: 2-3 nubes lentas semitransparentes para `partly_cloudy`, `cloudy` y `night_cloudy`, con colores adaptativos segun modo dia/noche y densidad de nubosidad.
+- **Primer relampago inmediato**: `triggerFlash()` se llama al montarse, no espera el primer intervalo aleatorio.
+
+### WeatherMap — Opacidad por capa y filtro CSS para humedad
+- **Bug: humedad no cargaba en modo oscuro**: la capa de humedad usaba API v2 de OWM (`HRD0`) que devolvia tiles incompatibles. Cambiado a API v1 (`humidity_m`) como el resto de capas.
+- **Opacidad por capa** (antes era generica 0.7 claro / 0.85 oscuro):
+  - Nubes (OWM): 0.85 claro / 0.85 oscuro
+  - Viento: 0.80 claro / 0.85 oscuro
+  - Humedad: 0.85 claro / 0.85 oscuro
+  - Precipitacion, temperatura, presion: 0.70 claro / 0.85 oscuro
+- **Filtro CSS para humedad en modo claro**: se crea un pane separado (`map.createPane('overlay')`) para la capa superpuesta. En modo claro con humedad activa, se inyecta `filter: brightness(0.65) saturate(1.5)` solo en ese pane, oscureciendo los blancos a gris y saturando los azules. El filtro se resetea al cambiar de capa o modo.
+- **`pane: 'overlay'`** en todas las capas superpuestas (tanto creacion inicial como `injectLayer`, `injectRadarAnimation` e `injectRadarFrame`).
+
+### hooks/useWeatherLayers.ts
+- `OWM_LAYER_MAP` simplificado: eliminado flag `v2`.
+- Eliminado import de `getOpenWeatherMapV2TileUrl`.
+
+### Limpieza
+- `services/weatherLayers.ts`: `getOpenWeatherMapV2TileUrl()` ya no se importa desde ningun lado (codigo muerto mantenido por compatibilidad).
+
+---
+
 ## v3.0 — Release Estable
 
 - Version actualizada a 3.0 en `app.json`, `package.json`, `README.md` y `plan.md`

@@ -149,15 +149,16 @@ tiempo-app/
 - [x] Marcadores de ciudades guardadas con divIcons personalizados
 - [x] Estilo mapa adaptado a modo claro/oscuro
 - [x] Clave API OpenWeatherMap configurable desde Settings
-- [x] Capas OWM V1 + V2 (HRD0 humedad)
+- [x] Capas OWM V1 (humedad_m) — humedad migrada de V2 HRD0 a V1 humidity_m
 - [x] `useOwmClouds` alternancia entre satélite y tiles OWM para nubes
-- [x] Opacidad y zoom adaptativos por tipo de capa
+- [x] Opacidad por capa (nubes 0.85, viento 0.8, humedad 0.85 en modo claro)
+- [x] Filtro CSS `brightness(0.65) saturate(1.5)` en pane overlay para humedad en modo claro
 - [x] `errorTileUrl` para tiles fallidos
 
 ### Fase 6 — Capas adicionales OWM
 - [x] Capas de temperatura, viento, humedad y presion via OpenWeatherMap
 - [x] Seccion "Claves API" en Settings con input de OpenWeatherMap API Key
-- [x] Capas V1 + V2 (HRD0 humedad) via Maps 2.0 endpoint
+- [x] Capas V1 (humidity_m para humedad) — todas las capas usan API V1
 - [x] Capas disponibles sin API key: precipitacion, nubes
 - [x] Capas disponibles con API key: temperatura, viento, humedad, presion
 
@@ -170,15 +171,18 @@ tiempo-app/
 
 ### Fase 8 — Animaciones de Particulas Climaticas
 - [x] Componente `WeatherParticles` con Reanimated (`useSharedValue` + `withRepeat`)
-- [x] `RainDrop`: 30 gotas cayendo con inclinacion por viento (rain), 40 gotas (storm)
-- [x] `SnowFlake`: 24 copos con drift sinusoidal horizontal
-- [x] `FogPuff`: 6 puffs grandes con drift horizontal lento
-- [x] `LightningFlash`: overlay con flash periodico (storm)
+- [x] `RainDrop`: 20 gotas cayendo con inclinacion por viento (rain), 28 gotas (storm)
+- [x] `SnowFlake`: 16 copos con drift sinusoidal horizontal
+- [x] `FogPuff`: 5 puffs grandes con drift horizontal lento
+- [x] `CloudPuff`: 2-3 nubes lentas para partly_cloudy/cloudy/night_cloudy
+- [x] `Sparkle`: 6-10 puntitos pulsantes para clear/night_clear
+- [x] `LightningFlash`: overlay con flash periodico (storm), primer flash inmediato
 - [x] `seededRandom()`: offsets deterministas por render
 - [x] Colores adaptativos claro/oscuro por tipo de particula
 - [x] `pointerEvents="none"` + `cancelAnimation()` en cleanup
-- [x] Integracion en Home (`app/index.tsx`) dentro de `DynamicBackground`
-- [x] Export desde `components/theme/index.ts`
+- [x] Transicion fade in/out al cambiar de condicion climatica
+- [x] Visibilidad mejorada de nieve, niebla y lluvia en modo claro
+- [x] Bugfix: `runOnJS` innecesario eliminado de LightningFlash
 
 ### Fase 9 — Animacion de Radar en Tiempo Real
 - [x] `useWeatherLayers` ampliado: `isPlaying`, `togglePlay`, `stopPlay`, `radarFrameUrls`, `pastCount`
@@ -214,18 +218,18 @@ tiempo-app/
 
 ## Version Actual
 
-**v3.0** — Release estable con:
+**v3.1** — Release con mejoras en particulas y mapa:
 - Previsión actual + 7 días (Open-Meteo + AEMET)
 - Gestión de ciudades con GPS y swipe-to-delete
 - Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
 - Alertas locales + AEMET con notificaciones push y background fetch
-- Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM)
+- Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM) — opacidad por capa y filtro CSS para humedad en modo claro
 - Animación de radar en tiempo real con timeline de frames (play/pause/scrub)
 - Calidad del Aire (AQI europeo) con detalle expandible (PM2.5, PM10, O3, NO2)
 - Fase Lunar con SVGs custom + orto/ocaso lunar + amanecer/atardecer
 - *(Widgets postpuesto — requiere Expo 55)*
 - Estilo de iconos configurable (color/monocromo)
-- Animaciones de partículas climáticas (lluvia, nieve, niebla, relámpagos)
+- Animaciones de partículas climáticas (lluvia, nieve, niebla, relámpagos, nubes, destellos solares/estelares) con transición suave y visibilidad mejorada en modo claro
 - Modo claro/oscuro con gradientes dinámicos
 - EAS Build configurado (development, preview, production — APK)
 
