@@ -176,7 +176,7 @@ export default function SearchScreen() {
       {query.length >= 3 && results.length === 0 && !searching && (
         <View style={{ padding: 32, alignItems: "center" }}>
           <ThemedText secondary style={{ fontSize: 16, textAlign: "center" }}>
-            No se encontraron ciudades para "{query}"
+            No se encontraron ciudades para &ldquo;{query}&rdquo;
           </ThemedText>
         </View>
       )}

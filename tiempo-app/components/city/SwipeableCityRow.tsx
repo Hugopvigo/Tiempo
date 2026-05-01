@@ -4,7 +4,7 @@ import { useThemeContext } from "@/components/theme";
 import { MapPin, Trash2 } from "lucide-react-native";
 import type { City } from "@/types/weather";
 import { useRef, memo, useCallback } from "react";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from "react-native-reanimated";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 interface SwipeableCityRowProps {
