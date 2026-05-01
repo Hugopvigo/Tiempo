@@ -2,9 +2,11 @@ import * as TaskManager from "expo-task-manager";
 import * as BackgroundFetch from "expo-background-fetch";
 import { getWeather } from "@/services/openmeteo";
 import { generateAlerts } from "@/services/alerts";
+import { configureAEMET, getAEMETAlerts, isAEMETConfigured } from "@/services/aemet";
+import { getAEMETZone } from "@/constants/aemetZones";
 import { scheduleAlertNotification, setBadgeCount } from "@/services/notifications";
 import { createMMKV } from "react-native-mmkv";
-import type { City, AppSettings } from "@/types/weather";
+import type { City, AppSettings, WeatherAlert } from "@/types/weather";
 
 const storage = createMMKV({ id: "tiempo-storage" });
 const BACKGROUND_TASK = "background-alerts";
@@ -45,6 +47,10 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
 
     if (!settings.notifications.enabled) return BackgroundFetch.BackgroundFetchResult.NoData;
 
+    if (settings.aemetApiKey) {
+      configureAEMET(settings.aemetApiKey);
+    }
+
     let newAlerts = 0;
     const dedupEntries = loadLastAlertIds();
     const dedupIds = new Set(dedupEntries.map((e) => e.id));
@@ -52,7 +58,25 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
     for (const city of cities.slice(0, 3)) {
       try {
         const weather = await getWeather(city.lat, city.lon, city.name);
-        const alerts = generateAlerts(weather);
+        const localAlerts = generateAlerts(weather);
+
+        let alerts: WeatherAlert[];
+        const zonaCode = getAEMETZone(city);
+
+        if (isAEMETConfigured() && zonaCode) {
+          const aemetAlerts = await getAEMETAlerts(zonaCode);
+          if (aemetAlerts.length > 0) {
+            const aemetTypes = new Set(aemetAlerts.map((a) => a.type));
+            const complement = localAlerts.filter((a) => !aemetTypes.has(a.type));
+            alerts = [...aemetAlerts, ...complement];
+          } else {
+            alerts = localAlerts;
+          }
+        } else {
+          alerts = localAlerts;
+        }
+
+        alerts.sort((a, b) => severityOrder(a.severity) - severityOrder(b.severity));
 
         for (const alert of alerts) {
           const typeKey = alert.type as keyof typeof settings.notifications;
@@ -83,6 +107,10 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
     return BackgroundFetch.BackgroundFetchResult.Failed;
   }
 });
+
+function severityOrder(s: WeatherAlert["severity"]): number {
+  return s === "red" ? 0 : s === "orange" ? 1 : 2;
+}
 
 export async function registerBackgroundFetch(): Promise<boolean> {
   try {
