@@ -51,6 +51,7 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
       configureAEMET(settings.aemetApiKey);
     }
 
+    let totalActive = 0;
     let newAlerts = 0;
     const dedupEntries = loadLastAlertIds();
     const dedupIds = new Set(dedupEntries.map((e) => e.id));
@@ -81,6 +82,7 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
         for (const alert of alerts) {
           const typeKey = alert.type as keyof typeof settings.notifications;
           if (typeKey !== "enabled" && !settings.notifications[typeKey]) continue;
+          totalActive++;
           if (dedupIds.has(alert.id)) continue;
 
           await scheduleAlertNotification(alert);
@@ -97,7 +99,11 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
 
     if (newAlerts > 0) {
       storage.set("lastAlertCheck", Date.now());
-      await setBadgeCount(newAlerts);
+    }
+    if (totalActive > 0) {
+      await setBadgeCount(totalActive);
+    } else {
+      await setBadgeCount(0);
     }
 
     return newAlerts > 0
