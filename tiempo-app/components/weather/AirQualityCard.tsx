@@ -31,6 +31,31 @@ function PollutantBar({ label, value, max, unit, color }: { label: string; value
   );
 }
 
+function getPollenLabel(value: number): string {
+  if (value < 10) return "Bajo";
+  if (value < 50) return "Moderado";
+  if (value < 200) return "Alto";
+  return "Muy alto";
+}
+
+function PollenBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
+  const { isDark } = useThemeContext();
+  const percentage = Math.min((value / max) * 100, 100);
+  const barBg = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)";
+
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+      <ThemedText secondary style={{ fontSize: 13, width: 72 }}>{label}</ThemedText>
+      <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: barBg, overflow: "hidden" }}>
+        <View style={{ width: `${percentage}%`, height: "100%", borderRadius: 3, backgroundColor: color }} />
+      </View>
+      <ThemedText style={{ fontSize: 13, width: 60, textAlign: "right" }}>
+        {getPollenLabel(value)}
+      </ThemedText>
+    </View>
+  );
+}
+
 export function AirQualityCard({ data }: AirQualityCardProps) {
   const { isDark } = useThemeContext();
   const { settings } = useSettingsStore();
@@ -99,6 +124,23 @@ export function AirQualityCard({ data }: AirQualityCardProps) {
           <PollutantBar label="PM10" value={data.current.pm10} max={150} unit="µg/m³" color={isColored ? "#FF9500" : monoColor} />
           <PollutantBar label="O₃" value={data.current.ozone} max={200} unit="µg/m³" color={isColored ? "#34D399" : monoColor} />
           <PollutantBar label="NO₂" value={data.current.nitrogenDioxide} max={200} unit="µg/m³" color={isColored ? "#60A5FA" : monoColor} />
+
+          {(data.current.grassPollen != null || data.current.olivePollen != null || data.current.birchPollen != null) && (
+            <View style={{ marginTop: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }}>
+              <ThemedText secondary style={{ fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+                Polen
+              </ThemedText>
+              {data.current.grassPollen != null && (
+                <PollenBar label="Gramíneas" value={data.current.grassPollen} max={200} color={isColored ? "#4ADE80" : monoColor} />
+              )}
+              {data.current.olivePollen != null && (
+                <PollenBar label="Olivo" value={data.current.olivePollen} max={400} color={isColored ? "#A3E635" : monoColor} />
+              )}
+              {data.current.birchPollen != null && (
+                <PollenBar label="Abedul" value={data.current.birchPollen} max={400} color={isColored ? "#FCD34D" : monoColor} />
+              )}
+            </View>
+          )}
         </View>
       )}
     </ThemedCard>

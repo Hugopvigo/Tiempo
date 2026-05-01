@@ -213,6 +213,9 @@ interface AirQualityApiResponse {
     ozone: number;
     nitrogen_dioxide: number;
     european_aqi: number;
+    grass_pollen: number | null;
+    olive_pollen: number | null;
+    birch_pollen: number | null;
   };
   hourly: {
     time: string[];
@@ -228,7 +231,7 @@ export async function getAirQuality(lat: number, lon: number): Promise<AirQualit
   const params = new URLSearchParams({
     latitude: lat.toString(),
     longitude: lon.toString(),
-    current: "pm2_5,pm10,ozone,nitrogen_dioxide,european_aqi",
+    current: "pm2_5,pm10,ozone,nitrogen_dioxide,european_aqi,grass_pollen,olive_pollen,birch_pollen",
     hourly: "european_aqi,pm2_5,pm10,ozone,nitrogen_dioxide",
     timezone: "auto",
     forecast_days: "1",
@@ -246,6 +249,9 @@ export async function getAirQuality(lat: number, lon: number): Promise<AirQualit
       pm10: data.current.pm10,
       ozone: data.current.ozone,
       nitrogenDioxide: data.current.nitrogen_dioxide,
+      grassPollen: data.current.grass_pollen,
+      olivePollen: data.current.olive_pollen,
+      birchPollen: data.current.birch_pollen,
     },
     hourly: {
       time: data.hourly.time,

@@ -59,7 +59,8 @@ export default function RootLayout() {
           <Stack
           screenOptions={{
             headerShown: false,
-            animation: "slide_from_right",
+            animation: "fade",
+            animationDuration: 220,
             contentStyle: {
               backgroundColor: isDark ? screenBackground.dark : screenBackground.light,
             },
