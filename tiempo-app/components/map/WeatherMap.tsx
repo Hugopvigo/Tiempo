@@ -6,6 +6,8 @@ import { useThemeContext } from "@/components/theme";
 import { useWeather } from "@/hooks/useWeather";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { ThemedText } from "@/components/theme";
+import { formatTemperature } from "@/constants/weather";
+import { useSettingsStore } from "@/stores/cityStore";
 
 interface WeatherMapProps {
   cities: City[];
@@ -24,7 +26,8 @@ interface WeatherMapProps {
 }
 
 function sanitizeUrl(url: string): string {
-  if (url.startsWith("https://") || url.startsWith("data:")) return url;
+  if (url.startsWith("https://")) return url;
+  if (url.startsWith("data:image/")) return url;
   return "";
 }
 
@@ -60,6 +63,7 @@ export function WeatherMap({
   onFrameChange,
 }: WeatherMapProps) {
   const { isDark } = useThemeContext();
+  const { settings } = useSettingsStore();
   const webviewRef = useRef<RNWebView>(null);
   const [loading, setLoading] = useState(true);
   const [mapError, setMapError] = useState(false);
@@ -296,7 +300,7 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
 </script>
 </body>
 </html>`;
-    }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteTileUrl, owmLayers, activeLayer, useOwmClouds, radarFrameUrls, isPlaying, frameIndex, pastCount]);
+    }, [cityMarkers, activeCity.lat, activeCity.lon, isDark, radarTileUrl, satelliteTileUrl, owmLayers, activeLayer, useOwmClouds]);
 
   const current = weather?.current;
   const condition = current?.condition;
@@ -329,7 +333,7 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
       ref={webviewRef}
       source={{ html }}
       style={{ flex: 1, backgroundColor: isDark ? "#0A0A0A" : "#F5F7FA" }}
-          originWhitelist={["about", "data", "https"]}
+          originWhitelist={["about", "https"]}
         onMessage={(e) => {
           try {
             const data = JSON.parse(e.nativeEvent.data);
@@ -345,7 +349,11 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
             else handleMessage(e as any);
           } catch {}
         }}
-          onError={() => setMapError(true)}
+          onShouldStartLoadWithRequest={(req) => {
+            const url = req.url;
+            return url.startsWith("https://") || url.startsWith("about:") || url.startsWith("data:image/");
+          }}
+        onError={() => setMapError(true)}
           onHttpError={() => setMapError(true)}
           javaScriptEnabled
           domStorageEnabled
@@ -416,9 +424,9 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
         >
           {condition && <WeatherIcon condition={condition} size={20} />}
           <View>
-            <ThemedText style={{ fontSize: 22, fontWeight: "500" }}>
-              {Math.round(current.temperature)}°
-            </ThemedText>
+        <ThemedText style={{ fontSize: 22, fontWeight: "500" }}>
+          {formatTemperature(current.temperature, settings.temperatureUnit)}
+        </ThemedText>
             <ThemedText secondary style={{ fontSize: 11 }}>
               {current.description}
             </ThemedText>

@@ -4,6 +4,11 @@ import type { City, AppSettings } from "@/types/weather";
 
 const storage = createMMKV({ id: "tiempo-storage" });
 
+function safeParse<T>(value: string | undefined, fallback: T): T {
+  if (!value) return fallback;
+  try { return JSON.parse(value) as T; } catch { return fallback; }
+}
+
 const savedCities = storage.getString("cities");
 const savedActiveCity = storage.getString("activeCity");
 
@@ -27,8 +32,8 @@ interface CityState {
 }
 
 export const useCityStore = create<CityState>((set, get) => ({
-  cities: savedCities ? JSON.parse(savedCities) : [defaultCity],
-  activeCity: savedActiveCity ? JSON.parse(savedActiveCity) : defaultCity,
+  cities: safeParse(savedCities, [defaultCity]),
+  activeCity: safeParse(savedActiveCity, defaultCity),
 
   addCity: (city) => {
     const { cities } = get();
@@ -94,7 +99,7 @@ interface SettingsState {
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
-  settings: savedSettings ? JSON.parse(savedSettings) : defaultSettings,
+  settings: safeParse(savedSettings, defaultSettings),
 
   updateSettings: (partial) => {
     const { settings } = get();

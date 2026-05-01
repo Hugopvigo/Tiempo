@@ -28,13 +28,13 @@ interface ParticleConfig {
 function getParticleConfig(condition: WeatherCondition): ParticleConfig {
   switch (condition) {
     case "rain":
-      return { type: "rain", count: 30 };
+      return { type: "rain", count: 20 };
     case "storm":
-      return { type: "rain", count: 40 };
+      return { type: "rain", count: 28 };
     case "snow":
-      return { type: "snow", count: 24 };
+      return { type: "snow", count: 16 };
     case "fog":
-      return { type: "fog", count: 6 };
+      return { type: "fog", count: 5 };
     default:
       return { type: "none", count: 0 };
   }

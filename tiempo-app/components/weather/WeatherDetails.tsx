@@ -2,9 +2,10 @@ import { View } from "react-native";
 import { ThemedCard, ThemedText } from "@/components/theme";
 import { Droplets, Wind, Eye, Thermometer, Gauge, Sun } from "lucide-react-native";
 import { useThemeContext } from "@/components/theme";
-import { windDirectionLabel } from "@/constants/weather";
+import { windDirectionLabel, formatTemperature } from "@/constants/weather";
 import { useSettingsStore } from "@/stores/cityStore";
 import { memo } from "react";
+import type { AppSettings } from "@/types/weather";
 
 const detailColorMap: Record<string, string> = {
   sensation: "#FF6B6B",
@@ -16,6 +17,7 @@ const detailColorMap: Record<string, string> = {
 };
 
 interface WeatherDetailsProps {
+  temperature: number;
   feelsLike: number;
   humidity: number;
   windSpeed: number;
@@ -64,7 +66,17 @@ const DetailTile = memo(function DetailTile({
   );
 });
 
+function formatWind(speed: number, unit: AppSettings["windUnit"]): string {
+  switch (unit) {
+    case "mph": return `${Math.round(speed * 0.621371)} mph`;
+    case "ms": return `${(speed / 3.6).toFixed(1)} m/s`;
+    case "knots": return `${Math.round(speed * 0.539957)} kn`;
+    default: return `${Math.round(speed)} km/h`;
+  }
+}
+
 export function WeatherDetails({
+  temperature,
   feelsLike,
   humidity,
   windSpeed,
@@ -86,8 +98,8 @@ export function WeatherDetails({
         <DetailTile
           icon={ic("sensation", Thermometer)}
           label="Sensación"
-          value={`${Math.round(feelsLike)}°`}
-          subtitle={feelsLike > feelsLike + 2 ? "Más cálido" : feelsLike < feelsLike - 2 ? "Más frío" : "Similar a la real"}
+      value={formatTemperature(feelsLike, settings.temperatureUnit)}
+      subtitle={feelsLike > temperature + 2 ? "Más cálido" : feelsLike < temperature - 2 ? "Más frío" : "Similar a la real"}
         />
         <DetailTile
           icon={ic("humidity", Droplets)}
@@ -101,7 +113,7 @@ export function WeatherDetails({
         <DetailTile
           icon={ic("wind", Wind)}
           label="Viento"
-          value={`${Math.round(windSpeed)} km/h`}
+          value={formatWind(windSpeed, settings.windUnit)}
           subtitle={`Dirección ${windDirectionLabel(windDirection)}`}
         />
         <DetailTile

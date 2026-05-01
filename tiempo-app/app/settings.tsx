@@ -46,10 +46,8 @@ export default function SettingsScreen() {
     if (locationCity) {
       setLocationCity(locationCity);
     } else {
-      await requestAndSet();
-      if (locationCity) {
-        setLocationCity(locationCity);
-      }
+      const resolved = await requestAndSet();
+      if (resolved) setLocationCity(resolved);
     }
   };
 

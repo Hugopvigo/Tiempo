@@ -3,6 +3,8 @@ import { ThemedCard, ThemedText } from "@/components/theme";
 import { useThemeContext } from "@/components/theme";
 import { WeatherIcon } from "./WeatherIcon";
 import type { DailyForecast } from "@/types/weather";
+import { formatTemperature } from "@/constants/weather";
+import { useSettingsStore } from "@/stores/cityStore";
 import { memo } from "react";
 
 interface DailyForecastProps {
@@ -11,7 +13,7 @@ interface DailyForecastProps {
 
 const DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-const DayRow = memo(function DayRow({ d, index, isDark }: { d: DailyForecast; index: number; isDark: boolean }) {
+const DayRow = memo(function DayRow({ d, index, isDark, unit }: { d: DailyForecast; index: number; isDark: boolean; unit: "celsius" | "fahrenheit" }) {
   const dayLabel = index === 0 ? "Hoy" : DAYS[new Date(d.date + "T12:00:00").getDay()];
 
   return (
@@ -41,10 +43,10 @@ const DayRow = memo(function DayRow({ d, index, isDark }: { d: DailyForecast; in
 
       <View style={{ flex: 1, flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
         <ThemedText style={{ fontSize: 17, fontWeight: "500" }}>
-          {Math.round(d.tempMax)}°
+          {formatTemperature(d.tempMax, unit)}
         </ThemedText>
         <ThemedText secondary style={{ fontSize: 17 }}>
-          {Math.round(d.tempMin)}°
+          {formatTemperature(d.tempMin, unit)}
         </ThemedText>
       </View>
     </View>
@@ -53,6 +55,7 @@ const DayRow = memo(function DayRow({ d, index, isDark }: { d: DailyForecast; in
 
 export function DailyForecastCard({ daily }: DailyForecastProps) {
   const { isDark } = useThemeContext();
+  const { settings } = useSettingsStore();
 
   return (
     <ThemedCard style={{ marginBottom: 12, paddingHorizontal: 20, paddingVertical: 18 }}>
@@ -63,7 +66,7 @@ export function DailyForecastCard({ daily }: DailyForecastProps) {
         Próximos 7 días
       </ThemedText>
       {daily.map((d, i) => (
-        <DayRow key={d.date} d={d} index={i} isDark={isDark} />
+        <DayRow key={d.date} d={d} index={i} isDark={isDark} unit={settings.temperatureUnit} />
       ))}
     </ThemedCard>
   );

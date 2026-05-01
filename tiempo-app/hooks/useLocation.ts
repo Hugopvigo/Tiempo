@@ -6,7 +6,7 @@ interface LocationState {
   city: City | null;
   error: string | null;
   loading: boolean;
-  requestAndSet: () => Promise<void>;
+  requestAndSet: () => Promise<City | null>;
 }
 
 export function useLocation(): LocationState {
@@ -14,7 +14,7 @@ export function useLocation(): LocationState {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const requestAndSet = useCallback(async () => {
+  const requestAndSet = useCallback(async (): Promise<City | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -22,7 +22,7 @@ export function useLocation(): LocationState {
       if (status !== "granted") {
         setError("Permiso de ubicación denegado");
         setLoading(false);
-        return;
+        return null;
       }
 
       const pos = await Location.getCurrentPositionAsync({
@@ -53,8 +53,10 @@ export function useLocation(): LocationState {
       } catch {}
 
       setCity(locationCity);
+      return locationCity;
     } catch {
       setError("No se pudo obtener la ubicación");
+      return null;
     } finally {
       setLoading(false);
     }

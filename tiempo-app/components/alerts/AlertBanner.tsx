@@ -4,7 +4,7 @@ import type { WeatherAlert } from "@/types/weather";
 import { alertColors } from "@/constants/theme";
 import { AlertTriangle, ChevronRight, X } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 interface AlertBannerProps {
   alerts: WeatherAlert[];
@@ -14,6 +14,7 @@ interface AlertBannerProps {
 export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
   const { isDark } = useThemeContext();
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const dismissRef = useRef(false);
   const router = useRouter();
 
   const active = alerts.filter((a) => !dismissed.has(a.id));
@@ -26,6 +27,10 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
     <TouchableOpacity
       activeOpacity={0.7}
       onPress={() => {
+        if (dismissRef.current) {
+          dismissRef.current = false;
+          return;
+        }
         const params = new URLSearchParams({
           id: top.id,
           title: top.title,
@@ -73,12 +78,12 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
                   </ThemedText>
                 </View>
 
-                <TouchableOpacity
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    setDismissed((prev) => new Set(prev).add(top.id));
-                    onDismiss?.();
-                  }}
+        <TouchableOpacity
+          onPress={() => {
+            dismissRef.current = true;
+            setDismissed((prev) => new Set(prev).add(top.id));
+            onDismiss?.();
+          }}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   <X
@@ -135,6 +140,7 @@ export function AlertList({ alerts }: AlertListProps) {
 }
 
 function AlertRow({ alert }: { alert: WeatherAlert }) {
+  const { isDark } = useThemeContext();
   const color = alertColors[alert.severity];
   const iconMap: Record<WeatherAlert["type"], string> = {
     rain: "🌧️",
@@ -199,7 +205,7 @@ function AlertRow({ alert }: { alert: WeatherAlert }) {
 
       <ChevronRight
         size={16}
-        color="rgba(255,255,255,0.3)"
+        color={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)"}
       />
     </TouchableOpacity>
   );

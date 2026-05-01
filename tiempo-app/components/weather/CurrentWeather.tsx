@@ -2,6 +2,8 @@ import { View } from "react-native";
 import { ThemedText } from "@/components/theme";
 import { WeatherIcon } from "./WeatherIcon";
 import type { WeatherCondition } from "@/types/weather";
+import { formatTemperature } from "@/constants/weather";
+import { useSettingsStore } from "@/stores/cityStore";
 
 interface CurrentWeatherProps {
   cityName: string;
@@ -22,6 +24,9 @@ export function CurrentWeather({
   tempMax,
   tempMin,
 }: CurrentWeatherProps) {
+  const { settings } = useSettingsStore();
+  const unit = settings.temperatureUnit;
+
   return (
     <View style={{ alignItems: "center", paddingTop: 20, paddingBottom: 24 }}>
       <ThemedText style={{ fontSize: 34, fontWeight: "600", letterSpacing: 0.5 }}>
@@ -31,7 +36,7 @@ export function CurrentWeather({
       <WeatherIcon condition={condition} size={40} colored />
 
       <ThemedText style={{ fontSize: 102, fontWeight: "200", marginTop: -4 }}>
-        {Math.round(temperature)}°
+        {formatTemperature(temperature, unit)}
       </ThemedText>
 
       <ThemedText secondary style={{ fontSize: 18, marginTop: -8 }}>
@@ -39,7 +44,7 @@ export function CurrentWeather({
       </ThemedText>
 
       <ThemedText secondary style={{ fontSize: 18, marginTop: 2 }}>
-        H:{Math.round(tempMax)}°  L:{Math.round(tempMin)}°
+        H:{formatTemperature(tempMax, unit)} L:{formatTemperature(tempMin, unit)}
       </ThemedText>
     </View>
   );

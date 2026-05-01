@@ -58,16 +58,19 @@ export default function SearchScreen() {
   const [results, setResults] = useState<City[]>([]);
   const [searching, setSearching] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const savedIds = new Set(cities.map((c) => c.id));
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      abortRef.current?.abort();
     };
   }, []);
 
   const debouncedSearch = useCallback((text: string) => {
     if (timerRef.current) clearTimeout(timerRef.current);
+    abortRef.current?.abort();
 
     if (text.length < 3) {
       setResults([]);
@@ -77,11 +80,13 @@ export default function SearchScreen() {
 
     setSearching(true);
     timerRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      abortRef.current = controller;
       try {
-        const found = await searchCities(text);
+        const found = await searchCities(text, controller.signal);
         setResults(found);
-      } catch {
-        setResults([]);
+      } catch (e) {
+        if ((e as Error).name !== "AbortError") setResults([]);
       } finally {
         setSearching(false);
       }
@@ -100,7 +105,12 @@ export default function SearchScreen() {
       setActiveCity(locationCity);
       router.back();
     } else {
-      await requestAndSet();
+      const resolved = await requestAndSet();
+      if (resolved) {
+        addCity(resolved);
+        setActiveCity(resolved);
+        router.back();
+      }
     }
   };
 

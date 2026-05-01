@@ -1,20 +1,22 @@
-import { View, Animated } from "react-native";
-import { useEffect, useRef } from "react";
+import { View } from "react-native";
+import { useEffect } from "react";
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, cancelAnimation } from "react-native-reanimated";
 import { useThemeContext } from "@/components/theme";
 
 function useShimmer() {
-  const opacity = useRef(new Animated.Value(0.3)).current;
+  const opacity = useSharedValue(0.3);
 
   useEffect(() => {
-    const anim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.7, duration: 800, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0.3, duration: 800, useNativeDriver: true }),
-      ])
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(0.7, { duration: 800 }),
+        withTiming(0.3, { duration: 800 })
+      ),
+      -1,
+      false
     );
-    anim.start();
-    return () => anim.stop();
-  }, [opacity]);
+    return () => cancelAnimation(opacity);
+  }, []);
 
   return opacity;
 }
@@ -24,15 +26,19 @@ function SkeletonBox({ width, height, borderRadius = 12 }: { width: number | str
   const { isDark } = useThemeContext();
   const color = isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)";
 
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: shimmer.value }));
+
   return (
     <Animated.View
-      style={{
-        width: width as any,
-        height,
-        borderRadius,
-        backgroundColor: color,
-        opacity: shimmer,
-      }}
+      style={[
+        {
+          width: width as any,
+          height,
+          borderRadius,
+          backgroundColor: color,
+        },
+        animatedStyle,
+      ]}
     />
   );
 }

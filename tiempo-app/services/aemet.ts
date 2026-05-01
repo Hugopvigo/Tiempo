@@ -25,6 +25,7 @@ async function aemetFetch<T>(endpoint: string): Promise<T> {
   const data = await res.json();
   if (data.datos) {
     const dataRes = await fetch(data.datos);
+    if (!dataRes.ok) throw new Error(`AEMET data error: ${dataRes.status}`);
     return dataRes.json();
   }
 

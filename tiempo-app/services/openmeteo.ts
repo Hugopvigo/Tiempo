@@ -130,7 +130,7 @@ export async function getWeather(lat: number, lon: number, cityName: string): Pr
   };
 }
 
-export async function searchCities(query: string) {
+export async function searchCities(query: string, signal?: AbortSignal) {
   const params = new URLSearchParams({
     name: query,
     count: "10",
@@ -138,7 +138,7 @@ export async function searchCities(query: string) {
     format: "json",
   });
 
-  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params}`);
+  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params}`, { signal });
   if (!res.ok) throw new Error(`Geocoding error: ${res.status}`);
 
   const data = await res.json();

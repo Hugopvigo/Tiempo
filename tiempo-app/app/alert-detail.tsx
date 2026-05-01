@@ -11,14 +11,20 @@ export default function AlertDetailScreen() {
   const { isDark } = useThemeContext();
   const params = useLocalSearchParams();
 
+  const validSeverities = ["yellow", "orange", "red"] as const;
+  const validTypes = ["rain", "storm", "snow", "wind", "heat", "cold", "coastal", "fog"] as const;
+
+  const severity = validSeverities.find((s) => s === params.severity) ?? "yellow";
+  const type = validTypes.find((t) => t === params.type) ?? "rain";
+
   const alert: WeatherAlert = {
-    id: params.id as string,
-    title: params.title as string,
-    description: params.description as string,
-    severity: params.severity as WeatherAlert["severity"],
-    type: params.type as WeatherAlert["type"],
-    startTime: params.startTime as string,
-    endTime: params.endTime as string,
+    id: (params.id as string) ?? "",
+    title: (params.title as string) ?? "Aviso",
+    description: (params.description as string) ?? "",
+    severity,
+    type,
+    startTime: (params.startTime as string) ?? "",
+    endTime: (params.endTime as string) ?? "",
   };
 
   const color = alertColors[alert.severity];

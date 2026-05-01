@@ -136,6 +136,7 @@ export default function HomeScreen() {
 
           <AnimatedView delay={300}>
             <WeatherDetails
+              temperature={weather.current.temperature}
               feelsLike={weather.current.feelsLike}
               humidity={weather.current.humidity}
               windSpeed={weather.current.windSpeed}

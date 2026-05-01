@@ -1,15 +1,17 @@
-import { View, ScrollView } from "react-native";
+import { View, FlatList } from "react-native";
 import { ThemedCard, ThemedText } from "@/components/theme";
 import { WeatherIcon } from "./WeatherIcon";
 import type { HourlyForecast } from "@/types/weather";
-import { memo } from "react";
+import { formatTemperature } from "@/constants/weather";
+import { useSettingsStore } from "@/stores/cityStore";
+import { memo, useCallback } from "react";
 
 interface HourlyForecastProps {
   hourly: HourlyForecast[];
 }
 
-const HourItem = memo(function HourItem({ h }: { h: HourlyForecast }) {
-  const hour = new Date(h.time).getHours();
+const HourItem = memo(function HourItem({ h, unit }: { h: HourlyForecast; unit: "celsius" | "fahrenheit" }) {
+  const hour = parseInt(h.time.split("T")[1]?.split(":")[0] ?? "0", 10);
   const label = hour === 0 ? "0" : `${hour}`;
 
   return (
@@ -19,7 +21,7 @@ const HourItem = memo(function HourItem({ h }: { h: HourlyForecast }) {
       </ThemedText>
       <WeatherIcon condition={h.condition} size={22} />
       <ThemedText style={{ fontSize: 17, fontWeight: "500" }}>
-        {Math.round(h.temperature)}°
+        {formatTemperature(h.temperature, unit)}
       </ThemedText>
       {h.precipitationChance > 0 && (
         <ThemedText secondary style={{ fontSize: 11 }}>
@@ -31,6 +33,14 @@ const HourItem = memo(function HourItem({ h }: { h: HourlyForecast }) {
 });
 
 export function HourlyForecastCard({ hourly }: HourlyForecastProps) {
+  const { settings } = useSettingsStore();
+  const unit = settings.temperatureUnit;
+  const data = hourly.slice(0, 25);
+
+  const renderItem = useCallback(({ item }: { item: HourlyForecast }) => (
+    <HourItem h={item} unit={unit} />
+  ), [unit]);
+
   return (
     <ThemedCard style={{ marginBottom: 12, paddingHorizontal: 20, paddingVertical: 18 }}>
       <ThemedText
@@ -39,11 +49,15 @@ export function HourlyForecastCard({ hourly }: HourlyForecastProps) {
       >
         Previsión horaria
       </ThemedText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-        {hourly.slice(0, 25).map((h, i) => (
-          <HourItem key={`${h.time}-${i}`} h={h} />
-        ))}
-      </ScrollView>
+      <FlatList
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        data={data}
+        keyExtractor={(item, i) => `${item.time}-${i}`}
+        renderItem={renderItem}
+        contentContainerStyle={{ gap: 8 }}
+        getItemLayout={(_, index) => ({ length: 72, offset: 72 * index, index })}
+      />
     </ThemedCard>
   );
 }

@@ -1,4 +1,4 @@
-import { useContext, createContext } from "react";
+import { useContext, createContext, useMemo } from "react";
 import type { ReactNode } from "react";
 
 interface ThemeContextValue {
@@ -12,8 +12,9 @@ export function useThemeContext() {
 }
 
 export function ThemeProvider({ children, isDark }: { children: ReactNode; isDark: boolean }) {
+  const value = useMemo(() => ({ isDark }), [isDark]);
   return (
-    <ThemeContext.Provider value={{ isDark }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
