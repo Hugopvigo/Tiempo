@@ -6,7 +6,7 @@ const ADMIN1_TO_AEMET_ZONE: Record<string, string> = {
   "Asturias": "AST",
   "Principado de Asturias": "AST",
   "Canarias": "CAN",
-  "Cantabria": "CAN",
+  "Cantabria": "SAN",
   "Castilla-La Mancha": "CLM",
   "Castilla la Mancha": "CLM",
   "Castilla y León": "CYL",

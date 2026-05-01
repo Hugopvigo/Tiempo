@@ -43,7 +43,9 @@ export function generateAlerts(weather: WeatherData): WeatherAlert[] {
   }
 
   const maxPrecip = Math.max(...weather.hourly.map((h) => h.precipitationChance));
-  if (maxPrecip >= 90) {
+  if (maxPrecip >= 95) {
+    alerts.push(makeAlert("rain", "red", weather, dateStr));
+  } else if (maxPrecip >= 90) {
     alerts.push(makeAlert("rain", "orange", weather, dateStr));
   } else if (maxPrecip >= 70) {
     alerts.push(makeAlert("rain", "yellow", weather, dateStr));
@@ -56,7 +58,9 @@ export function generateAlerts(weather: WeatherData): WeatherAlert[] {
     alerts.push(makeAlert("snow", "yellow", weather, dateStr));
   }
 
-  if (weather.current.temperature <= -10) {
+  if (weather.current.temperature <= -20) {
+    alerts.push(makeAlert("cold", "red", weather, dateStr));
+  } else if (weather.current.temperature <= -10) {
     alerts.push(makeAlert("cold", "orange", weather, dateStr));
   } else if (weather.current.temperature <= -5) {
     alerts.push(makeAlert("cold", "yellow", weather, dateStr));
@@ -127,7 +131,7 @@ function makeAlert(
     storm: `Se prevén tormentas eléctricas en ${weather.cityName}. Extrema precaución y evita zonas expuestas.`,
     snow: `Se esperan nevadas en ${weather.cityName}. Las carreteras pueden verse afectadas.`,
     wind: `Rachas de viento de hasta ${Math.round(weather.current.windSpeed)} km/h en ${weather.cityName}. Toma precauciones.`,
-    heat: weather.current.uvIndex >= 6
+    heat: weather.current.uvIndex >= 8
       ? `Índice UV de ${weather.current.uvIndex} en ${weather.cityName}. Usa protección solar y evita la exposición prolongada.`
       : `Temperaturas extremas en ${weather.cityName}. Mantente hidratado y evita la exposición al sol.`,
     cold: `Temperaturas bajo cero en ${weather.cityName}. Protege tuberías y toma medidas ante heladas.`,
