@@ -36,20 +36,28 @@ function uvLabel(uv: number): string {
 }
 
 const DetailTile = memo(function DetailTile({
-  icon,
+  iconKey,
+  icon: IconComponent,
   label,
   value,
   subtitle,
 }: {
-  icon: React.ReactNode;
+  iconKey: string;
+  icon: any;
   label: string;
   value: string;
   subtitle?: string;
 }) {
+  const { isDark } = useThemeContext();
+  const { settings } = useSettingsStore();
+  const monoColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)";
+  const isColored = settings.iconStyle === "colored";
+  const iconColor = isColored ? detailColorMap[iconKey] : monoColor;
+
   return (
     <ThemedCard style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 18, minHeight: 140, alignItems: "center", justifyContent: "center" }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 6 }}>
-        {icon}
+        <IconComponent size={14} color={iconColor} />
         <ThemedText secondary style={{ fontSize: 12, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}>
           {label}
         </ThemedText>
@@ -85,24 +93,20 @@ export function WeatherDetails({
   pressure,
   visibility,
 }: WeatherDetailsProps) {
-  const { isDark } = useThemeContext();
   const { settings } = useSettingsStore();
-  const monoColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)";
-  const isColored = settings.iconStyle === "colored";
-
-  const ic = (key: string, Icon: any) => <Icon size={14} color={isColored ? detailColorMap[key] : monoColor} />;
-
   return (
     <View style={{ gap: 12, marginBottom: 12 }}>
       <View style={{ flexDirection: "row", gap: 12 }}>
         <DetailTile
-          icon={ic("sensation", Thermometer)}
+          iconKey="sensation"
+          icon={Thermometer}
           label="Sensación"
       value={formatTemperature(feelsLike, settings.temperatureUnit)}
       subtitle={feelsLike > temperature + 2 ? "Más cálido" : feelsLike < temperature - 2 ? "Más frío" : "Similar a la real"}
         />
         <DetailTile
-          icon={ic("humidity", Droplets)}
+          iconKey="humidity"
+          icon={Droplets}
           label="Humedad"
           value={`${Math.round(humidity)}%`}
           subtitle={humidity > 70 ? "Alta" : humidity > 40 ? "Moderada" : "Baja"}
@@ -111,13 +115,15 @@ export function WeatherDetails({
 
       <View style={{ flexDirection: "row", gap: 12 }}>
         <DetailTile
-          icon={ic("wind", Wind)}
+          iconKey="wind"
+          icon={Wind}
           label="Viento"
           value={formatWind(windSpeed, settings.windUnit)}
           subtitle={`Dirección ${windDirectionLabel(windDirection)}`}
         />
         <DetailTile
-          icon={ic("uv", Sun)}
+          iconKey="uv"
+          icon={Sun}
           label="Índice UV"
           value={`${Math.round(uvIndex)}`}
           subtitle={uvLabel(uvIndex)}
@@ -126,12 +132,14 @@ export function WeatherDetails({
 
       <View style={{ flexDirection: "row", gap: 12 }}>
         <DetailTile
-          icon={ic("pressure", Gauge)}
+          iconKey="pressure"
+          icon={Gauge}
           label="Presión"
           value={`${Math.round(pressure)} hPa`}
         />
         <DetailTile
-          icon={ic("visibility", Eye)}
+          iconKey="visibility"
+          icon={Eye}
           label="Visibilidad"
           value={visibility >= 1000 ? `${(visibility / 1000).toFixed(1)} km` : `${Math.round(visibility)} m`}
           subtitle={visibility >= 10000 ? "Excelente" : visibility >= 5000 ? "Buena" : "Reducida"}

@@ -14,8 +14,7 @@ export function useTides(lat: number, lon: number, isCoastal: boolean) {
   });
 }
 
-export function useCurrentSeaCondition(lat: number, lon: number, isCoastal: boolean): SeaCondition | null {
-  const { data } = useTides(lat, lon, isCoastal);
+export function useCurrentSeaCondition(data: MarineData | undefined): SeaCondition | null {
   if (!data) return null;
 
   const now = new Date();
@@ -32,8 +31,7 @@ export function useCurrentSeaCondition(lat: number, lon: number, isCoastal: bool
   };
 }
 
-export function useTideDirection(lat: number, lon: number, isCoastal: boolean): TideDirectionInfo | null {
-  const { data } = useTides(lat, lon, isCoastal);
+export function useTideDirection(data: MarineData | undefined): TideDirectionInfo | null {
   if (!data) return null;
 
   const levels = data.hourly.seaLevelHeight;

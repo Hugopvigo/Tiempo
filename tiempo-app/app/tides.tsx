@@ -23,16 +23,8 @@ export default function TidesScreen() {
     activeCity.lon,
     coastal
   );
-  const seaCondition = useCurrentSeaCondition(
-    activeCity.lat,
-    activeCity.lon,
-    coastal
-  );
-  const tideDirection = useTideDirection(
-    activeCity.lat,
-    activeCity.lon,
-    coastal
-  );
+  const seaCondition = useCurrentSeaCondition(data);
+  const tideDirection = useTideDirection(data);
   const [showCitySelector, setShowCitySelector] = useState(false);
   const [selectedDay, setSelectedDay] = useState(0);
 
