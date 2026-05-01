@@ -12,22 +12,22 @@ export function generateAlerts(weather: WeatherData): WeatherAlert[] {
 
   const dateStr = new Date().toISOString().slice(0, 10);
 
-  if (weather.current.windSpeed >= 70) {
+  if (weather.current.windSpeed >= 90) {
     alerts.push(makeAlert("wind", "red", weather, dateStr));
-  } else if (weather.current.windSpeed >= 50) {
+  } else if (weather.current.windSpeed >= 65) {
     alerts.push(makeAlert("wind", "orange", weather, dateStr));
-  } else if (weather.current.windSpeed >= 38) {
+  } else if (weather.current.windSpeed >= 50) {
     alerts.push(makeAlert("wind", "yellow", weather, dateStr));
   }
 
   let heatSev: WeatherAlert["severity"] | null = null;
-  if (weather.current.uvIndex >= 11) heatSev = "red";
-  else if (weather.current.uvIndex >= 8) heatSev = "orange";
-  else if (weather.current.uvIndex >= 6) heatSev = "yellow";
+  if (weather.current.uvIndex >= 12) heatSev = "red";
+  else if (weather.current.uvIndex >= 10) heatSev = "orange";
+  else if (weather.current.uvIndex >= 8) heatSev = "yellow";
 
-  if (weather.current.temperature >= 42) {
+  if (weather.current.temperature >= 44) {
     if (heatSev !== "red") heatSev = "red";
-  } else if (weather.current.temperature >= 38) {
+  } else if (weather.current.temperature >= 40) {
     if (heatSev === null || heatSev === "yellow") heatSev = "orange";
   }
 
