@@ -141,6 +141,9 @@ export interface AirQualityData {
     pm10: number;
     ozone: number;
     nitrogenDioxide: number;
+    grassPollen: number | null;
+    olivePollen: number | null;
+    birchPollen: number | null;
   };
   hourly: {
     time: string[];

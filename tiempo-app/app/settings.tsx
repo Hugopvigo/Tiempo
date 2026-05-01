@@ -189,6 +189,28 @@ export default function SettingsScreen() {
               ))}
             </View>
           </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Wind size={16} color={iconColor} />
+            <ThemedText style={{ fontSize: 16, flex: 1 }}>Viento</ThemedText>
+            <View style={{ flexDirection: "row", gap: 4 }}>
+              {(["kmh", "mph", "ms", "knots"] as const).map((unit) => (
+                <TouchableOpacity
+                  key={unit}
+                  onPress={() => updateSettings({ windUnit: unit })}
+                  style={{
+                    paddingVertical: 6,
+                    paddingHorizontal: 10,
+                    borderRadius: 8,
+                    backgroundColor: settings.windUnit === unit ? activeColor : "transparent",
+                  }}
+                >
+                  <ThemedText style={{ fontSize: 14, fontWeight: settings.windUnit === unit ? "600" : "400" }}>
+                    {unit === "kmh" ? "km/h" : unit === "mph" ? "mph" : unit === "ms" ? "m/s" : "kn"}
+                  </ThemedText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
         </ThemedCard>
 
         <ThemedCard style={{ marginBottom: 16 }}>
