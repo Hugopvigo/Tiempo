@@ -91,6 +91,7 @@ const defaultSettings: AppSettings = {
   temperatureUnit: "celsius",
   windUnit: "kmh",
   openWeatherMapApiKey: "",
+  aemetApiKey: "",
 };
 
 interface SettingsState {
