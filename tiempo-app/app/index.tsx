@@ -9,7 +9,7 @@ import { AlertBanner } from "@/components/alerts";
 import { useWeather } from "@/hooks/useWeather";
 import { useAirQuality } from "@/hooks/useAirQuality";
 import { useLunarPhase } from "@/hooks/useLunarPhase";
-import { useLocalAlerts } from "@/hooks/useAlerts";
+import { useMergedAlerts } from "@/hooks/useAlerts";
 import { useCities } from "@/hooks/useCities";
 import { useThemeContext } from "@/components/theme";
 import { useState, useCallback, useEffect } from "react";
@@ -28,7 +28,7 @@ export default function HomeScreen() {
     activeCity.lon,
     activeCity.name
   );
-  const alerts = useLocalAlerts(weather);
+  const alerts = useMergedAlerts(weather, activeCity);
   const { data: airQuality } = useAirQuality(activeCity.lat, activeCity.lon);
   const lunarPhase = useLunarPhase(activeCity.lat, activeCity.lon, weather?.daily);
   const [showCitySelector, setShowCitySelector] = useState(false);
