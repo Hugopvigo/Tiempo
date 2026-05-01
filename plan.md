@@ -135,12 +135,18 @@ tiempo-app/
 - [x] Hook `useLocalAlerts(weather)` + `useAlerts(zonaCode)`
 - [x] AlertBanner en pantalla principal (color por severidad, dismiss, navegación a detalle)
 - [x] AlertList + AlertRow (lista de avisos con icono, severidad, timestamps)
-- [x] Pantalla detalle de alerta (título, descripción, inicio/fin, severidad, link AEMET)
+- [x] Pantalla detalle de alerta (título, descripción, inicio/fin, severidad, link AEMET condicional)
 - [x] Expo Notifications setup + permisos + canal Android
 - [x] Background fetch periódico (30min) para alertas
 - [x] Badge en icono de app (número de alertas activas)
 - [x] Ajustes de notificaciones por tipo (lluvia, tormenta, nieve, viento, calor, frío, costera)
 - [x] `AppSettings.notifications` ampliado con heat/cold/coastal
+- [x] Umbrales ajustados: viento 50/65/90, UV 8/10/12, temp 40/44, lluvia red ≥95%, frío red ≤-20°C
+- [x] Integración AEMET: API key configurable en Settings, init en _layout.tsx
+- [x] Mapa admin1 → zona AEMET (`constants/aemetZones.ts` + `getAEMETZone()`)
+- [x] Hook combinado `useMergedAlerts()`: AEMET principal, locales fallback/complemento
+- [x] Background fetch con merge AEMET+locales
+- [x] 8 bugs corregidos: badge count, Cantabria→SAN, ID AEMET determinista, fallback null, toggle costera con nota, rain.red, calor descripción, cold.red
 
 ### Fase 5 — Mapa Meteorológico
 - [x] Mapa WebView con Leaflet + CartoDB tiles (light_all / dark_all)
@@ -218,11 +224,12 @@ tiempo-app/
 
 ## Version Actual
 
-**v3.1** — Release con mejoras en particulas y mapa:
+**v3.2** — Integración AEMET + Corrección de Alertas:
 - Previsión actual + 7 días (Open-Meteo + AEMET)
 - Gestión de ciudades con GPS y swipe-to-delete
 - Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
-- Alertas locales + AEMET con notificaciones push y background fetch
+- **Alertas oficiales AEMET** integradas: API key configurable, AEMET como fuente principal, locales como fallback/complemento. Merge inteligente sin duplicados.
+- Umbrales ajustados (menos ruido): viento 50/65/90, UV 8/10/12, temp 40/44
 - Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM) — opacidad por capa y filtro CSS para humedad en modo claro
 - Animación de radar en tiempo real con timeline de frames (play/pause/scrub)
 - Calidad del Aire (AQI europeo) con detalle expandible (PM2.5, PM10, O3, NO2)
@@ -232,6 +239,7 @@ tiempo-app/
 - Animaciones de partículas climáticas (lluvia, nieve, niebla, relámpagos, nubes, destellos solares/estelares) con transición suave y visibilidad mejorada en modo claro
 - Modo claro/oscuro con gradientes dinámicos
 - EAS Build configurado (development, preview, production — APK)
+- 8 bugs de notificaciones corregidos (badge, Cantabria, ID AEMET, fallback, costera, rain.red, calor, cold.red)
 
 ## Principios de Diseño (estilo Apple Weather)
 

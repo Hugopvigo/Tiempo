@@ -723,3 +723,50 @@ tiempo-app/
 - **WebView**: `sanitizeUrl` solo permite `data:image/*`; `originWhitelist` sin entrada `data`; `onShouldStartLoadWithRequest` más estricto
 - **AEMET**: `res.ok` añadido al segundo fetch (`data.datos`)
 - **Search**: `AbortController` cancela peticiones en vuelo al escribir nueva búsqueda (race condition fix)
+
+---
+
+## v3.2 — Integración AEMET + Corrección de Alertas
+
+### Umbrales de alerta ajustados (menos ruido)
+- **Viento**: ≥50 km/h amarillo (antes ≥38), ≥65 naranja (antes ≥50), ≥90 rojo (antes ≥70)
+- **UV**: ≥8 amarillo (antes ≥6), ≥10 naranja (antes ≥8), ≥12 rojo (antes ≥11)
+- **Temperatura**: naranja ≥40°C (antes ≥38), rojo ≥44°C (antes ≥42)
+- **Lluvia**: añadido umbral rojo ≥95% probabilidad (antes solo yellow ≥70%, orange ≥90%)
+- **Frío**: añadido umbral rojo ≤-20°C (antes solo yellow ≤-5°C, orange ≤-10°C)
+
+### Integración AEMET OpenData (alertas oficiales)
+- **API Key configurable**: nuevo campo `aemetApiKey` en `AppSettings`, persistido en MMKV
+- **Input en Settings**: sección "AEMET OpenData" con API key editable (mismo patrón que OWM), llama a `configureAEMET()` al guardar
+- **Init automático**: `_layout.tsx` configura AEMET al arrancar si hay key guardada
+- **Mapa de zonas**: `constants/aemetZones.ts` — mapeo `admin1` → código zona AEMET (17 CCAA + Ceuta/Melilla con variantes de nombre de Open-Meteo y expo-location)
+- **Utilidad `getAEMETZone(city)`**: deriva código de zona AEMET desde el campo `admin1` de `City`
+
+### Hook combinado de alertas (`hooks/useAlerts.ts`)
+- **`useMergedAlerts(weather, city)`**: AEMET como fuente principal, locales como fallback/complemento
+  - Si AEMET está configurada y responde OK: sus alertas reemplazan las locales del mismo tipo
+  - Tipos que AEMET no cubre: se mantienen alertas locales como complemento
+  - Si AEMET falla o no hay key: fallback completo a alertas locales
+- **`useAEMETAlerts(zonaCode)`**: query TanStack para avisos AEMET (stale 15min, gcTime 60min)
+- **`useLocalAlerts(weather)`**: sin cambios, genera alertas locales
+
+### Background fetch con AEMET (`services/backgroundAlerts.ts`)
+- Si `settings.aemetApiKey` existe, configura AEMET y hace fetch de avisos por zona
+- Merge AEMET+locales con misma lógica que el hook combinado
+- Badge count corregido: ahora muestra **total de alertas activas** (no solo nuevas)
+
+### 8 bugs corregidos en sistema de notificaciones
+1. **🔴 Badge count incorrecto en background**: `setBadgeCount(newAlerts)` → `setBadgeCount(totalActive)`. Antes sobreescribía el total con solo las nuevas de esa ejecución
+2. **🔴 Cantabria mapeada a Canarias**: `"Cantabria": "CAN"` → `"Cantabria": "SAN"`. Las ciudades cántabras recibían avisos de Canarias
+3. **🟡 ID AEMET no determinista**: `aemet-${zonaCode}-${i}` → `aemet-${zonaCode}-${type}-${severity}-${onset date}`. El índice del array cambiaba entre llamadas, rompiendo dedup
+4. **🟡 Fallback AEMET → rain**: `parseAEMETType()` ahora devuelve `null` para tipos no reconocidos (polvo, deshielo, etc.), que se filtran. Añadidos mapeos: niebla, polvo/arena/calima → `fog`, deshielo/hielo → `cold`
+5. **🟡 Toggle costera sin AEMET**: nota "Requiere API AEMET" bajo el toggle cuando no hay key configurada
+6. **🔵 rain.red sin threshold**: añadido ≥95% probabilidad de precipitación
+7. **🔵 Descripción calor rama muerta**: condición cambiada de `uvIndex >= 6` a `uvIndex >= 8` para coincidir con el nuevo umbral. Rama de "Temperaturas extremas" ahora accesible cuando la alerta viene solo por temperatura
+8. **🔵 cold.red sin threshold**: añadido ≤-20°C
+
+### Link AEMET condicional
+- `alert-detail.tsx`: enlace "Ver avisos AEMET" solo visible si hay API key configurada
+
+### Descripción de calor mejorada
+- Cuando la alerta de calor se origina solo por temperatura (sin UV alto), muestra "Temperaturas extremas..." en lugar del texto de UV

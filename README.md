@@ -1,4 +1,4 @@
-# Tiempo — Tu Clima en Tiempo Real - Version 3.0
+# Tiempo — Tu Clima en Tiempo Real - Version 3.1
 
 [![Expo](https://img.shields.io/badge/Expo-54+-000020.svg?style=flat&logo=expo&logoColor=white)](https://expo.dev)
 [![React Native](https://img.shields.io/badge/React_Native-0.81+-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactnative.dev)
@@ -29,14 +29,14 @@
 - **Calidad del Aire:** Indice EAQI europeo con barra de progreso y detalle expandible (PM2.5, PM10, O3, NO2) via Open-Meteo Air Quality API.
 - **Fase Lunar:** 8 fases lunares con SVGs custom, iluminacion %, orto/ocaso lunar y amanecer/atardecer. Calculo local sin API externa.
 - **Mareas Dinamicas:** Gráficos sinusoidales con **Skia** para zonas costeras. Deteccion automatica de ciudades costeras vs interiores con datos de la Open-Meteo Marine API. Indicador de marea subiendo/bajando en tiempo real y horarios de pleamar/bajamar.
-- **Alertas Oficiales:** Integracion directa con avisos de la AEMET (lluvia, tormenta, nieve, viento, calor, frio, costera).
+- **Alertas Oficiales:** Integracion directa con avisos de la AEMET (lluvia, tormenta, nieve, viento, calor, frio, costera). AEMET como fuente principal cuando hay API key configurada, alertas locales como fallback. Merge inteligente sin duplicados.
 - **Mapa Interactivo:** Capas de radar de lluvia (RainViewer), satelite infrarrojo de nubes, y capas adicionales de temperatura, viento, humedad y presion via OpenWeatherMap. Opacidad optimizada por capa y filtro CSS para mejorar visibilidad de humedad en modo claro. Animacion de radar en tiempo real con timeline de frames (play/pause/scrub).
 - **Widgets:** *(Postpuesto)* Requiere Expo SDK 55+. Widget compacto (2x1) y widget de previsión (4x2) para pantalla de inicio. Se retomará al migrar a Expo 55.
-- **Notificaciones Push:** Alertas meteorologicas en segundo plano con configuracion por tipo de alerta.
+- **Notificaciones Push:** Alertas meteorologicas en segundo plano con configuracion por tipo de alerta. Umbrales ajustados para menos ruido (viento ≥50 km/h, UV ≥8).
 - **Interfaz Adaptativa:** Fondos degradados dinamicos que cambian segun la condicion climatica y el modo (claro/oscuro).
 - **Gestion de Ciudades:** Busqueda con autocompletado y almacenamiento local ultra rapido con **MMKV**.
 - **Geolocalizacion:** Acceso instantaneo al clima de tu ubicacion actual.
-- **Claves API configurables:** El usuario puede introducir su propia API Key de OpenWeatherMap desde Ajustes para desbloquear capas adicionales del mapa.
+- **Claves API configurables:** El usuario puede introducir su propia API Key de OpenWeatherMap y AEMET OpenData desde Ajustes. OWM desbloquea capas adicionales del mapa; AEMET activa alertas oficiales y notificaciones costeras.
 
 ---
 
@@ -81,7 +81,7 @@ tiempo-app/
 
 | API | Uso | Requiere Key |
 |-----|-----|-------------|
-| **AEMET API** | Datos oficiales para Espana, avisos meteorologicos | Si (`.env`) |
+| **AEMET API** | Datos oficiales para Espana, avisos meteorologicos | Si (Ajustes app) |
 | **Open-Meteo** | Pronostico global, datos marinos (`/v1/marine` con mareas), fallback | No |
 | **Open-Meteo Geocoding** | Motor de busqueda de localizaciones y ciudades | No |
 | **RainViewer** | Tiles de radar de precipitacion y satelite infrarrojo | No |
@@ -120,6 +120,13 @@ npm run android
 La app permite configurar claves API desde **Ajustes > Claves API** sin necesidad de recompilar:
 
 - **OpenWeatherMap API Key:** Necesaria para desbloquear las capas adicionales del mapa (temperatura, viento, humedad, presion). Sin esta key, solo estaran disponibles las capas de lluvia y nubes (que usan RainViewer, gratuito y sin key).
+
+- **AEMET OpenData API Key:** Activa las alertas oficiales de la AEMET (avisos de lluvia, tormenta, nieve, viento, calor, frio, costera). Cuando esta configurada, las alertas de AEMET reemplazan las locales del mismo tipo como fuente principal. Tambien habilita las notificaciones costeras y el enlace "Ver avisos AEMET" en el detalle de alertas.
+
+Como obtener una API Key gratuita de AEMET:
+1. Registrate en [opendata.aemet.es](https://opendata.aemet.es/centrodedescargas/inicio)
+2. Solicita una API Key gratuita
+3. Copia tu key y pegala en Ajustes > Claves API > AEMET OpenData
 
 Como obtener una API Key gratuita de OpenWeatherMap:
 1. Registrate en [openweathermap.org](https://home.openweathermap.org/users/sign_up)
