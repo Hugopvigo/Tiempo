@@ -60,6 +60,9 @@ credentials.json
 /ios
 /android
 
+# Local build script
+local-build-setup.sh
+
 # Root config files
 .androidStudio.md
 tiempo-app/Install.md
