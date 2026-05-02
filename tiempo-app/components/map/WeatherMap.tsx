@@ -2,10 +2,9 @@ import { useRef, useCallback, useMemo, useState, useEffect } from "react";
 import { View, ActivityIndicator, Text, TouchableOpacity } from "react-native";
 import { WebView as RNWebView } from "react-native-webview";
 import type { City } from "@/types/weather";
-import { useThemeContext } from "@/components/theme";
+import { useThemeContext , ThemedText } from "@/components/theme";
 import { useWeather } from "@/hooks/useWeather";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
-import { ThemedText } from "@/components/theme";
 import { formatTemperature } from "@/constants/weather";
 import { useSettingsStore } from "@/stores/cityStore";
 

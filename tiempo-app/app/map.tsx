@@ -20,7 +20,7 @@ export default function MapScreen() {
     satelliteUrl,
     owmLayers,
     availableLayers,
-    loading: layersLoading,
+    loading: _layersLoading,
     useOwmClouds,
     timestamps,
     frameIndex,

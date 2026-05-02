@@ -1,7 +1,6 @@
 import { View } from "react-native";
-import { ThemedCard, ThemedText } from "@/components/theme";
+import { ThemedCard, ThemedText , useThemeContext } from "@/components/theme";
 import { Droplets, Wind, Eye, Thermometer, Gauge, Sun } from "lucide-react-native";
-import { useThemeContext } from "@/components/theme";
 import { windDirectionLabel, formatTemperature } from "@/constants/weather";
 import { useSettingsStore } from "@/stores/cityStore";
 import { memo } from "react";

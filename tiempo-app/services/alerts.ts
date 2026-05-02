@@ -1,7 +1,6 @@
 import type { WeatherData, WeatherAlert, WeatherCondition } from "@/types/weather";
 
 const STORM_CODES = new Set([95, 96, 99]);
-const RAIN_CODES = new Set([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82]);
 const SNOW_CODES = new Set([71, 73, 75, 77, 85, 86]);
 const FOG_CODES = new Set([45, 48]);
 

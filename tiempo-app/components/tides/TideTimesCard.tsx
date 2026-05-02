@@ -14,7 +14,6 @@ function formatTime(iso: string): string {
 
 export function TideTimesCard({ forecast }: TideTimesCardProps) {
   const { isDark } = useThemeContext();
-  const accentColor = isDark ? "#5AC8FA" : "#007AFF";
 
   const highTides = forecast.tides.filter((t) => t.type === "high");
   const lowTides = forecast.tides.filter((t) => t.type === "low");

@@ -1,9 +1,8 @@
 import { View } from "react-native";
-import { ThemedCard, ThemedText } from "@/components/theme";
-import { useThemeContext } from "@/components/theme";
+import { ThemedCard, ThemedText , useThemeContext } from "@/components/theme";
 import { useSettingsStore } from "@/stores/cityStore";
 import { Moon, Sunrise, Sunset } from "lucide-react-native";
-import { Svg, Circle, Path, Defs, ClipPath, G } from "react-native-svg";
+import { Svg, Circle, Path, G } from "react-native-svg";
 import type { LunarPhaseData } from "@/types/weather";
 
 interface LunarPhaseCardProps {

@@ -12,7 +12,7 @@ import { requestNotificationPermissions, setupNotificationChannel, cancelAllAler
 import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
 import { configureAEMET } from "@/services/aemet";
 import type { ThemeMode, IconStyle } from "@/types/weather";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function SettingsScreen() {
   const { isDark } = useThemeContext();
@@ -381,6 +381,19 @@ export default function SettingsScreen() {
             validate={validateAEMETKey}
           />
         </ThemedCard>
+
+        <View style={{ alignItems: "center", paddingVertical: 8 }}>
+          <ThemedText
+            style={{
+              fontSize: 12,
+              fontWeight: "400",
+              color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.3)",
+              letterSpacing: 0.3,
+            }}
+          >
+            App desarrollada por Hugo Perez-Vigo
+          </ThemedText>
+        </View>
     </ScrollView>
 
     <BottomNavBar />
@@ -407,6 +420,7 @@ async function validateAEMETKey(key: string): Promise<boolean> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
+
     const res = await fetch(
       "https://opendata.aemet.es/opendata/api/avisos_cap/AND",
       {
@@ -414,8 +428,22 @@ async function validateAEMETKey(key: string): Promise<boolean> {
         signal: controller.signal,
       }
     );
+
     clearTimeout(timeout);
-    return res.ok;
+    if (!res.ok) return false;
+
+    const data = await res.json();
+    if (!data.datos) return false;
+
+    const dataController = new AbortController();
+    const dataTimeout = setTimeout(() => dataController.abort(), 6000);
+
+    const dataRes = await fetch(data.datos, {
+      signal: dataController.signal,
+    });
+    clearTimeout(dataTimeout);
+
+    return dataRes.ok;
   } catch {
     return false;
   }

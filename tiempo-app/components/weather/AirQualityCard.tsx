@@ -1,6 +1,5 @@
 import { View, TouchableOpacity } from "react-native";
-import { ThemedCard, ThemedText } from "@/components/theme";
-import { useThemeContext } from "@/components/theme";
+import { ThemedCard, ThemedText , useThemeContext } from "@/components/theme";
 import { useSettingsStore } from "@/stores/cityStore";
 import { Wind } from "lucide-react-native";
 import { getAQILabel, getAQIDescription, getAQIColor } from "@/types/weather";

@@ -1,7 +1,6 @@
-import { View, ScrollView, RefreshControl } from "react-native";
+import { View, ScrollView, RefreshControl , TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { DynamicBackground, ThemedText, ThemedCard, useThemeContext } from "@/components/theme";
-import { screenBackground } from "@/constants/theme";
+import { DynamicBackground, ThemedText, useThemeContext } from "@/components/theme";
 import { TideChart, TideTable, SeaConditionCard, TideTimesCard } from "@/components/tides";
 import { SeaConditionSkeleton, TideChartSkeleton, TideTableSkeleton } from "@/components/ui/Skeleton";
 import { useTides, useCurrentSeaCondition, useTideDirection, deriveTideForecasts } from "@/hooks/useTides";
@@ -9,8 +8,7 @@ import { useCities } from "@/hooks/useCities";
 import { isCoastalCity } from "@/utils/coastal";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { CitySelector } from "@/components/city";
-import { useState, useCallback, useMemo } from "react";
-import { TouchableOpacity } from "react-native";
+import { useState, useMemo } from "react";
 import { ChevronDown, Waves, MapPinOff } from "lucide-react-native";
 import type { MarineData, TideForecast } from "@/types/weather";
 

@@ -38,7 +38,6 @@ export function calculateMoonTimes(
   lat: number,
   lon: number
 ): { moonrise?: string; moonset?: string } {
-  const J0 = 0.0009375;
   const rad = Math.PI / 180;
 
   const day = date.getDate();
@@ -52,7 +51,7 @@ export function calculateMoonTimes(
 
   const sinDec = Math.sin(rad * thetaM) * 0.39779;
   const cosDec = Math.sqrt(1 - sinDec * sinDec);
-  const dec = Math.asin(sinDec) / rad;
+  
 
   const cosH = (Math.sin(rad * -0.8333) - Math.sin(rad * lat) * sinDec) /
     (Math.cos(rad * lat) * cosDec);

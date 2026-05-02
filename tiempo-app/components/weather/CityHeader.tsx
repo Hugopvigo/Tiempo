@@ -1,8 +1,7 @@
-import { View, TouchableOpacity } from "react-native";
-import { ThemedText } from "@/components/theme";
+import { TouchableOpacity } from "react-native";
+import { ThemedText , useThemeContext } from "@/components/theme";
 import { useRouter } from "expo-router";
 import { ChevronRight, MapPin } from "lucide-react-native";
-import { useThemeContext } from "@/components/theme";
 
 interface CityHeaderProps {
   cityName: string;

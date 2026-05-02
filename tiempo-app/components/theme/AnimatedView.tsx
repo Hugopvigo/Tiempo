@@ -1,4 +1,3 @@
-import { View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import type { ReactNode } from "react";
 

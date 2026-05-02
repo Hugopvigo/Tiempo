@@ -142,16 +142,6 @@ export function AlertList({ alerts }: AlertListProps) {
 function AlertRow({ alert }: { alert: WeatherAlert }) {
   const { isDark } = useThemeContext();
   const color = alertColors[alert.severity];
-  const iconMap: Record<WeatherAlert["type"], string> = {
-    rain: "🌧️",
-    storm: "⛈️",
-    snow: "❄️",
-    wind: "💨",
-    heat: "🌡️",
-    cold: "🥶",
-    coastal: "🌊",
-    fog: "🌫️",
-  };
 
   return (
     <TouchableOpacity

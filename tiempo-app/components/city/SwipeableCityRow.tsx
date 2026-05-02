@@ -1,9 +1,8 @@
-import { View, TouchableOpacity, StyleSheet } from "react-native";
-import { ThemedText } from "@/components/theme";
-import { useThemeContext } from "@/components/theme";
+import { View, TouchableOpacity } from "react-native";
+import { ThemedText , useThemeContext } from "@/components/theme";
 import { MapPin, Trash2 } from "lucide-react-native";
 import type { City } from "@/types/weather";
-import { useRef, memo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 

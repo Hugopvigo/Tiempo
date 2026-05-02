@@ -1,4 +1,4 @@
-import { View, ScrollView, Linking } from "react-native";
+import { View, ScrollView, Linking , TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeContext, ThemedText, ThemedCard, DynamicBackground } from "@/components/theme";
 import { useLocalSearchParams, Stack } from "expo-router";
@@ -6,7 +6,6 @@ import type { WeatherAlert } from "@/types/weather";
 import { alertColors } from "@/constants/theme";
 import { AlertTriangle, Clock, Shield, ExternalLink } from "lucide-react-native";
 import { isAEMETConfigured } from "@/services/aemet";
-import { TouchableOpacity } from "react-native";
 
 export default function AlertDetailScreen() {
   const { isDark } = useThemeContext();

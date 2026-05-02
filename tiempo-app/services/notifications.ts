@@ -20,7 +20,6 @@ export async function requestNotificationPermissions(): Promise<boolean> {
 }
 
 export async function scheduleAlertNotification(alert: WeatherAlert): Promise<string> {
-  const emoji = typeEmoji(alert.type);
   const color = alert.severity === "red" ? "🔴" : alert.severity === "orange" ? "🟠" : "🟡";
 
   return Notifications.scheduleNotificationAsync({
@@ -41,29 +40,6 @@ export async function cancelAllAlertNotifications(): Promise<void> {
 
 export async function setBadgeCount(count: number): Promise<void> {
   await Notifications.setBadgeCountAsync(count);
-}
-
-function typeEmoji(type: WeatherAlert["type"]): string {
-  switch (type) {
-    case "rain":
-      return "🌧️";
-    case "storm":
-      return "⛈️";
-    case "snow":
-      return "❄️";
-    case "wind":
-      return "💨";
-    case "heat":
-      return "🌡️";
-    case "cold":
-      return "🥶";
-    case "coastal":
-      return "🌊";
-    case "fog":
-      return "🌫️";
-    default:
-      return "⚠️";
-  }
 }
 
 export async function setupNotificationChannel(): Promise<void> {

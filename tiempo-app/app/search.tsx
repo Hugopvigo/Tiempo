@@ -7,7 +7,7 @@ import { searchCities } from "@/services/openmeteo";
 import { useCities } from "@/hooks/useCities";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { useRouter } from "expo-router";
-import { ArrowLeft, MapPin, Check, Navigation } from "lucide-react-native";
+import { ArrowLeft, Check, Navigation } from "lucide-react-native";
 import { useLocation } from "@/hooks/useLocation";
 import type { City } from "@/types/weather";
 
@@ -22,7 +22,6 @@ const SearchResultItem = memo(function SearchResultItem({
   isDark: boolean;
   onSelect: (c: City) => void;
 }) {
-  const iconColor = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)";
   const separator = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
 
   return (

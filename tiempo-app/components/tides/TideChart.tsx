@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { View } from "react-native";
-import Svg, { Path, Line, Text as SvgText, Rect } from "react-native-svg";
+import Svg, { Path, Line, Text as SvgText } from "react-native-svg";
 import { ThemedCard, ThemedText, useThemeContext } from "@/components/theme";
 import type { MarineData } from "@/types/weather";
 

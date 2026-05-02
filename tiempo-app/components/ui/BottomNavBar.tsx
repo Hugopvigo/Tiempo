@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Platform, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeContext } from "@/components/theme";
 import { Home, Search, Waves, Map, Settings } from "lucide-react-native";

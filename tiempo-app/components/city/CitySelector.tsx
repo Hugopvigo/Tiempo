@@ -1,11 +1,10 @@
 import { View, TouchableOpacity, Modal, ScrollView, Pressable } from "react-native";
-import { ThemedText } from "@/components/theme";
-import { useThemeContext } from "@/components/theme";
+import { ThemedText , useThemeContext } from "@/components/theme";
 import { useCities } from "@/hooks/useCities";
 import { MapPin, Check, Plus, X } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import type { City } from "@/types/weather";
-import { memo, useState } from "react";
+import { memo } from "react";
 
 const CityItem = memo(function CityItem({
   city,
@@ -71,7 +70,6 @@ export function CitySelector({ visible, onClose }: CitySelectorProps) {
   };
 
   const bgColor = isDark ? "#1C1C1E" : "#F2F2F7";
-  const cardBg = isDark ? "#2C2C2E" : "#FFFFFF";
 
   return (
     <Modal

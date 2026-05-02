@@ -1,6 +1,5 @@
 import { View } from "react-native";
-import { ThemedCard, ThemedText } from "@/components/theme";
-import { useThemeContext } from "@/components/theme";
+import { ThemedCard, ThemedText , useThemeContext } from "@/components/theme";
 import { WeatherIcon } from "./WeatherIcon";
 import type { DailyForecast } from "@/types/weather";
 import { formatTemperature } from "@/constants/weather";

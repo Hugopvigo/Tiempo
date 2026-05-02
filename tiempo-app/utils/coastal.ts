@@ -1,16 +1,5 @@
 import type { City } from "@/types/weather";
 
-const COASTAL_REGIONS: { lat: [number, number]; lon: [number, number] }[] = [
-  { lat: [36, 43.5], lon: [-9.5, -1] },
-  { lat: [36, 43.5], lon: [0, 3.5] },
-  { lat: [38, 43.8], lon: [-9.5, -8.5] },
-  { lat: [39, 43.5], lon: [-1, 3.5] },
-  { lat: [36, 37.5], lon: [-6, -1] },
-  { lat: [42, 43.5], lon: [-9.5, -8] },
-  { lat: [27.5, 29], lon: [-18.5, -13] },
-  { lat: [28, 29.5], lon: [-17, -15] },
-];
-
 const KNOWN_COASTAL_CITIES = new Set([
   "barcelona", "valencia", "málaga", "malaga", "cádiz", "cadiz",
   "san sebastián", "san sebastian", "bilbao", "santander", "gijón", "gijon",
