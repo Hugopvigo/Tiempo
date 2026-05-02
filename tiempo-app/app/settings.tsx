@@ -527,13 +527,13 @@ function ApiKeyInput({
   if (!editing) {
     return (
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
-          <ThemedText style={{ fontSize: 14 }} numberOfLines={1}>
-            {hasKey ? `${value.slice(0, 4)}${"*".repeat(Math.max(0, value.length - 4))}` : "Sin configurar"}
-          </ThemedText>
-          {valid === true && <ThemedText style={{ fontSize: 12 }}>✅</ThemedText>}
-          {valid === false && <ThemedText style={{ fontSize: 12 }}>❌</ThemedText>}
-        </View>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1, marginRight: 8 }}>
+        <ThemedText style={{ fontSize: 14, flexShrink: 1 }} numberOfLines={1} ellipsizeMode="middle">
+          {hasKey ? `${value.slice(0, 4)}${"*".repeat(Math.max(0, value.length - 4))}` : "Sin configurar"}
+        </ThemedText>
+        {valid === true && <ThemedText style={{ fontSize: 12, flexShrink: 0 }}>✅</ThemedText>}
+        {valid === false && <ThemedText style={{ fontSize: 12, flexShrink: 0 }}>❌</ThemedText>}
+      </View>
         <TouchableOpacity
           onPress={() => { setDraft(value); setEditing(true); setValid(null); setError(null); }}
           style={{
