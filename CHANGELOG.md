@@ -726,7 +726,7 @@ tiempo-app/
 
 ---
 
-## v3.2 — Integración AEMET + Corrección de Alertas
+## v3.3 — Integración AEMET + Corrección de Alertas
 
 ### Umbrales de alerta ajustados (menos ruido)
 - **Viento**: ≥50 km/h amarillo (antes ≥38), ≥65 naranja (antes ≥50), ≥90 rojo (antes ≥70)

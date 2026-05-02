@@ -224,7 +224,7 @@ tiempo-app/
 
 ## Version Actual
 
-**v3.2** — Integración AEMET + Corrección de Alertas:
+**v3.3** — Integración AEMET + Corrección de Alertas:
 - Previsión actual + 7 días (Open-Meteo + AEMET)
 - Gestión de ciudades con GPS y swipe-to-delete
 - Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
