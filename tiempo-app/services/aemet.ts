@@ -34,11 +34,11 @@ async function aemetFetch<T>(endpoint: string): Promise<T> {
   return data;
 }
 
-const CAP_SEVERITY: Record<string, WeatherAlert["severity"]> = {
+const CAP_SEVERITY: Record<string, WeatherAlert["severity"] | null> = {
   Extreme: "red",
   Severe: "orange",
   Moderate: "yellow",
-  Minor: "yellow",
+  Minor: null,
 };
 
 function capEventToType(event: string): WeatherAlert["type"] | null {
@@ -107,7 +107,7 @@ interface CAPAlertInfo {
   area?: { areaDesc?: string };
 }
 
-function parseCAPAlert(parsed: any, zonaCode: string): WeatherAlert | null {
+function parseCAPAlert(parsed: any, zonaCode: string, subzonePatterns?: string[]): WeatherAlert | null {
   const alert = parsed.alert || parsed["alert"] || parsed;
   if (!alert) return null;
 
@@ -124,10 +124,22 @@ function parseCAPAlert(parsed: any, zonaCode: string): WeatherAlert | null {
   const type = capEventToType(event);
   if (!type) return null;
 
-  const severity = CAP_SEVERITY[info.severity || ""] || "yellow";
+  const capSeverity = info.severity || "";
+  const severity = CAP_SEVERITY[capSeverity];
+  if (!severity) return null;
+
+  const areaDesc = info.area?.areaDesc || "";
+
+  if (subzonePatterns && subzonePatterns.length > 0 && areaDesc) {
+    const descLower = areaDesc.toLowerCase();
+    const matches = subzonePatterns.some((p) =>
+      descLower.includes(p.toLowerCase())
+    );
+    if (!matches) return null;
+  }
+
   const onset = info.onset || new Date().toISOString();
   const expires = info.expires || new Date(Date.now() + 24 * 3600000).toISOString();
-  const areaDesc = info.area?.areaDesc || "";
   const description = [info.description, areaDesc].filter(Boolean).join("\n");
 
   return {
@@ -141,7 +153,10 @@ function parseCAPAlert(parsed: any, zonaCode: string): WeatherAlert | null {
   };
 }
 
-export async function getAEMETAlerts(zonaCode: string): Promise<WeatherAlert[]> {
+export async function getAEMETAlerts(
+  zonaCode: string,
+  subzonePatterns?: string[]
+): Promise<WeatherAlert[]> {
   try {
     const ccaa = getCCAACode(zonaCode);
     if (!ccaa) return [];
@@ -174,7 +189,7 @@ export async function getAEMETAlerts(zonaCode: string): Promise<WeatherAlert[]> 
     for (const xml of xmlFiles) {
       try {
         const parsed = parser.parse(xml);
-        const alert = parseCAPAlert(parsed, zonaCode);
+        const alert = parseCAPAlert(parsed, zonaCode, subzonePatterns);
         if (alert) alerts.push(alert);
       } catch {
         // skip malformed XML
