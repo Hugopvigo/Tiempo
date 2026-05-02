@@ -1,4 +1,6 @@
 import type { WeatherAlert } from "@/types/weather";
+import { getCCAACode } from "@/constants/aemetZones";
+import { XMLParser } from "fast-xml-parser";
 
 const BASE_URL = "https://opendata.aemet.es/opendata";
 
@@ -32,62 +34,154 @@ async function aemetFetch<T>(endpoint: string): Promise<T> {
   return data;
 }
 
-interface AEMETAlertRaw {
-  tipo: string;
-  severity: string;
-  title: string;
-  description: string;
-  onset: string;
-  expires: string;
-  area?: string;
-}
+const CAP_SEVERITY: Record<string, WeatherAlert["severity"]> = {
+  Extreme: "red",
+  Severe: "orange",
+  Moderate: "yellow",
+  Minor: "yellow",
+};
 
-function parseAEMETSeverity(severity: string): WeatherAlert["severity"] {
-  const lower = severity.toLowerCase();
-  if (lower.includes("rojo") || lower.includes("red")) return "red";
-  if (lower.includes("naranja") || lower.includes("orange")) return "orange";
-  return "yellow";
-}
-
-function parseAEMETType(tipo: string): WeatherAlert["type"] | null {
-  const lower = tipo.toLowerCase();
-  if (lower.includes("lluvia") || lower.includes("precipitación")) return "rain";
-  if (lower.includes("tormenta") || lower.includes("rayos")) return "storm";
-  if (lower.includes("nieve")) return "snow";
-  if (lower.includes("viento")) return "wind";
-  if (lower.includes("calor") || lower.includes("temperatura máxima")) return "heat";
-  if (lower.includes("frío") || lower.includes("temperatura mínima")) return "cold";
-  if (lower.includes("costera") || lower.includes("marítimo")) return "coastal";
-  if (lower.includes("niebla")) return "fog";
-  if (lower.includes("polvo") || lower.includes("arena") || lower.includes("calima")) return "fog";
-  if (lower.includes("deshielo") || lower.includes("hielo")) return "cold";
+function capEventToType(event: string): WeatherAlert["type"] | null {
+  const lower = event.toLowerCase();
+  if (/lluvia|precipitaci/.test(lower)) return "rain";
+  if (/tormenta|rayos|eléctrica/.test(lower)) return "storm";
+  if (/nieve|nevada/.test(lower)) return "snow";
+  if (/viento/.test(lower)) return "wind";
+  if (/calor|temperatura.*máxima|temperatura.*max/.test(lower)) return "heat";
+  if (/frío|frío|temperatura.*mínima|temperatura.*min|hielo|deshielo/.test(lower)) return "cold";
+  if (/costera|marítimo|marítima|costa|oleaje/.test(lower)) return "coastal";
+  if (/niebla/.test(lower)) return "fog";
+  if (/polvo|arena|calima/.test(lower)) return "fog";
   return null;
+}
+
+function bytesToString(bytes: Uint8Array): string {
+  let result = "";
+  for (let i = 0; i < bytes.length; i++) {
+    result += String.fromCharCode(bytes[i]);
+  }
+  return result;
+}
+
+function parseTar(buffer: ArrayBuffer): string[] {
+  const bytes = new Uint8Array(buffer);
+  const files: string[] = [];
+  let offset = 0;
+
+  while (offset + 512 <= bytes.length) {
+    const header = bytes.slice(offset, offset + 512);
+
+    if (header.every((b) => b === 0)) break;
+
+    const sizeStr = String.fromCharCode(...header.slice(124, 136)).replace(/\0/g, "").trim();
+    const size = parseInt(sizeStr, 8);
+    if (isNaN(size) || size === 0) { offset += 512; continue; }
+
+    const typeFlag = String.fromCharCode(header[156]);
+    offset += 512;
+
+    const paddedSize = Math.ceil(size / 512) * 512;
+
+    if (typeFlag === "\0" || typeFlag === "0" || typeFlag === "") {
+      if (offset + size > bytes.length) break;
+      const data = bytes.slice(offset, offset + size);
+      files.push(bytesToString(data));
+    }
+
+    offset += paddedSize;
+  }
+
+  return files;
+}
+
+interface CAPAlertInfo {
+  language?: string;
+  event?: string;
+  severity?: string;
+  urgency?: string;
+  certainty?: string;
+  onset?: string;
+  expires?: string;
+  headline?: string;
+  description?: string;
+  area?: { areaDesc?: string };
+}
+
+function parseCAPAlert(parsed: any, zonaCode: string): WeatherAlert | null {
+  const alert = parsed.alert || parsed["alert"] || parsed;
+  if (!alert) return null;
+
+  let infos: CAPAlertInfo[] = [];
+  if (alert.info) {
+    infos = Array.isArray(alert.info) ? alert.info : [alert.info];
+  }
+  if (infos.length === 0) return null;
+
+  const esInfo = infos.find((i) => i.language && i.language.startsWith("es"));
+  const info = esInfo || infos[0];
+
+  const event = info.event || "";
+  const type = capEventToType(event);
+  if (!type) return null;
+
+  const severity = CAP_SEVERITY[info.severity || ""] || "yellow";
+  const onset = info.onset || new Date().toISOString();
+  const expires = info.expires || new Date(Date.now() + 24 * 3600000).toISOString();
+  const areaDesc = info.area?.areaDesc || "";
+  const description = [info.description, areaDesc].filter(Boolean).join("\n");
+
+  return {
+    id: `aemet-${zonaCode}-${type}-${severity}-${onset.slice(0, 10)}`,
+    title: info.headline || event,
+    description,
+    severity,
+    type,
+    startTime: onset,
+    endTime: expires,
+  };
 }
 
 export async function getAEMETAlerts(zonaCode: string): Promise<WeatherAlert[]> {
   try {
-    const raw = await aemetFetch<AEMETAlertRaw[]>(
-      `/api/avisos_cap/${zonaCode}`
-    );
-    if (!Array.isArray(raw)) return [];
+    const ccaa = getCCAACode(zonaCode);
+    if (!ccaa) return [];
 
-    return raw
-      .map((alert) => {
-        const type = parseAEMETType(alert.tipo ?? "");
-        if (!type) return null;
-        const severity = parseAEMETSeverity(alert.severity);
-        const onset = alert.onset ?? new Date().toISOString();
-        return {
-          id: `aemet-${zonaCode}-${type}-${severity}-${onset.slice(0, 10)}`,
-          title: alert.title ?? alert.tipo ?? "Aviso AEMET",
-          description: alert.description ?? "",
-          severity,
-          type,
-          startTime: onset,
-          endTime: alert.expires ?? new Date(Date.now() + 24 * 3600000).toISOString(),
-        } as WeatherAlert;
-      })
-      .filter((a): a is WeatherAlert => a !== null);
+    const res = await fetch(
+      `${BASE_URL}/api/avisos_cap/ultimoelaborado/area/${ccaa}`,
+      {
+        headers: {
+          api_key: config.apiKey,
+          Accept: "application/json",
+        },
+      }
+    );
+    if (!res.ok) return [];
+
+    const json = await res.json();
+    if (!json.datos) return [];
+
+    const tarRes = await fetch(json.datos);
+    if (!tarRes.ok) return [];
+
+    const tarBuffer = await tarRes.arrayBuffer();
+
+    const xmlFiles = parseTar(tarBuffer);
+    if (xmlFiles.length === 0) return [];
+
+    const parser = new XMLParser({ ignoreAttributes: true });
+    const alerts: WeatherAlert[] = [];
+
+    for (const xml of xmlFiles) {
+      try {
+        const parsed = parser.parse(xml);
+        const alert = parseCAPAlert(parsed, zonaCode);
+        if (alert) alerts.push(alert);
+      } catch {
+        // skip malformed XML
+      }
+    }
+
+    return alerts;
   } catch {
     return [];
   }

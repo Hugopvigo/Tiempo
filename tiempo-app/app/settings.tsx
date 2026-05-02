@@ -422,7 +422,7 @@ async function validateAEMETKey(key: string): Promise<boolean> {
     const timeout = setTimeout(() => controller.abort(), 6000);
 
     const res = await fetch(
-      "https://opendata.aemet.es/opendata/api/avisos_cap/AND",
+      "https://opendata.aemet.es/opendata/api/maestro/municipios",
       {
         headers: { api_key: key, Accept: "application/json" },
         signal: controller.signal,
@@ -430,20 +430,7 @@ async function validateAEMETKey(key: string): Promise<boolean> {
     );
 
     clearTimeout(timeout);
-    if (!res.ok) return false;
-
-    const data = await res.json();
-    if (!data.datos) return false;
-
-    const dataController = new AbortController();
-    const dataTimeout = setTimeout(() => dataController.abort(), 6000);
-
-    const dataRes = await fetch(data.datos, {
-      signal: dataController.signal,
-    });
-    clearTimeout(dataTimeout);
-
-    return dataRes.ok;
+    return res.ok;
   } catch {
     return false;
   }
