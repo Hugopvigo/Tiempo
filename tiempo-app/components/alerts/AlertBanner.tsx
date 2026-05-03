@@ -4,7 +4,37 @@ import type { WeatherAlert } from "@/types/weather";
 import { alertColors } from "@/constants/theme";
 import { AlertTriangle, ChevronRight, X } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { createMMKV } from "react-native-mmkv";
+
+const alertStorage = createMMKV({ id: "tiempo-storage" });
+const DISMISSED_TTL = 24 * 60 * 60 * 1000;
+
+function loadDismissedAlerts(zoneKey: string): Set<string> {
+  try {
+    const json = alertStorage.getString(`dismissed-${zoneKey}`);
+    if (!json) return new Set();
+    const entries: Array<{ id: string; ts: number }> = JSON.parse(json);
+    const cutoff = Date.now() - DISMISSED_TTL;
+    return new Set(entries.filter((e) => e.ts > cutoff).map((e) => e.id));
+  } catch {
+    return new Set();
+  }
+}
+
+function persistDismissedAlerts(zoneKey: string, dismissed: Set<string>): void {
+  const now = Date.now();
+  const entries = [...dismissed].map((id) => ({ id, ts: now }));
+  alertStorage.set(`dismissed-${zoneKey}`, JSON.stringify(entries));
+}
+
+function extractZoneKey(alertId: string): string {
+  const parts = alertId.split("-");
+  if (parts.length >= 2 && parts[0] === "aemet") {
+    return parts[1];
+  }
+  return "local";
+}
 
 interface AlertBannerProps {
   alerts: WeatherAlert[];
@@ -14,8 +44,30 @@ interface AlertBannerProps {
 export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
   const { isDark } = useThemeContext();
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [zoneKey, setZoneKey] = useState<string>("default");
   const dismissRef = useRef(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (alerts.length > 0) {
+      const key = extractZoneKey(alerts[0].id);
+      setZoneKey(key);
+      setDismissed(loadDismissedAlerts(key));
+    }
+  }, [alerts]);
+
+  const handleDismiss = useCallback(
+    (id: string) => {
+      setDismissed((prev) => {
+        const next = new Set(prev);
+        next.add(id);
+        persistDismissedAlerts(zoneKey, next);
+        return next;
+      });
+      onDismiss?.();
+    },
+    [zoneKey, onDismiss]
+  );
 
   const active = alerts.filter((a) => !dismissed.has(a.id));
   if (active.length === 0) return null;
@@ -64,7 +116,7 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
 
             <View style={{ flex: 1, gap: 4 }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
                   <View
                     style={{
                       width: 8,
@@ -77,20 +129,6 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
                     {top.title}
                   </ThemedText>
                 </View>
-
-        <TouchableOpacity
-          onPress={() => {
-            dismissRef.current = true;
-            setDismissed((prev) => new Set(prev).add(top.id));
-            onDismiss?.();
-          }}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <X
-                    size={16}
-                    color={isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)"}
-                  />
-                </TouchableOpacity>
               </View>
 
               <ThemedText
@@ -119,6 +157,27 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
           </View>
         </View>
       </View>
+
+      <TouchableOpacity
+        onPress={() => {
+          dismissRef.current = true;
+          handleDismiss(top.id);
+        }}
+        hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+        style={{
+          position: "absolute",
+          top: 10,
+          right: 8,
+          width: 32,
+          height: 32,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 16,
+          backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
+        }}
+      >
+        <X size={20} color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"} />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 }

@@ -61,13 +61,13 @@ export function LayerSelector({ selected, onSelect, availableLayers, showRadarTi
             ? "rgba(90,200,250,0.2)"
             : "rgba(0,122,255,0.15)"
           : isDark
-            ? "rgba(255,255,255,0.1)"
+            ? "rgba(255,255,255,0.18)"
             : "rgba(255,255,255,0.85)",
                 borderWidth: 1,
         borderColor: isActive
           ? activeColor
           : isDark
-            ? "rgba(255,255,255,0.15)"
+            ? "rgba(255,255,255,0.22)"
             : "rgba(0,0,0,0.08)",
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },

@@ -1,5 +1,33 @@
 # Changelog
 
+## v3.5 — Gráfico de lluvia + Partículas mejoradas + Botones mapa
+
+### Nuevo: Gráfico de probabilidad de lluvia
+- Componente `PrecipitationChart` con gráfico SVG área/línea (curva Bezier suave)
+- Eje vertical 0-100%, eje horizontal con 24h de datos
+- Colores adaptativos claro/oscuro: azul `#007AFF` / `#5AC8FA`
+- Integrado en Home entre previsión horaria y previsión semanal
+- Solo se muestra cuando hay probabilidad > 0%
+
+### Partículas climáticas más densas
+- Lluvia: 20→30, Tormenta: 28→40, Nieve: 16→20
+- Niebla: 5→8, Destellos claro: 6→10, Destellos noche: 10→15
+- Nubes parciales: 2→3, Nublado: 3→5
+
+### Botones de mapa en modo oscuro
+- Mayor opacidad en botones inactivos (0.10→0.18) y bordes (0.15→0.22)
+- Aspecto más sólido sin perder estilo translúcido
+
+### Correcciones
+- Espaciado uniforme entre cards en Home (eliminado `marginBottom` sobrante en HourlyForecastCard)
+- Opacidad de relleno en PrecipitationChart aumentada (12-15% → 25-30%)
+
+### Versión
+- `app.json`, `package.json`, `package-lock.json` → 3.5.0
+- `versionCode` Android: 1 → 2
+- EAS Build production subido con runtime 3.5.0
+- Token Expo guardado en `.env` (gitignored)
+
 ## v3.2 — Integración AEMET + Corrección de Alertas
 
 ### Umbrales de alerta ajustados (menos ruido)

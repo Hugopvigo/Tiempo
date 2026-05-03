@@ -177,11 +177,11 @@ tiempo-app/
 
 ### Fase 8 — Animaciones de Particulas Climaticas
 - [x] Componente `WeatherParticles` con Reanimated (`useSharedValue` + `withRepeat`)
-- [x] `RainDrop`: 20 gotas cayendo con inclinacion por viento (rain), 28 gotas (storm)
-- [x] `SnowFlake`: 16 copos con drift sinusoidal horizontal
-- [x] `FogPuff`: 5 puffs grandes con drift horizontal lento
-- [x] `CloudPuff`: 2-3 nubes lentas para partly_cloudy/cloudy/night_cloudy
-- [x] `Sparkle`: 6-10 puntitos pulsantes para clear/night_clear
+- [x] `RainDrop`: 30 gotas cayendo con inclinacion por viento (rain), 40 gotas (storm)
+- [x] `SnowFlake`: 20 copos con drift sinusoidal horizontal
+- [x] `FogPuff`: 8 puffs grandes con drift horizontal lento
+- [x] `CloudPuff`: 3-5 nubes lentas para partly_cloudy/cloudy/night_cloudy
+- [x] `Sparkle`: 10-15 puntitos pulsantes para clear/night_clear
 - [x] `LightningFlash`: overlay con flash periodico (storm), primer flash inmediato
 - [x] `seededRandom()`: offsets deterministas por render
 - [x] Colores adaptativos claro/oscuro por tipo de particula
@@ -224,22 +224,23 @@ tiempo-app/
 
 ## Version Actual
 
-**v3.2** — Integración AEMET + Corrección de Alertas:
+**v3.5** — Gráfico de lluvia + Partículas mejoradas + Botones mapa:
 - Previsión actual + 7 días (Open-Meteo + AEMET)
+- **Gráfico de probabilidad de lluvia**: área/línea SVG con curva Bezier 24h, integrado entre previsión horaria y semanal
 - Gestión de ciudades con GPS y swipe-to-delete
 - Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
-- **Alertas oficiales AEMET** integradas: API key configurable, AEMET como fuente principal, locales como fallback/complemento. Merge inteligente sin duplicados.
+- Alertas oficiales AEMET integradas: API key configurable, merge inteligente sin duplicados
 - Umbrales ajustados (menos ruido): viento 50/65/90, UV 8/10/12, temp 40/44
-- Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM) — opacidad por capa y filtro CSS para humedad en modo claro
+- Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM) — opacidad por capa y filtro CSS para humedad en modo claro. Botones del selector con mayor opacidad en modo oscuro (0.10→0.18)
 - Animación de radar en tiempo real con timeline de frames (play/pause/scrub)
 - Calidad del Aire (AQI europeo) con detalle expandible (PM2.5, PM10, O3, NO2)
 - Fase Lunar con SVGs custom + orto/ocaso lunar + amanecer/atardecer
 - *(Widgets postpuesto — requiere Expo 55)*
 - Estilo de iconos configurable (color/monocromo)
-- Animaciones de partículas climáticas (lluvia, nieve, niebla, relámpagos, nubes, destellos solares/estelares) con transición suave y visibilidad mejorada en modo claro
+- Animaciones de partículas climáticas más densas: lluvia 30, tormenta 40, nieve 20, niebla 8, destellos 10-15, nubes 3-5
 - Modo claro/oscuro con gradientes dinámicos
 - EAS Build configurado (development, preview, production — APK)
-- 8 bugs de notificaciones corregidos (badge, Cantabria, ID AEMET, fallback, costera, rain.red, calor, cold.red)
+- EAS Build production v3.5 subido (APK firmado)
 
 ## Principios de Diseño (estilo Apple Weather)
 
@@ -389,5 +390,5 @@ Cada fase incluye verificación en dispositivo Android vía EAS Build.
 - [x] WeatherMap `html` en `useMemo` sin deps de animación — WebView no se destruye por cada frame de radar
 - [x] ThemeProvider `useMemo`; ThemedCard/ThemedText `StyleSheet.create`; HourlyForecast `ScrollView` → `FlatList`; TideChart SVG en `useMemo`
 - [x] SwipeableCityRow y Skeleton migrados a Reanimated + GestureHandler (UI thread)
-- [x] WeatherParticles: contadores reducidos (lluvia 30→20, tormenta 40→28, nieve 24→16)
+- [x] WeatherParticles: contadores ajustados (lluvia 30, tormenta 40, nieve 20, niebla 8, nubes 3-5)
 - [x] Eliminados `Original.png` (2,2 MB) + `assets/Old/` (464 KB); no-op `useEffect` en `useTheme`

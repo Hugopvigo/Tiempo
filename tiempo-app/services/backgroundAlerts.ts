@@ -3,7 +3,7 @@ import * as BackgroundFetch from "expo-background-fetch";
 import { getWeather } from "@/services/openmeteo";
 import { generateAlerts } from "@/services/alerts";
 import { configureAEMET, getAEMETAlerts, isAEMETConfigured } from "@/services/aemet";
-import { getAEMETZone } from "@/constants/aemetZones";
+import { getAEMETZone, getAEMETSubzonePatterns } from "@/constants/aemetZones";
 import { scheduleAlertNotification, setBadgeCount } from "@/services/notifications";
 import { createMMKV } from "react-native-mmkv";
 import type { City, AppSettings, WeatherAlert } from "@/types/weather";
@@ -63,9 +63,10 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
 
         let alerts: WeatherAlert[];
         const zonaCode = getAEMETZone(city);
+        const subzonePatterns = getAEMETSubzonePatterns(city);
 
         if (isAEMETConfigured() && zonaCode) {
-          const aemetAlerts = await getAEMETAlerts(zonaCode);
+          const aemetAlerts = await getAEMETAlerts(zonaCode, subzonePatterns);
           if (aemetAlerts.length > 0) {
             const aemetTypes = new Set(aemetAlerts.map((a) => a.type));
             const complement = localAlerts.filter((a) => !aemetTypes.has(a.type));

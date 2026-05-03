@@ -2,7 +2,7 @@
   "expo": {
     "name": "Tiempo",
     "slug": "tiempo-app",
-    "version": "3.2.0",
+    "version": "3.5.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -29,7 +29,8 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
-      ]
+      ],
+      "versionCode": 4
     },
     "web": {
       "favicon": "./assets/favicon.png",

@@ -27,22 +27,22 @@ interface ParticleConfig {
 function getParticleConfig(condition: WeatherCondition): ParticleConfig {
   switch (condition) {
     case "rain":
-      return { type: "rain", count: 20 };
+      return { type: "rain", count: 30 };
     case "storm":
-      return { type: "rain", count: 28 };
+      return { type: "rain", count: 40 };
     case "snow":
-      return { type: "snow", count: 16 };
+      return { type: "snow", count: 20 };
     case "fog":
-      return { type: "fog", count: 5 };
+      return { type: "fog", count: 8 };
     case "clear":
-      return { type: "sparkle", count: 6 };
-    case "night_clear":
       return { type: "sparkle", count: 10 };
+    case "night_clear":
+      return { type: "sparkle", count: 15 };
     case "partly_cloudy":
     case "night_cloudy":
-      return { type: "cloud", count: 2 };
-    case "cloudy":
       return { type: "cloud", count: 3 };
+    case "cloudy":
+      return { type: "cloud", count: 5 };
     default:
       return { type: "none", count: 0 };
   }

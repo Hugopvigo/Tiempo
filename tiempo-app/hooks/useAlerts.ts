@@ -2,13 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { isAEMETConfigured, getAEMETAlerts } from "@/services/aemet";
 import { generateAlerts } from "@/services/alerts";
-import { getAEMETZone } from "@/constants/aemetZones";
+import { getAEMETZone, getAEMETSubzonePatterns } from "@/constants/aemetZones";
 import type { WeatherAlert, WeatherData, City } from "@/types/weather";
 
-export function useAEMETAlerts(zonaCode: string | undefined) {
+export function useAEMETAlerts(
+  zonaCode: string | undefined,
+  subzonePatterns: string[] | undefined
+) {
   return useQuery<WeatherAlert[]>({
-    queryKey: ["alerts", zonaCode],
-    queryFn: () => getAEMETAlerts(zonaCode!),
+    queryKey: ["alerts", zonaCode, subzonePatterns?.join(",") ?? ""],
+    queryFn: () => getAEMETAlerts(zonaCode!, subzonePatterns),
     staleTime: 15 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
     enabled: isAEMETConfigured() && !!zonaCode,
@@ -27,10 +30,12 @@ export function useMergedAlerts(
   city: City | undefined
 ): WeatherAlert[] {
   const zonaCode = city ? getAEMETZone(city) : undefined;
+  const subzonePatterns = city ? getAEMETSubzonePatterns(city) : undefined;
   const aemetConfigured = isAEMETConfigured() && !!zonaCode;
 
   const { data: aemetAlerts, isLoading: aemetLoading } = useAEMETAlerts(
-    aemetConfigured ? zonaCode : undefined
+    aemetConfigured ? zonaCode : undefined,
+    subzonePatterns
   );
 
   const localAlerts = useLocalAlerts(weather);
