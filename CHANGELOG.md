@@ -1,237 +1,444 @@
 # Changelog
 
-## Fase 0 — Scaffolding
+## v3.2 — Integración AEMET + Corrección de Alertas
 
-### Proyecto base
-- Proyecto Expo SDK 54 + TypeScript creado con `create-expo-app`
-- Expo Router v4 configurado (5 rutas: index, search, tides, map, settings)
-- NativeWind v4 + Tailwind CSS preset configurado
-- Babel config con Reanimated plugin
-- Metro config con NativeWind integration
-- TypeScript estricto habilitado con path aliases (`@/*`)
+### Umbrales de alerta ajustados (menos ruido)
+- **Viento**: ≥50 km/h amarillo (antes ≥38), ≥65 naranja (antes ≥50), ≥90 rojo (antes ≥70)
+- **UV**: ≥8 amarillo (antes ≥6), ≥10 naranja (antes ≥8), ≥12 rojo (antes ≥11)
+- **Temperatura**: naranja ≥40°C (antes ≥38), rojo ≥44°C (antes ≥42)
+- **Lluvia**: añadido umbral rojo ≥95% probabilidad (antes solo yellow ≥70%, orange ≥90%)
+- **Frío**: añadido umbral rojo ≤-20°C (antes solo yellow ≤-5°C, orange ≤-10°C)
 
-### Dependencias instaladas
-| Paquete | Versión | Uso |
-|---------|---------|-----|
-| expo | ~54.0.33 | Framework base |
-| expo-router | ~6.0.23 | Navegación file-based |
-| nativewind | ^4.2.3 | Tailwind para RN |
-| tailwindcss | ^3.4.19 | Engine CSS |
-| zustand | ^5.0.12 | Estado global |
-| @tanstack/react-query | ^5.100.1 | Cache de API |
-| react-native-mmkv | ^4.3.1 | Almacenamiento key-value |
-| react-native-reanimated | ~4.1.1 | Animaciones nativas |
-| react-native-worklets | latest | Peer dep de Reanimated |
-| lucide-react-native | ^1.9.0 | Iconos |
-| react-native-svg | ^15.12.1 | SVG para iconos |
-| expo-linear-gradient | ~15.0.8 | Gradientes dinámicos |
-| expo-location | ~19.0.8 | Geolocalización |
-| expo-notifications | ^0.32.16 | Push notifications |
-| react-native-safe-area-context | ~5.6.0 | Safe area |
-| react-native-screens | ~4.16.0 | Pantallas nativas |
+### Integración AEMET OpenData (alertas oficiales)
+- **API Key configurable**: nuevo campo `aemetApiKey` en `AppSettings`, persistido en MMKV
+- **Input en Settings**: sección "AEMET OpenData" con API key editable (mismo patrón que OWM), llama a `configureAEMET()` al guardar
+- **Init automático**: `_layout.tsx` configura AEMET al arrancar si hay key guardada
+- **Mapa de zonas**: `constants/aemetZones.ts` — mapeo `admin1` → código zona AEMET (17 CCAA + Ceuta/Melilla con variantes de nombre de Open-Meteo y expo-location)
+- **Utilidad `getAEMETZone(city)`**: deriva código de zona AEMET desde el campo `admin1` de `City`
 
-### Estructura de carpetas
-```
-tiempo-app/
-├── app/                    # Expo Router
-├── components/
-│   ├── theme/              # ThemeProvider, ThemedText, ThemedCard, DynamicBackground
-│   ├── ui/                 # Skeleton, BottomNavBar
-│   ├── weather/            # Componentes del tiempo
-│   ├── city/               # Componentes de ciudades
-│   ├── tides/              # Componentes de mareas (fase 3)
-│   └── map/                # Componentes de mapa (fase 5)
-├── hooks/                  # Custom hooks
-├── services/               # API clients
-├── stores/                 # Zustand stores + MMKV persist
-├── types/                  # TypeScript types
-├── constants/              # Tema, colores, mapeos
-└── assets/                 # Iconos, imágenes
-```
+### Hook combinado de alertas (`hooks/useAlerts.ts`)
+- **`useMergedAlerts(weather, city)`**: AEMET como fuente principal, locales como fallback/complemento
+- Si AEMET está configurada y responde OK: sus alertas reemplazan las locales del mismo tipo
+- Tipos que AEMET no cubre: se mantienen alertas locales como complemento
+- Si AEMET falla o no hay key: fallback completo a alertas locales
+- **`useAEMETAlerts(zonaCode)`**: query TanStack para avisos AEMET (stale 15min, gcTime 60min)
+- **`useLocalAlerts(weather)`**: sin cambios, genera alertas locales
 
-### Sistema de tema (claro/oscuro)
-- `ThemeProvider` con contexto React
-- `useTheme()` hook: detecta sistema + override manual
-- `ThemedText`: color automático según modo
-- `ThemedCard`: fondo semitransparente adaptativo (claro: blanco 25%, oscuro: negro 30%)
-- `DynamicBackground`: gradientes duales por condición climática (9 condiciones x 2 modos = 18 gradientes)
-- Configuración: `settingsStore.theme` → `'system' | 'light' | 'dark'`
+### Background fetch con AEMET (`services/backgroundAlerts.ts`)
+- Si `settings.aemetApiKey` existe, configura AEMET y hace fetch de avisos por zona
+- Merge AEMET+locales con misma lógica que el hook combinado
+- Badge count corregido: ahora muestra **total de alertas activas** (no solo nuevas)
 
-### Servicios API
-- `services/openmeteo.ts`: `getWeather()`, `searchCities()`, `getMarineWeather()`
-- `services/aemet.ts`: `getAEMETForecast()`, `getAEMETAlerts()`, `getAEMETTides()` (pendiente API key)
+### 8 bugs corregidos en sistema de notificaciones
+1. **🔴 Badge count incorrecto en background**: `setBadgeCount(newAlerts)` → `setBadgeCount(totalActive)`. Antes sobreescribía el total con solo las nuevas de esa ejecución
+2. **🔴 Cantabria mapeada a Canarias**: `"Cantabria": "CAN"` → `"Cantabria": "SAN"`. Las ciudades cántabras recibían avisos de Canarias
+3. **🟡 ID AEMET no determinista**: `aemet-${zonaCode}-${i}` → `aemet-${zonaCode}-${type}-${severity}-${onset date}`. El índice del array cambiaba entre llamadas, rompiendo dedup
+4. **🟡 Fallback AEMET → rain**: `parseAEMETType()` ahora devuelve `null` para tipos no reconocidos (polvo, deshielo, etc.), que se filtran. Añadidos mapeos: niebla, polvo/arena/calima → `fog`, deshielo/hielo → `cold`
+5. **🟡 Toggle costera sin AEMET**: nota "Requiere API AEMET" bajo el toggle cuando no hay key configurada
+6. **🔵 rain.red sin threshold**: añadido ≥95% probabilidad de precipitación
+7. **🔵 Descripción calor rama muerta**: condición cambiada de `uvIndex >= 6` a `uvIndex >= 8` para coincidir con el nuevo umbral. Rama de "Temperaturas extremas" ahora accesible cuando la alerta viene solo por temperatura
+8. **🔵 cold.red sin threshold**: añadido ≤-20°C
 
-### Stores
-- `stores/cityStore.ts`: `useCityStore` (ciudades + ciudad activa) + `useSettingsStore` (tema, unidades, notificaciones)
-- Persistencia con MMKV
+### Link AEMET condicional
+- `alert-detail.tsx`: enlace "Ver avisos AEMET" solo visible si hay API key configurada
 
-### Hooks
-- `useWeather(lat, lon, cityName)` → TanStack Query, stale 10min, cache 30min
-- `useTides(lat, lon, isCoastal)` → TanStack Query, stale 30min
-- `useCities()` → Zustand store wrapper
-- `useAlerts(zonaCode)` → AEMET avisos
-- `useLocation()` → expo-location con reverse geocode
-- `useTheme()` → sistema + override manual
+### Descripción de calor mejorada
+- Cuando la alerta de calor se origina solo por temperatura (sin UV alto), muestra "Temperaturas extremas..." en lugar del texto de UV
 
-### Pantallas placeholder
-- `app/index.tsx` — Home
-- `app/search.tsx` — Búsqueda
-- `app/tides.tsx` — Mareas
-- `app/map.tsx` — Mapa
-- `app/settings.tsx` — Ajustes
+---
+
+## v3.1 — Mejoras en particulas y mapa
+
+### WeatherParticles — Nuevas particulas y correcciones
+- **Bug: `runOnJS` eliminado** en `LightningFlash` — el `setInterval` ya corre en JS thread, el wrapper era redundante y anadia un salto de hilo innecesario.
+- **Visibilidad de nieve en modo claro**: color cambiado de `rgba(255,255,255,0.85)` a `rgba(200,215,240,0.9)` (azul-gris claro) para contrastar con el fondo casi blanco `#F1F5F9`.
+- **Visibilidad de niebla en modo claro**: opacidad aumentada y tono cambiado a azul-gris (`rgba(180,200,220,0.35)`) para mejor contraste.
+- **Visibilidad de lluvia en modo claro**: color mas saturado (`rgba(59,130,246,0.45)`) para destacar del fondo.
+- **Transicion fade**: el contenedor de particulas ahora hace fade in/out al aparecer/desaparecer (500ms/300ms), eliminando cortes abruptos al cambiar de condicion.
+- **Nuevas particulas "Sparkle"**: 6-10 puntitos pulsantes para `clear` (amarillo-dorado, simulan reflejos de sol) y `night_clear` (blancos, simulan estrellas titilantes).
+- **Nuevas particulas "CloudPuff"**: 2-3 nubes lentas semitransparentes para `partly_cloudy`, `cloudy` y `night_cloudy`, con colores adaptativos segun modo dia/noche y densidad de nubosidad.
+- **Primer relampago inmediato**: `triggerFlash()` se llama al montarse, no espera el primer intervalo aleatorio.
+
+### WeatherMap — Opacidad por capa y filtro CSS para humedad
+- **Bug: humedad no cargaba en modo oscuro**: la capa de humedad usaba API v2 de OWM (`HRD0`) que devolvia tiles incompatibles. Cambiado a API v1 (`humidity_m`) como el resto de capas.
+- **Opacidad por capa** (antes era generica 0.7 claro / 0.85 oscuro):
+  - Nubes (OWM): 0.85 claro / 0.85 oscuro
+  - Viento: 0.80 claro / 0.85 oscuro
+  - Humedad: 0.85 claro / 0.85 oscuro
+  - Precipitacion, temperatura, presion: 0.70 claro / 0.85 oscuro
+- **Filtro CSS para humedad en modo claro**: se crea un pane separado (`map.createPane('overlay')`) para la capa superpuesta. En modo claro con humedad activa, se inyecta `filter: brightness(0.65) saturate(1.5)` solo en ese pane, oscureciendo los blancos a gris y saturando los azules. El filtro se resetea al cambiar de capa o modo.
+- **`pane: 'overlay'`** en todas las capas superpuestas (tanto creacion inicial como `injectLayer`, `injectRadarAnimation` e `injectRadarFrame`).
+
+### hooks/useWeatherLayers.ts
+- `OWM_LAYER_MAP` simplificado: eliminado flag `v2`.
+- Eliminado import de `getOpenWeatherMapV2TileUrl`.
 
 ### Limpieza
-- Eliminados archivos legacy: `index.html`, `script.js`, `style.css`, `Tiempo.py`, subdirectorio `Tiempo/`
+- `services/weatherLayers.ts`: `getOpenWeatherMapV2TileUrl()` ya no se importa desde ningun lado (codigo muerto mantenido por compatibilidad).
 
 ---
 
-## Fase 1 — Core: Previsión Actual + 7 días
+## v3.0 — Release Estable
 
-### Componentes Weather creados
+- Version actualizada a 3.0 en `app.json`, `package.json`, `README.md` y `plan.md`
+- EAS Build perfil `production` configurado con `autoIncrement: true`
+- Widgets eliminados (postpuesto a Expo 55)
+- Build de produccion via EAS (APK firmado)
 
-| Componente | Archivo | Descripción |
-|-----------|---------|-------------|
-| `WeatherIcon` | `components/weather/WeatherIcon.tsx` | Icono Lucide dinámico por condición (9 condiciones → 9 iconos) |
-| `CurrentWeather` | `components/weather/CurrentWeather.tsx` | Ciudad, temperatura 102px, descripción, H/L del día |
-| `HourlyForecastCard` | `components/weather/HourlyForecast.tsx` | Scroll horizontal 25h con iconos, temp y % precipitación |
-| `DailyForecastCard` | `components/weather/DailyForecast.tsx` | 7 días con icono, % lluvia, temp max/min |
-| `WeatherDetails` | `components/weather/WeatherDetails.tsx` | 6 tiles: sensación, humedad, viento, UV, presión, visibilidad |
-| `CityHeader` | `components/weather/CityHeader.tsx` | Header navegable a búsqueda |
+### Notificaciones — 8 bugs corregidos
+- **Canal Android**: `channelId: "weather-alerts"` ahora referenciado en `scheduleAlertNotification()`
+- **typeEmoji**: añadido `default: return "⚠️"` para tipos desconocidos
+- **typeEmoji**: añadido caso `"fog"` → `"🌫️"`
+- **badge**: eliminado `badge: 1` hardcodeado del content; ahora gestionado con `setBadgeCount()`
+- **Deduplicación persistente**: `lastAlertIds` migrado de `Set<string>` en memoria a MMKV con TTL 24h
+- **IDs con fecha**: `` `local-${type}-${severity}-${lat}-${lon}-${dateStr}` `` para evitar duplicados entre días
+- **Niebla como tipo propio**: `makeAlert("fog", ...)` en lugar de `makeAlert("rain", ...)`
+- **FOG_CODES**: uso de códigos WMO 45/48 + visibilidad < 1000m para detección de niebla
+- **Código muerto eliminado**: `windMax` y `now` en `alerts.ts`
+- **Heat fusionado**: UV y temperatura combinados, tomando la severidad más alta
+- **Cleanup al desactivar**: `cancelAllAlertNotifications()` + `setBadgeCount(0)` al apagar notificaciones (settings + home)
+- **`.catch()`** en `requestNotificationPermissions()` (settings + home)
+- **`setupNotificationChannel()`** hecho async con `await`
+- **Toggle "Niebla"** en Settings con icono `CloudFog` (lucide)
+- **`fog: true`** en default settings + `fog` en tipo `WeatherAlert["type"]`
+- **`fog: "🌫️"`** en `AlertRow.iconMap`
 
-### UI Components
+### Fase 11 — Calidad del Aire (AQI)
+- **Tipos**: `AirQualityData` + `getAQILabel()`, `getAQIDescription()`, `getAQIColor()` en `types/weather.ts`
+- **Escala EAQI**: 0-20 Bueno (#50F0E6), 20-40 Moderado (#50CCAA), 40-60 Deficiente (#F0E641), 60-80 Malo (#FF5050), 80-100 Muy malo (#960032), >100 Extremo (#7D2181)
+- **Servicio**: `getAirQuality(lat, lon)` en `services/openmeteo.ts` → `air-quality-api.open-meteo.com/v1`
+- **Hook**: `useAirQuality(lat, lon)` con TanStack Query (stale 30min, gcTime 60min, retry 1)
+- **Componente**: `AirQualityCard` en `components/weather/AirQualityCard.tsx`
+  - Header con icono Wind + AQI numérico en círculo coloreado
+  - Label + descripción del AQI actual
+  - Barra horizontal con gradiente EAQI (6 segmentos) y marcador
+  - Detalle expandible (tap): 4 barras de contaminantes (PM2.5 max=75, PM10 max=150, O3 max=200, NO2 max=200)
+  - Adaptación colored/monochrome
+- **Integración**: en Home debajo de WeatherDetails (AnimatedView delay 400)
 
-| Componente | Archivo | Descripción |
-|-----------|---------|-------------|
-| `BottomNavBar` | `components/ui/BottomNavBar.tsx` | 5 tabs con Lucide icons + ruta activa destacada |
-| Skeleton loaders | `components/ui/Skeleton.tsx` | Shimmer animado (4 variantes: current, hourly, daily, details) |
+### Fase 12 — Fase Lunar + Orto/Ocaso Lunar
+- **Cálculo local**: `utils/lunar.ts` con algoritmo trigonométrico (sin API externa)
+- `calculateMoonPhase(date)`: edad lunar desde luna nueva de referencia (6 ene 2000), 8 fases, iluminación %
+- `calculateMoonTimes(date, lat, lon)`: orto/ocaso lunar aproximado
+- **Tipos**: `LunarPhaseData` en `types/weather.ts`
+- **Hook**: `useLunarPhase(lat, lon, daily)` con `useMemo` (sin query, instantáneo)
+- **Componente**: `LunarPhaseCard` en `components/weather/LunarPhaseCard.tsx`
+  - 8 SVGs custom con `react-native-svg` (NewMoon, WaxingCrescent, FirstQuarter, WaxingGibous, FullMoon, WaningGibous, LastQuarter, WaningCrescent)
+  - Luna coloreada (#FCD34D) o monocroma según preferencia de iconos
+  - Amanecer/Atardecer con iconos Sunrise/Sunset (lucide)
+  - Orto/Ocaso lunar con iconos Moon (lucide)
+  - Sección de tiempos con línea divisoria
+- **Integración**: en Home debajo de AirQualityCard (AnimatedView delay 500)
+- **Export**: ambos componentes en `components/weather/index.ts`
 
-### Mejoras en servicios
-- `openmeteo.ts` ahora rellena `description` e `icon` automáticamente
-- Fallback seguro si `currentHourIndex` es -1
+### Seguridad — Hardening v3.0
 
-### Mejoras en pantalla Home
-- Fondo degradado dinámico por condición climática + modo claro/oscuro
-- Pull-to-refresh con `RefreshControl`
-- Skeleton loaders mientras carga
-- Botón "Reintentar" si hay error
-- `BottomNavBar` integrada
+- **Paquetes eliminados**:
+  - `react-native-windows` (4 HIGH CVEs en `@xmldom/xmldom` ≤0.8.12, app es solo Android)
+  - `@types/react-native` (deprecated, React 19 incluye tipos propios)
+  - `react-native-web` (dep directa innecesaria, ya es transitive dep)
+- **AndroidManifest.xml**:
+  - Eliminados permisos peligrosos: `SYSTEM_ALERT_WINDOW`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`
+  - `allowBackup="false"` (claves API MMKV no deben copiarse en backup)
+- **WeatherMap WebView**:
+  - SRI hashes en Leaflet CDN (CSS + JS) — protege contra CDN comprometido/MITM
+  - `originWhitelist` restringido de `["*"]` a `["about", "data", "https"]`
+  - `sanitizeUrl()` añadida: solo permite `https://` y `data:`, rechaza todo lo demás
+  - URLs interpoladas en `injectJavaScript` pasan por `sanitizeUrl()` (tileUrl, initialTileUrl, url en radar)
+- **Dependencias actualizadas** (seguras dentro de SDK 54):
+  - `react-native-worklets` 0.5.1 → 0.8.1 (requerido por reanimated 4.3.0)
+  - `expo` → ~54.0.34, `@expo/metro-config` → ~54.0.15, `expo-linking` → ~8.0.12
+  - `expo-notifications` → ~0.32.17, `@tanstack/react-query` → ^5.100.6
+  - `lucide-react-native` → ^1.14.0, `react-native-svg` → ^15.15.4
+  - `react-native-nitro-modules` → ^0.35.6, `@react-native-community/slider` → ^5.2.0
+  - `react-native-safe-area-context` → ^5.7.0, `react-native-reanimated` → ~4.3.0
+  - `react-native-screens` → ~4.24.0
+- **Vulnerabilidades**: 24 → 13 (0 HIGH, 13 moderate transitivos de Expo SDK 54 — no fixeables sin SDK 55)
 
-### Mapeos de condiciones
-- `weatherCodeToCondition()`: WMO codes → 9 condiciones normalizadas
-- `conditionToDescription`: descripciones en español
-- `conditionToIcon`: mapeo a nombres de iconos Lucide
-- `windDirectionLabel()`: grados → N/NE/E/SE/S/SO/O/NO
-- `formatTemperature()`: soporte °C/°F
+### Calidad y Seguridad (en desarrollo)
+- **Bugs**: `formatTemperature()` / `formatWind()` aplicados en todos los componentes; GPS stale closure fix; `dismissRef` en AlertBanner; HourlyForecast timezone fix
+- **Rendimiento**: WeatherMap `html` en `useMemo` sin deps de animación; ThemeProvider `useMemo`; ThemedCard/ThemedText `StyleSheet.create`; HourlyForecast `ScrollView` → `FlatList`; TideChart SVG en `useMemo`
+- **Animaciones**: SwipeableCityRow y Skeleton migrados a Reanimated + GestureHandler (UI thread); WeatherParticles contadores reducidos
+- **Limpieza**: Eliminados `Original.png` (2,2 MB) + `assets/Old/` (464 KB); no-op `useEffect` en `useTheme`
+- **WebView**: `sanitizeUrl` solo permite `data:image/*`; `originWhitelist` sin entrada `data`; `onShouldStartLoadWithRequest` más estricto
+- **AEMET**: `res.ok` añadido al segundo fetch (`data.datos`)
+- **Search**: `AbortController` cancela peticiones en vuelo al escribir nueva búsqueda (race condition fix)
 
 ---
 
-## Fase 2 — Gestión de Ciudades
+## v2.5.1 — Revert de Widgets
 
-### Componentes nuevos
+### Widgets eliminados (postpuesto a Expo 55)
+- **Razon:** `expo-widgets` y `@expo/ui` (dependencia transitoria) requieren Expo SDK 55. La app usa Expo 54, causando `ClassNotFoundException: ComposeViewFunctionDefinitionBuilder` al iniciar.
+- Eliminado `expo-widgets` de `package.json`
+- `@react-native-community/slider` **mantenido** (se usa en RadarTimeline, Fase 9)
+- Eliminado `modules/tiempo-widget/` (modulo nativo Expo con Kotlin + JS)
+- Eliminado `hooks/useWidgetUpdater.ts`
+- Eliminado import y llamada a `useWidgetUpdater` en `app/index.tsx`
+- Eliminados `WeatherWidgetProvider.kt` y `WeatherWidgetMediumProvider.kt` (Kotlin)
+- Eliminados layouts XML: `widget_weather_small.xml`, `widget_weather_medium.xml`
+- Eliminados drawables: `widget_bg_dark.xml`, `widget_bg_light.xml`
+- Eliminados metadatos: `widget_weather_small_info.xml`, `widget_weather_medium_info.xml`
+- Eliminados receivers de `AndroidManifest.xml`
+- `package.json` y `package-lock.json` restaurados a Version 2.5
 
-| Componente | Archivo | Descripción |
-|-----------|---------|-------------|
-| `CitySelector` | `components/city/CitySelector.tsx` | Modal bottom sheet para cambiar entre ciudades guardadas |
-| `SwipeableCityRow` | `components/city/SwipeableCityRow.tsx` | Fila swipe-para-eliminar con PanResponder + Animated |
-
-### Search mejorada
-- **Debounce**: 300ms de retardo en búsqueda, evita llamadas API innecesarias
-- **Indicador "ya guardada"**: icono Check verde para ciudades ya en la lista
-- **Campo de búsqueda**: estilizado con fondo semitransparente
-- **Botón GPS**: "Usar mi ubicación" en la parte superior de la pantalla de búsqueda
-- **Estado vacío**: mensajes contextuales según longitud de query
-
-### Geolocalización
-- **useLocation mejorado**: devuelve objeto `City` con nombre vía `reverseGeocodeAsync`
-- **Botón GPS en Settings**: añade ubicación actual como ciudad especial
-- **Ciudad GPS**: `id: "gps-current"`, `isLocation: true`, icono MapPin
-- **setLocationCity()**: inserta la ciudad GPS al inicio de la lista, elimina GPS previo
-
-### Store mejorado
-- `setLocationCity(city)`: añade/actualiza ciudad GPS
-- `reorderCities(cities)`: reordenar lista completa
-- IDs estables: usa `r.id` de Open-Meteo Geocoding + fallback de coordenadas redondeadas
-
-### Swipe to delete
-- `SwipeableCityRow`: PanResponder que detecta swipe izquierda > 20px
-- Revela botón rojo de eliminar (80px) con icono Trash2
-- Spring animation al soltar (abre si > 50px, cierra si no)
-- Alert de confirmación antes de eliminar
-- Protección: no se puede eliminar si solo queda 1 ciudad
-
-### Integración en Home
-- Tap en nombre de ciudad → abre `CitySelector` modal
-- ChevronDown indica que es tappable
-- Ciudad GPS muestra "Mi ubicación" en lugar del nombre real
-
-### Integración en Settings
-- `SwipeableCityRow` para cada ciudad
-- Botón GPS + botón Añadir en header de sección
-- Alert de confirmación al eliminar
-
-### plan.md actualizado
-- Fase 2 marcada como completada con checkboxes
+### Nota
+- Los widgets de pantalla de inicio se retomaran en la Fase 10 al migrar a Expo SDK 55+
+- Las animaciones de radar (Fase 9) se mantienen intactas
 
 ---
 
-## Fase 3 — Mareas
+## v2.5 — Fase 8: Animaciones de Particulas Climaticas
+
+### Componente nuevo: `WeatherParticles` (`components/theme/WeatherParticles.tsx`)
+- Sistema de particulas animadas con Reanimated que se muestran segun la condicion climatica
+- 4 tipos de particulas:
+  - **Lluvia** (`rain`): 30 gotas cayendo con inclinacion por viento, color azul semitransparente
+  - **Tormenta** (`storm`): 40 gotas + flash de relampago periodico (secuencia de opacidad 0.7-0-0.4-0)
+  - **Nieve** (`snow`): 24 copos cayendo lentos con drift sinusoidal horizontal, color blanco
+  - **Niebla** (`fog`): 6 puffs grandes moviendose horizontalmente con baja opacidad
+- Condiciones sin particulas: `clear`, `partly_cloudy`, `cloudy`, `night_clear`, `night_cloudy`
+
+### Arquitectura de particulas
+- `RainDrop`: linea vertical animada con `useSharedValue` + `withRepeat(withTiming())` para Y (caida) y opacidad (fade in/out)
+- `SnowFlake`: circulo pequeño con animacion Y (caida lenta) + X (drift sinusoidal con `withSequence`)
+- `FogPuff`: circulo grande borroso con animacion X (drift horizontal lento)
+- `LightningFlash`: overlay full-screen con `withSequence` para flash de relampago, intervalo 4-10s random
+- `seededRandom()`: generador pseudo-aleatorio deterministico para posiciones/offsets estables por render
+- Todas las particulas usan `pointerEvents="none"` para no bloquear interaccion
+- `cancelAnimation()` en `useEffect` cleanup para evitar leaks
+
+### Integracion en Home
+- `<WeatherParticles condition={condition} isDark={isDark} />` insertado dentro de `<DynamicBackground>` en `app/index.tsx`
+- Capa `position: absolute` entre el fondo degradado y el contenido
+- Exportado desde `components/theme/index.ts`
+
+### Colores adaptativos
+- Lluvia claro: `rgba(96,165,250,0.35)` / oscuro: `rgba(147,197,253,0.5)`
+- Lluvia tormenta claro: `rgba(59,130,246,0.4)` / oscuro: `rgba(147,197,253,0.6)`
+- Nieve claro: `rgba(255,255,255,0.85)` / oscuro: `rgba(255,255,255,0.7)`
+- Niebla claro: `rgba(203,213,225,0.25)` / oscuro: `rgba(148,163,184,0.12)`
+- Relampago: `rgba(255,255,255,0.9)`
+
+---
+
+## v2.4 — Release 2.4
+
+### Estilo de iconos configurable
+- Nuevo tipo `IconStyle`: `"colored" | "monochrome"` en `types/weather.ts`
+- `AppSettings.iconStyle`: preferencia de iconos del usuario
+- `settingsStore` default: `iconStyle: "colored"`
+- `WeatherIcon` soporta prop `colored` y lee `settings.iconStyle`
+- **Color**: iconos climáticos con colores por condición (soleado=#FFB800, lluvia=#5AC8FA, tormenta=#7C3AED, etc.)
+- **Monocromo**: iconos en gris adaptativo (como versión anterior)
+- `WeatherDetails` iconos con colores temáticos (sensación=#FF6B6B, humedad=#5AC8FA, viento=#34D399, UV=#FFB800, presión=#A78BFA, visibilidad=#60A5FA)
+- Sección "Iconos" en Settings con selector Color/Monocromo (iconos Palette + CircleDot)
+
+### Mejoras en mapa
+- `useOwmClouds` prop en `WeatherMap`: permite usar tiles OWM para nubes en lugar de satélite
+- Opacidad adaptativa por capa: satélite 0.9, OWM 0.7 (claro) / 0.85 (oscuro)
+- `maxZoom` dinámico: 13 para satélite, 18 para OWM
+- `minZoom` diferenciado: 4 para satélite, 3 para OWM
+- `errorTileUrl`: GIF transparente 1x1 para tiles fallidos
+
+### Correcciones
+- Botón de ciudad en Settings corregido
+- `SwipeableCityRow` con estilo corregido
+- Tides: corrección en lógica de mareas
+- Modo oscuro: `ThemedCard` y gradientes refinados
+- `constants/theme.ts`: colores de fondo ajustados
+
+### Assets
+- Nuevas capturas de pantalla: screen-4, screen-5, screen-6
+- Capturas existentes actualizadas
+
+### Versión
+- `app.json` version: `2.0.0` → `2.4.0`
+- `package.json` version: `1.0.0` → `2.4.0`
+
+### EAS Build production
+- Build de producción lanzada para Android (APK)
+
+---
+
+## v2.3 — Release 2.3
+
+- Landing page actualizada (index.html)
+- README actualizado
+
+---
+
+## v2.2 — Release 2.2
+
+- README.md actualizado con nuevas capturas y descripción
+
+---
+
+## v2.1 — OpenWeatherMaps
+
+### Mapa con capas OWM
+- Capas de temperatura, viento, humedad y presión vía OpenWeatherMap
+- `getOpenWeatherMapTileUrl()` y `getOpenWeatherMapV2TileUrl()` en `weatherLayers.ts`
+- Capas V2: HRD0 (humedad) vía Maps 2.0 endpoint
+- Capas disponibles sin API key: precipitación, nubes
+- Capas disponibles con API key: temperatura, viento, humedad, presión
+
+### Clave API configurable
+- Sección "Claves API" en Settings con input de OpenWeatherMap API Key
+- Clave ofuscada en display (4 primeros chars + asteriscos)
+- Botones Editar/Añadir/Guardar/Cancelar
+
+---
+
+## v2.0 — Release Estable
+
+### Animaciones fluidas y rediseño
+- `AnimatedView`: nuevo componente de animaciones con Reanimated
+- `ThemedCard` mejorado con soporte para animaciones de entrada
+- Gradientes de fondo refinados en `constants/theme.ts`
+- `CitySelector` rediseñado con transiciones suaves
+- Home screen con layout optimizado y animaciones de entrada
+
+### App icons y splash actualizados
+- Iconos de alta resolución (adaptive-icon: 476KB, icon: 476KB)
+- Splash icon actualizado
+- Favicon actualizado
+
+### UI general
+- `BottomNavBar` totalmente rediseñado con nuevos estilos
+- `WeatherIcon` con soporte para variante day/night
+- `CurrentWeather`, `HourlyForecast`, `DailyForecast` con ajustes visuales
+- `ThemedCard` con soporte de animación y blur mejorado
+- Modo oscuro refinado en toda la app
+
+### Versión
+- `app.json` version: `1.0.0` → `2.0.0`
+- `app.json` ampliado con `newArchEnabled`, `edgeToEdgeEnabled`, `predictiveBackGestureEnabled`
+- Permisos Android declarados: `ACCESS_COARSE_LOCATION`, `ACCESS_FINE_LOCATION`
+- Plugins configurados: `expo-router`, `expo-location`, `expo-notifications`
+
+---
+
+## v1.1 — Beta 1.1
+
+### Mejoras del mapa
+- `WeatherMap` refactorizado con mejor manejo de capas
+- Interactividad mejorada en WebView
+- Correcciones de estilo y layout
+
+### UI mejorada
+- `BottomNavBar` rediseñado con mejor distribución y estilo
+- Pantalla Home con mejor layout y espaciado
+- Ajustes y búsqueda con micro-mejoras visuales
+
+---
+
+## v1.0 — Primera Release (Beta)
+
+### EAS Build configurado
+- `eas.json` con 3 perfiles: `development`, `preview`, `production`
+- Todos los perfiles generan APK para Android
+- `appVersionSource: "remote"` — versión gestionada desde EAS
+- Proyecto registrado en EAS con ID `9829422f-1608-4ad5-b622-67aecada466f`
+
+### Mapa meteorológico (WebView + Leaflet)
+- `WeatherMap` con Leaflet embebido en WebView + CartoDB tiles
+- `LayerSelector`: 6 capas (Lluvia, Nubes, Temp, Viento, Humedad, Presión)
+- Soporte para RainViewer (radar precipitación), satélite infrarrojo y OpenWeatherMap tiles
+- `useWeatherLayers` hook para gestión de URLs y capas
+- `weatherLayers.ts`: servicio de capas con cache RainViewer 10min TTL
+- Marcadores de ciudades guardadas en el mapa
+- Adaptación automática claro/oscuro (CartoDB light_all / dark_all)
+
+### Dependenecias actualizadas
+- `.npmrc` con `legacy-peer-deps=true`
+- `package-lock.json` actualizado
+
+### Nuevos assets
+- Iconos adaptativos actualizados (adaptive-icon, icon, splash-icon, favicon)
+
+---
+
+## Fase 7 — Mareas v2: Altura de marea y horarios de pleamar/bajamar
+
+### Datos de marea reales (Open-Meteo Marine API)
+- `sea_level_height_msl`: altura del nivel del mar incluyendo mareas, por hora
+- Añadido a `getMarineWeather()` en `services/openmeteo.ts`
+- `MarineData.hourly.seaLevelHeight`: array numérico con alturas horarias
 
 ### Tipos nuevos (`types/weather.ts`)
 | Tipo | Descripción |
 |------|-------------|
-| `MarineData` | Datos marinos horarios + diarios (waveHeight, waveDirection, wavePeriod) |
-| `SeaCondition` | Estado del mar actual con label + description |
-| `getSeaConditionLabel()` | Altura de ola → etiqueta (Calma, Marejadilla, Marejada, Mar gruesa...) |
-| `getSeaConditionDescription()` | Descripción textual del estado del mar |
-| `City.isCoastal` | Nuevo campo opcional para marcar ciudades costeras |
+| `TideDirection` | `"rising" \| "falling" \| "stable"` |
+| `TideDirectionInfo` | `{ height: number; direction: TideDirection }` |
+| `MarineData.hourly.seaLevelHeight` | Altura del nivel del mar por hora |
 
-### Servicio mejorado (`services/openmeteo.ts`)
-- `getMarineWeather()`: parsing tipado completo (snake_case → camelCase)
-- `MarineApiResponse` interface interna para tipar respuesta cruda
-- Retorna `MarineData` con hourly + daily estructurados
-
-### Hooks (`hooks/useTides.ts`)
-| Hook | Descripción |
+### Hooks nuevos (`hooks/useTides.ts`)
+| Hook/Función | Descripción |
 |------|-------------|
-| `useTides(lat, lon, isCoastal)` | TanStack Query, stale 30min, gcTime 60min, retry: 1, enabled solo si coastal |
-| `useCurrentSeaCondition(lat, lon, isCoastal)` | Devuelve `SeaCondition` actual (hora más cercana) |
+| `useTideDirection(lat, lon, isCoastal)` | Devuelve `TideDirectionInfo`: altura actual + dirección (subiendo/bajando/estable) |
+| `deriveTideForecasts(seaLevelHeight, times, dates)` | Deriva `TideForecast[]` con horarios de pleamar/bajamar detectando picos/valles locales |
 
-### Detección de ciudad costera (`utils/coastal.ts`)
-- `isCoastalCity(city)`: 3 niveles de detección:
-  1. `city.isCoastal` explícito
-  2. Nombre en lista de ciudades costeras/inland conocidas (40+ ciudades ES)
-  3. Haversine a puntos de costa española (< 25km = costera)
-- `distanceToNearestCoast()`: calcula km a la costa más cercana
-- `haversineKm()`: fórmula Haversine para distancia geodésica
+### Componente nuevo: `TideTimesCard` (`components/tides/TideTimesCard.tsx`)
+- Muestra horarios de pleamar (↑ verde) y bajamar (↓ naranja) con altura
+- Coeficiente de marea estimado
+- Aviso de que datos son estimados por modelo numérico
+- Estilo adaptativo claro/oscuro
 
-### Componentes nuevos (`components/tides/`)
+### Componente mejorado: `SeaConditionCard`
+- Nueva 4ª columna: indicador de marea con icono TrendingUp/TrendingDown/Minus
+- Muestra altura del nivel del mar + dirección (Subiendo/Bajando/Estable)
+- Colores: verde subiendo, naranja bajando
 
-| Componente | Archivo | Descripción |
-|-----------|---------|-------------|
-| `TideChart` | `TideChart.tsx` | Gráfico SVG 24h: curva Bézier suave, área rellena, grid horaria (00/06/12/18/24), etiquetas altura (m), datos max + periodo |
-| `TideTable` | `TideTable.tsx` | Tabla 7 días: día, oleaje máx, dirección dominante, periodo máx. Highlight "Hoy" |
-| `SeaConditionCard` | `SeaConditionCard.tsx` | Estado del mar actual: label grande (28px), descripción, 3 tiles (altura/dirección/periodo), alerta roja si oleaje ≥ 3m |
-| `DaySelector` | (inline en `tides.tsx`) | Tabs de día (Hoy, Lun, Mar...) para seleccionar día del gráfico |
-| `index.ts` | Barrel export | Exporta TideChart, TideTable, SeaConditionCard |
+### Pantalla Tides actualizada (`app/tides.tsx`)
+- `useTideDirection()` para indicador en tiempo real
+- `deriveTideForecasts()` para horarios de pleamar/bajamar por día
+- `TideTimesCard` integrado entre DaySelector y TideChart
+- Cambio de día actualiza tanto TideChart como TideTimesCard
 
-### Skeleton loaders nuevos (`components/ui/Skeleton.tsx`)
-| Skeleton | Descripción |
-|----------|-------------|
-| `SeaConditionSkeleton` | Shimmer para card de estado del mar |
-| `TideChartSkeleton` | Shimmer para gráfico de mareas |
-| `TideTableSkeleton` | Shimmer para tabla 7 días |
-
-### Pantalla Tides reconstruida (`app/tides.tsx`)
-- **Ciudad costera**: SeaConditionCard → DaySelector → TideChart → TideTable
-- **Ciudad interior**: icono MapPinOff + mensaje + botón "Cambiar ciudad"
-- Pull-to-refresh con RefreshControl
-- CitySelector integrado (tap en nombre)
-- Skeleton loaders mientras carga
-- Error state con "Reintentar"
-- Adaptación completa claro/oscuro
+### Versión app
+- `app.json` version: `1.0.0` → `2.0.0`
 
 ### plan.md actualizado
-- Fases 0, 1 y 3 marcadas como completadas
+- Fases 5, 6, 7 marcadas como completadas
+
+---
+
+## Fase 5-6 — Mapas y Capas adicionales
+
+### Mapa interactivo (`app/map.tsx`)
+- WebView con Leaflet embebido + CartoDB tiles (light_all / dark_all)
+- Marcadores de ciudades con divIcons personalizados
+- Resolución de capas: precipitación → RainViewer, nubes → satélite/OWM, resto → OWM tiles
+
+### Capas del mapa (`services/weatherLayers.ts`)
+- `getRainViewerData()`: API de RainViewer con cache 10min TTL
+- `getRadarTileUrl()`: tiles de radar de precipitación
+- `getSatelliteTileUrl()`: tiles de satélite infrarrojo
+- `getOpenWeatherMapTileUrl()`: V1 tiles (`clouds_new`, `temp_new`, `wind_new`, `pressure_new`)
+- `getOpenWeatherMapV2TileUrl()`: V2 tiles (`HRD0` humedad, Maps 2.0 endpoint)
+
+### Hook de capas (`hooks/useWeatherLayers.ts`)
+- `useWeatherLayers()`: gestiona RainViewer data + URLs OWM + capas disponibles
+- `OWM_LAYER_MAP`: mapa de capas con flag `v2` para endpoint Maps 2.0
+- Capas disponibles sin API key: precipitación, nubes
+- Capas disponibles con API key: temperatura, viento, humedad, presión
+
+### Selector de capas (`components/map/LayerSelector.tsx`)
+- 6 capas: Lluvia, Nubes, Temp, Viento, Humedad, Presión
+- Botones horizontales scrollables con iconos Lucide
+- Estilo adaptativo claro/oscuro
+
+### Modo oscuro del mapa mejorado
+- Opacidad overlay: 0.7 (claro) → 0.85 (oscuro) para mayor visibilidad
+- maxZoom ampliado: 13 → 18 para capas OWM
+- `errorTileUrl`: GIF transparente 1x1 para tiles fallidos
+- Botones de capas con contraste mejorado en dark mode
+
+### Clave API configurable (`app/settings.tsx`)
+- Nueva sección "Claves API" con input de OpenWeatherMap API Key
+- Muestra clave ofuscada (4 primeros chars + asteriscos)
+- Botones Editar/Añadir/Guardar/Cancelar
 
 ---
 
@@ -331,442 +538,235 @@ tiempo-app/
 
 ---
 
-## Fase 5-6 — Mapas y Capas adicionales
-
-### Mapa interactivo (`app/map.tsx`)
-- WebView con Leaflet embebido + CartoDB tiles (light_all / dark_all)
-- Marcadores de ciudades con divIcons personalizados
-- Resolución de capas: precipitación → RainViewer, nubes → satélite/OWM, resto → OWM tiles
-
-### Capas del mapa (`services/weatherLayers.ts`)
-- `getRainViewerData()`: API de RainViewer con cache 10min TTL
-- `getRadarTileUrl()`: tiles de radar de precipitación
-- `getSatelliteTileUrl()`: tiles de satélite infrarrojo
-- `getOpenWeatherMapTileUrl()`: V1 tiles (`clouds_new`, `temp_new`, `wind_new`, `pressure_new`)
-- `getOpenWeatherMapV2TileUrl()`: V2 tiles (`HRD0` humedad, Maps 2.0 endpoint)
-
-### Hook de capas (`hooks/useWeatherLayers.ts`)
-- `useWeatherLayers()`: gestiona RainViewer data + URLs OWM + capas disponibles
-- `OWM_LAYER_MAP`: mapa de capas con flag `v2` para endpoint Maps 2.0
-- Capas disponibles sin API key: precipitación, nubes
-- Capas disponibles con API key: temperatura, viento, humedad, presión
-
-### Selector de capas (`components/map/LayerSelector.tsx`)
-- 6 capas: Lluvia, Nubes, Temp, Viento, Humedad, Presión
-- Botones horizontales scrollables con iconos Lucide
-- Estilo adaptativo claro/oscuro
-
-### Modo oscuro del mapa mejorado
-- Opacidad overlay: 0.7 (claro) → 0.85 (oscuro) para mayor visibilidad
-- maxZoom ampliado: 13 → 18 para capas OWM
-- `errorTileUrl`: GIF transparente 1x1 para tiles fallidos
-- Botones de capas con contraste mejorado en dark mode
-
-### Clave API configurable (`app/settings.tsx`)
-- Nueva sección "Claves API" con input de OpenWeatherMap API Key
-- Muestra clave ofuscada (4 primeros chars + asteriscos)
-- Botones Editar/Añadir/Guardar/Cancelar
-
----
-
-## Fase 7 — Mareas v2: Altura de marea y horarios de pleamar/bajamar
-
-### Datos de marea reales (Open-Meteo Marine API)
-- `sea_level_height_msl`: altura del nivel del mar incluyendo mareas, por hora
-- Añadido a `getMarineWeather()` en `services/openmeteo.ts`
-- `MarineData.hourly.seaLevelHeight`: array numérico con alturas horarias
+## Fase 3 — Mareas
 
 ### Tipos nuevos (`types/weather.ts`)
 | Tipo | Descripción |
 |------|-------------|
-| `TideDirection` | `"rising" \| "falling" \| "stable"` |
-| `TideDirectionInfo` | `{ height: number; direction: TideDirection }` |
-| `MarineData.hourly.seaLevelHeight` | Altura del nivel del mar por hora |
+| `MarineData` | Datos marinos horarios + diarios (waveHeight, waveDirection, wavePeriod) |
+| `SeaCondition` | Estado del mar actual con label + description |
+| `getSeaConditionLabel()` | Altura de ola → etiqueta (Calma, Marejadilla, Marejada, Mar gruesa...) |
+| `getSeaConditionDescription()` | Descripción textual del estado del mar |
+| `City.isCoastal` | Nuevo campo opcional para marcar ciudades costeras |
 
-### Hooks nuevos (`hooks/useTides.ts`)
-| Hook/Función | Descripción |
+### Servicio mejorado (`services/openmeteo.ts`)
+- `getMarineWeather()`: parsing tipado completo (snake_case → camelCase)
+- `MarineApiResponse` interface interna para tipar respuesta cruda
+- Retorna `MarineData` con hourly + daily estructurados
+
+### Hooks (`hooks/useTides.ts`)
+| Hook | Descripción |
 |------|-------------|
-| `useTideDirection(lat, lon, isCoastal)` | Devuelve `TideDirectionInfo`: altura actual + dirección (subiendo/bajando/estable) |
-| `deriveTideForecasts(seaLevelHeight, times, dates)` | Deriva `TideForecast[]` con horarios de pleamar/bajamar detectando picos/valles locales |
+| `useTides(lat, lon, isCoastal)` | TanStack Query, stale 30min, gcTime 60min, retry: 1, enabled solo si coastal |
+| `useCurrentSeaCondition(lat, lon, isCoastal)` | Devuelve `SeaCondition` actual (hora más cercana) |
 
-### Componente nuevo: `TideTimesCard` (`components/tides/TideTimesCard.tsx`)
-- Muestra horarios de pleamar (↑ verde) y bajamar (↓ naranja) con altura
-- Coeficiente de marea estimado
-- Aviso de que datos son estimados por modelo numérico
-- Estilo adaptativo claro/oscuro
+### Detección de ciudad costera (`utils/coastal.ts`)
+- `isCoastalCity(city)`: 3 niveles de detección:
+  1. `city.isCoastal` explícito
+  2. Nombre en lista de ciudades costeras/inland conocidas (40+ ciudades ES)
+  3. Haversine a puntos de costa española (< 25km = costera)
+- `distanceToNearestCoast()`: calcula km a la costa más cercana
+- `haversineKm()`: fórmula Haversine para distancia geodésica
 
-### Componente mejorado: `SeaConditionCard`
-- Nueva 4ª columna: indicador de marea con icono TrendingUp/TrendingDown/Minus
-- Muestra altura del nivel del mar + dirección (Subiendo/Bajando/Estable)
-- Colores: verde subiendo, naranja bajando
+### Componentes nuevos (`components/tides/`)
 
-### Pantalla Tides actualizada (`app/tides.tsx`)
-- `useTideDirection()` para indicador en tiempo real
-- `deriveTideForecasts()` para horarios de pleamar/bajamar por día
-- `TideTimesCard` integrado entre DaySelector y TideChart
-- Cambio de día actualiza tanto TideChart como TideTimesCard
+| Componente | Archivo | Descripción |
+|-----------|---------|-------------|
+| `TideChart` | `TideChart.tsx` | Gráfico SVG 24h: curva Bézier suave, área rellena, grid horaria (00/06/12/18/24), etiquetas altura (m), datos max + periodo |
+| `TideTable` | `TideTable.tsx` | Tabla 7 días: día, oleaje máx, dirección dominante, periodo máx. Highlight "Hoy" |
+| `SeaConditionCard` | `SeaConditionCard.tsx` | Estado del mar actual: label grande (28px), descripción, 3 tiles (altura/dirección/periodo), alerta roja si oleaje ≥ 3m |
+| `DaySelector` | (inline en `tides.tsx`) | Tabs de día (Hoy, Lun, Mar...) para seleccionar día del gráfico |
+| `index.ts` | Barrel export | Exporta TideChart, TideTable, SeaConditionCard |
 
-### Versión app
-- `app.json` version: `1.0.0` → `2.0.0`
+### Skeleton loaders nuevos (`components/ui/Skeleton.tsx`)
+| Skeleton | Descripción |
+|----------|-------------|
+| `SeaConditionSkeleton` | Shimmer para card de estado del mar |
+| `TideChartSkeleton` | Shimmer para gráfico de mareas |
+| `TideTableSkeleton` | Shimmer para tabla 7 días |
+
+### Pantalla Tides reconstruida (`app/tides.tsx`)
+- **Ciudad costera**: SeaConditionCard → DaySelector → TideChart → TideTable
+- **Ciudad interior**: icono MapPinOff + mensaje + botón "Cambiar ciudad"
+- Pull-to-refresh con RefreshControl
+- CitySelector integrado (tap en nombre)
+- Skeleton loaders mientras carga
+- Error state con "Reintentar"
+- Adaptación completa claro/oscuro
 
 ### plan.md actualizado
-- Fases 5, 6, 7 marcadas como completadas
+- Fases 0, 1 y 3 marcadas como completadas
 
 ---
 
-## v1.0 — Primera Release (Beta)
+## Fase 2 — Gestión de Ciudades
 
-### EAS Build configurado
-- `eas.json` con 3 perfiles: `development`, `preview`, `production`
-- Todos los perfiles generan APK para Android
-- `appVersionSource: "remote"` — versión gestionada desde EAS
-- Proyecto registrado en EAS con ID `9829422f-1608-4ad5-b622-67aecada466f`
+### Componentes nuevos
 
-### Mapa meteorológico (WebView + Leaflet)
-- `WeatherMap` con Leaflet embebido en WebView + CartoDB tiles
-- `LayerSelector`: 6 capas (Lluvia, Nubes, Temp, Viento, Humedad, Presión)
-- Soporte para RainViewer (radar precipitación), satélite infrarrojo y OpenWeatherMap tiles
-- `useWeatherLayers` hook para gestión de URLs y capas
-- `weatherLayers.ts`: servicio de capas con cache RainViewer 10min TTL
-- Marcadores de ciudades guardadas en el mapa
-- Adaptación automática claro/oscuro (CartoDB light_all / dark_all)
+| Componente | Archivo | Descripción |
+|-----------|---------|-------------|
+| `CitySelector` | `components/city/CitySelector.tsx` | Modal bottom sheet para cambiar entre ciudades guardadas |
+| `SwipeableCityRow` | `components/city/SwipeableCityRow.tsx` | Fila swipe-para-eliminar con PanResponder + Animated |
 
-### Dependenecias actualizadas
-- `.npmrc` con `legacy-peer-deps=true`
-- `package-lock.json` actualizado
+### Search mejorada
+- **Debounce**: 300ms de retardo en búsqueda, evita llamadas API innecesarias
+- **Indicador "ya guardada"**: icono Check verde para ciudades ya en la lista
+- **Campo de búsqueda**: estilizado con fondo semitransparente
+- **Botón GPS**: "Usar mi ubicación" en la parte superior de la pantalla de búsqueda
+- **Estado vacío**: mensajes contextuales según longitud de query
 
-### Nuevos assets
-- Iconos adaptativos actualizados (adaptive-icon, icon, splash-icon, favicon)
+### Geolocalización
+- **useLocation mejorado**: devuelve objeto `City` con nombre vía `reverseGeocodeAsync`
+- **Botón GPS en Settings**: añade ubicación actual como ciudad especial
+- **Ciudad GPS**: `id: "gps-current"`, `isLocation: true`, icono MapPin
+- **setLocationCity()**: inserta la ciudad GPS al inicio de la lista, elimina GPS previo
 
----
+### Store mejorado
+- `setLocationCity(city)`: añade/actualiza ciudad GPS
+- `reorderCities(cities)`: reordenar lista completa
+- IDs estables: usa `r.id` de Open-Meteo Geocoding + fallback de coordenadas redondeadas
 
-## v1.1 — Beta 1.1
+### Swipe to delete
+- `SwipeableCityRow`: PanResponder que detecta swipe izquierda > 20px
+- Revela botón rojo de eliminar (80px) con icono Trash2
+- Spring animation al soltar (abre si > 50px, cierra si no)
+- Alert de confirmación antes de eliminar
+- Protección: no se puede eliminar si solo queda 1 ciudad
 
-### Mejoras del mapa
-- `WeatherMap` refactorizado con mejor manejo de capas
-- Interactividad mejorada en WebView
-- Correcciones de estilo y layout
+### Integración en Home
+- Tap en nombre de ciudad → abre `CitySelector` modal
+- ChevronDown indica que es tappable
+- Ciudad GPS muestra "Mi ubicación" en lugar del nombre real
 
-### UI mejorada
-- `BottomNavBar` rediseñado con mejor distribución y estilo
-- Pantalla Home con mejor layout y espaciado
-- Ajustes y búsqueda con micro-mejoras visuales
+### Integración en Settings
+- `SwipeableCityRow` para cada ciudad
+- Botón GPS + botón Añadir en header de sección
+- Alert de confirmación al eliminar
 
----
-
-## v2.0 — Release Estable
-
-### Animaciones fluidas y rediseño
-- `AnimatedView`: nuevo componente de animaciones con Reanimated
-- `ThemedCard` mejorado con soporte para animaciones de entrada
-- Gradientes de fondo refinados en `constants/theme.ts`
-- `CitySelector` rediseñado con transiciones suaves
-- Home screen con layout optimizado y animaciones de entrada
-
-### App icons y splash actualizados
-- Iconos de alta resolución (adaptive-icon: 476KB, icon: 476KB)
-- Splash icon actualizado
-- Favicon actualizado
-
-### UI general
-- `BottomNavBar` totalmente rediseñado con nuevos estilos
-- `WeatherIcon` con soporte para variante day/night
-- `CurrentWeather`, `HourlyForecast`, `DailyForecast` con ajustes visuales
-- `ThemedCard` con soporte de animación y blur mejorado
-- Modo oscuro refinado en toda la app
-
-### Versión
-- `app.json` version: `1.0.0` → `2.0.0`
-- `app.json` ampliado con `newArchEnabled`, `edgeToEdgeEnabled`, `predictiveBackGestureEnabled`
-- Permisos Android declarados: `ACCESS_COARSE_LOCATION`, `ACCESS_FINE_LOCATION`
-- Plugins configurados: `expo-router`, `expo-location`, `expo-notifications`
+### plan.md actualizado
+- Fase 2 marcada como completada con checkboxes
 
 ---
 
-## v2.1 — OpenWeatherMaps
+## Fase 1 — Core: Previsión Actual + 7 días
 
-### Mapa con capas OWM
-- Capas de temperatura, viento, humedad y presión vía OpenWeatherMap
-- `getOpenWeatherMapTileUrl()` y `getOpenWeatherMapV2TileUrl()` en `weatherLayers.ts`
-- Capas V2: HRD0 (humedad) vía Maps 2.0 endpoint
-- Capas disponibles sin API key: precipitación, nubes
-- Capas disponibles con API key: temperatura, viento, humedad, presión
+### Componentes Weather creados
 
-### Clave API configurable
-- Sección "Claves API" en Settings con input de OpenWeatherMap API Key
-- Clave ofuscada en display (4 primeros chars + asteriscos)
-- Botones Editar/Añadir/Guardar/Cancelar
+| Componente | Archivo | Descripción |
+|-----------|---------|-------------|
+| `WeatherIcon` | `components/weather/WeatherIcon.tsx` | Icono Lucide dinámico por condición (9 condiciones → 9 iconos) |
+| `CurrentWeather` | `components/weather/CurrentWeather.tsx` | Ciudad, temperatura 102px, descripción, H/L del día |
+| `HourlyForecastCard` | `components/weather/HourlyForecast.tsx` | Scroll horizontal 25h con iconos, temp y % precipitación |
+| `DailyForecastCard` | `components/weather/DailyForecast.tsx` | 7 días con icono, % lluvia, temp max/min |
+| `WeatherDetails` | `components/weather/WeatherDetails.tsx` | 6 tiles: sensación, humedad, viento, UV, presión, visibilidad |
+| `CityHeader` | `components/weather/CityHeader.tsx` | Header navegable a búsqueda |
 
----
+### UI Components
 
-## v2.2 — Release 2.2
+| Componente | Archivo | Descripción |
+|-----------|---------|-------------|
+| `BottomNavBar` | `components/ui/BottomNavBar.tsx` | 5 tabs con Lucide icons + ruta activa destacada |
+| Skeleton loaders | `components/ui/Skeleton.tsx` | Shimmer animado (4 variantes: current, hourly, daily, details) |
 
-- README.md actualizado con nuevas capturas y descripción
+### Mejoras en servicios
+- `openmeteo.ts` ahora rellena `description` e `icon` automáticamente
+- Fallback seguro si `currentHourIndex` es -1
 
----
+### Mejoras en pantalla Home
+- Fondo degradado dinámico por condición climática + modo claro/oscuro
+- Pull-to-refresh con `RefreshControl`
+- Skeleton loaders mientras carga
+- Botón "Reintentar" si hay error
+- `BottomNavBar` integrada
 
-## v2.3 — Release 2.3
-
-- Landing page actualizada (index.html)
-- README actualizado
-
----
-
-## v2.4 — Release 2.4
-
-### Estilo de iconos configurable
-- Nuevo tipo `IconStyle`: `"colored" | "monochrome"` en `types/weather.ts`
-- `AppSettings.iconStyle`: preferencia de iconos del usuario
-- `settingsStore` default: `iconStyle: "colored"`
-- `WeatherIcon` soporta prop `colored` y lee `settings.iconStyle`
-  - **Color**: iconos climáticos con colores por condición (soleado=#FFB800, lluvia=#5AC8FA, tormenta=#7C3AED, etc.)
-  - **Monocromo**: iconos en gris adaptativo (como versión anterior)
-- `WeatherDetails` iconos con colores temáticos (sensación=#FF6B6B, humedad=#5AC8FA, viento=#34D399, UV=#FFB800, presión=#A78BFA, visibilidad=#60A5FA)
-- Sección "Iconos" en Settings con selector Color/Monocromo (iconos Palette + CircleDot)
-
-### Mejoras en mapa
-- `useOwmClouds` prop en `WeatherMap`: permite usar tiles OWM para nubes en lugar de satélite
-- Opacidad adaptativa por capa: satélite 0.9, OWM 0.7 (claro) / 0.85 (oscuro)
-- `maxZoom` dinámico: 13 para satélite, 18 para OWM
-- `minZoom` diferenciado: 4 para satélite, 3 para OWM
-- `errorTileUrl`: GIF transparente 1x1 para tiles fallidos
-
-### Correcciones
-- Botón de ciudad en Settings corregido
-- `SwipeableCityRow` con estilo corregido
-- Tides: corrección en lógica de mareas
-- Modo oscuro: `ThemedCard` y gradientes refinados
-- `constants/theme.ts`: colores de fondo ajustados
-
-### Assets
-- Nuevas capturas de pantalla: screen-4, screen-5, screen-6
-- Capturas existentes actualizadas
-
-### Versión
-- `app.json` version: `2.0.0` → `2.4.0`
-- `package.json` version: `1.0.0` → `2.4.0`
-
-### EAS Build production
-- Build de producción lanzada para Android (APK)
+### Mapeos de condiciones
+- `weatherCodeToCondition()`: WMO codes → 9 condiciones normalizadas
+- `conditionToDescription`: descripciones en español
+- `conditionToIcon`: mapeo a nombres de iconos Lucide
+- `windDirectionLabel()`: grados → N/NE/E/SE/S/SO/O/NO
+- `formatTemperature()`: soporte °C/°F
 
 ---
 
-## v2.5 — Fase 8: Animaciones de Particulas Climaticas
+## Fase 0 — Scaffolding
 
-### Componente nuevo: `WeatherParticles` (`components/theme/WeatherParticles.tsx`)
-- Sistema de particulas animadas con Reanimated que se muestran segun la condicion climatica
-- 4 tipos de particulas:
-  - **Lluvia** (`rain`): 30 gotas cayendo con inclinacion por viento, color azul semitransparente
-  - **Tormenta** (`storm`): 40 gotas + flash de relampago periodico (secuencia de opacidad 0.7-0-0.4-0)
-  - **Nieve** (`snow`): 24 copos cayendo lentos con drift sinusoidal horizontal, color blanco
-  - **Niebla** (`fog`): 6 puffs grandes moviendose horizontalmente con baja opacidad
-- Condiciones sin particulas: `clear`, `partly_cloudy`, `cloudy`, `night_clear`, `night_cloudy`
+### Proyecto base
+- Proyecto Expo SDK 54 + TypeScript creado con `create-expo-app`
+- Expo Router v4 configurado (5 rutas: index, search, tides, map, settings)
+- NativeWind v4 + Tailwind CSS preset configurado
+- Babel config con Reanimated plugin
+- Metro config con NativeWind integration
+- TypeScript estricto habilitado con path aliases (`@/*`)
 
-### Arquitectura de particulas
-- `RainDrop`: linea vertical animada con `useSharedValue` + `withRepeat(withTiming())` para Y (caida) y opacidad (fade in/out)
-- `SnowFlake`: circulo pequeño con animacion Y (caida lenta) + X (drift sinusoidal con `withSequence`)
-- `FogPuff`: circulo grande borroso con animacion X (drift horizontal lento)
-- `LightningFlash`: overlay full-screen con `withSequence` para flash de relampago, intervalo 4-10s random
-- `seededRandom()`: generador pseudo-aleatorio deterministico para posiciones/offsets estables por render
-- Todas las particulas usan `pointerEvents="none"` para no bloquear interaccion
-- `cancelAnimation()` en `useEffect` cleanup para evitar leaks
+### Dependencias instaladas
+| Paquete | Versión | Uso |
+|---------|---------|-----|
+| expo | ~54.0.33 | Framework base |
+| expo-router | ~6.0.23 | Navegación file-based |
+| nativewind | ^4.2.3 | Tailwind para RN |
+| tailwindcss | ^3.4.19 | Engine CSS |
+| zustand | ^5.0.12 | Estado global |
+| @tanstack/react-query | ^5.100.1 | Cache de API |
+| react-native-mmkv | ^4.3.1 | Almacenamiento key-value |
+| react-native-reanimated | ~4.1.1 | Animaciones nativas |
+| react-native-worklets | latest | Peer dep de Reanimated |
+| lucide-react-native | ^1.9.0 | Iconos |
+| react-native-svg | ^15.12.1 | SVG para iconos |
+| expo-linear-gradient | ~15.0.8 | Gradientes dinámicos |
+| expo-location | ~19.0.8 | Geolocalización |
+| expo-notifications | ^0.32.16 | Push notifications |
+| react-native-safe-area-context | ~5.6.0 | Safe area |
+| react-native-screens | ~4.16.0 | Pantallas nativas |
 
-### Integracion en Home
-- `<WeatherParticles condition={condition} isDark={isDark} />` insertado dentro de `<DynamicBackground>` en `app/index.tsx`
-- Capa `position: absolute` entre el fondo degradado y el contenido
-- Exportado desde `components/theme/index.ts`
+### Estructura de carpetas
+```
+tiempo-app/
+├── app/               # Expo Router
+├── components/
+│   ├── theme/         # ThemeProvider, ThemedText, ThemedCard, DynamicBackground
+│   ├── ui/            # Skeleton, BottomNavBar
+│   ├── weather/       # Componentes del tiempo
+│   ├── city/          # Componentes de ciudades
+│   ├── tides/         # Componentes de mareas (fase 3)
+│   └── map/           # Componentes de mapa (fase 5)
+├── hooks/             # Custom hooks
+├── services/          # API clients
+├── stores/            # Zustand stores + MMKV persist
+├── types/             # TypeScript types
+├── constants/         # Tema, colores, mapeos
+└── assets/            # Iconos, imágenes
+```
 
-### Colores adaptativos
-- Lluvia claro: `rgba(96,165,250,0.35)` / oscuro: `rgba(147,197,253,0.5)`
-- Lluvia tormenta claro: `rgba(59,130,246,0.4)` / oscuro: `rgba(147,197,253,0.6)`
-- Nieve claro: `rgba(255,255,255,0.85)` / oscuro: `rgba(255,255,255,0.7)`
-- Niebla claro: `rgba(203,213,225,0.25)` / oscuro: `rgba(148,163,184,0.12)`
-- Relampago: `rgba(255,255,255,0.9)`
+### Sistema de tema (claro/oscuro)
+- `ThemeProvider` con contexto React
+- `useTheme()` hook: detecta sistema + override manual
+- `ThemedText`: color automático según modo
+- `ThemedCard`: fondo semitransparente adaptativo (claro: blanco 25%, oscuro: negro 30%)
+- `DynamicBackground`: gradientes duales por condición climática (9 condiciones x 2 modos = 18 gradientes)
+- Configuración: `settingsStore.theme` → `'system' | 'light' | 'dark'`
 
----
+### Servicios API
+- `services/openmeteo.ts`: `getWeather()`, `searchCities()`, `getMarineWeather()`
+- `services/aemet.ts`: `getAEMETForecast()`, `getAEMETAlerts()`, `getAEMETTides()` (pendiente API key)
 
-## v2.5.1 — Revert de Widgets
+### Stores
+- `stores/cityStore.ts`: `useCityStore` (ciudades + ciudad activa) + `useSettingsStore` (tema, unidades, notificaciones)
+- Persistencia con MMKV
 
-### Widgets eliminados (postpuesto a Expo 55)
-- **Razon:** `expo-widgets` y `@expo/ui` (dependencia transitoria) requieren Expo SDK 55. La app usa Expo 54, causando `ClassNotFoundException: ComposeViewFunctionDefinitionBuilder` al iniciar.
-- Eliminado `expo-widgets` de `package.json`
-- `@react-native-community/slider` **mantenido** (se usa en RadarTimeline, Fase 9)
-- Eliminado `modules/tiempo-widget/` (modulo nativo Expo con Kotlin + JS)
-- Eliminado `hooks/useWidgetUpdater.ts`
-- Eliminado import y llamada a `useWidgetUpdater` en `app/index.tsx`
-- Eliminados `WeatherWidgetProvider.kt` y `WeatherWidgetMediumProvider.kt` (Kotlin)
-- Eliminados layouts XML: `widget_weather_small.xml`, `widget_weather_medium.xml`
-- Eliminados drawables: `widget_bg_dark.xml`, `widget_bg_light.xml`
-- Eliminados metadatos: `widget_weather_small_info.xml`, `widget_weather_medium_info.xml`
-- Eliminados receivers de `AndroidManifest.xml`
-- `package.json` y `package-lock.json` restaurados a Version 2.5
+### Hooks
+- `useWeather(lat, lon, cityName)` → TanStack Query, stale 10min, cache 30min
+- `useTides(lat, lon, isCoastal)` → TanStack Query, stale 30min
+- `useCities()` → Zustand store wrapper
+- `useAlerts(zonaCode)` → AEMET avisos
+- `useLocation()` → expo-location con reverse geocode
+- `useTheme()` → sistema + override manual
 
-### Nota
-- Los widgets de pantalla de inicio se retomaran en la Fase 10 al migrar a Expo SDK 55+
-- Las animaciones de radar (Fase 9) se mantienen intactas
-
----
-
-## v3.1 — Mejoras en particulas y mapa
-
-### WeatherParticles — Nuevas particulas y correcciones
-- **Bug: `runOnJS` eliminado** en `LightningFlash` — el `setInterval` ya corre en JS thread, el wrapper era redundante y anadia un salto de hilo innecesario.
-- **Visibilidad de nieve en modo claro**: color cambiado de `rgba(255,255,255,0.85)` a `rgba(200,215,240,0.9)` (azul-gris claro) para contrastar con el fondo casi blanco `#F1F5F9`.
-- **Visibilidad de niebla en modo claro**: opacidad aumentada y tono cambiado a azul-gris (`rgba(180,200,220,0.35)`) para mejor contraste.
-- **Visibilidad de lluvia en modo claro**: color mas saturado (`rgba(59,130,246,0.45)`) para destacar del fondo.
-- **Transicion fade**: el contenedor de particulas ahora hace fade in/out al aparecer/desaparecer (500ms/300ms), eliminando cortes abruptos al cambiar de condicion.
-- **Nuevas particulas "Sparkle"**: 6-10 puntitos pulsantes para `clear` (amarillo-dorado, simulan reflejos de sol) y `night_clear` (blancos, simulan estrellas titilantes).
-- **Nuevas particulas "CloudPuff"**: 2-3 nubes lentas semitransparentes para `partly_cloudy`, `cloudy` y `night_cloudy`, con colores adaptativos segun modo dia/noche y densidad de nubosidad.
-- **Primer relampago inmediato**: `triggerFlash()` se llama al montarse, no espera el primer intervalo aleatorio.
-
-### WeatherMap — Opacidad por capa y filtro CSS para humedad
-- **Bug: humedad no cargaba en modo oscuro**: la capa de humedad usaba API v2 de OWM (`HRD0`) que devolvia tiles incompatibles. Cambiado a API v1 (`humidity_m`) como el resto de capas.
-- **Opacidad por capa** (antes era generica 0.7 claro / 0.85 oscuro):
-  - Nubes (OWM): 0.85 claro / 0.85 oscuro
-  - Viento: 0.80 claro / 0.85 oscuro
-  - Humedad: 0.85 claro / 0.85 oscuro
-  - Precipitacion, temperatura, presion: 0.70 claro / 0.85 oscuro
-- **Filtro CSS para humedad en modo claro**: se crea un pane separado (`map.createPane('overlay')`) para la capa superpuesta. En modo claro con humedad activa, se inyecta `filter: brightness(0.65) saturate(1.5)` solo en ese pane, oscureciendo los blancos a gris y saturando los azules. El filtro se resetea al cambiar de capa o modo.
-- **`pane: 'overlay'`** en todas las capas superpuestas (tanto creacion inicial como `injectLayer`, `injectRadarAnimation` e `injectRadarFrame`).
-
-### hooks/useWeatherLayers.ts
-- `OWM_LAYER_MAP` simplificado: eliminado flag `v2`.
-- Eliminado import de `getOpenWeatherMapV2TileUrl`.
+### Pantallas placeholder
+- `app/index.tsx` — Home
+- `app/search.tsx` — Búsqueda
+- `app/tides.tsx` — Mareas
+- `app/map.tsx` — Mapa
+- `app/settings.tsx` — Ajustes
 
 ### Limpieza
-- `services/weatherLayers.ts`: `getOpenWeatherMapV2TileUrl()` ya no se importa desde ningun lado (codigo muerto mantenido por compatibilidad).
-
----
-
-## v3.0 — Release Estable
-
-- Version actualizada a 3.0 en `app.json`, `package.json`, `README.md` y `plan.md`
-- EAS Build perfil `production` configurado con `autoIncrement: true`
-- Widgets eliminados (postpuesto a Expo 55)
-- Build de produccion via EAS (APK firmado)
-
-### Notificaciones — 8 bugs corregidos
-- **Canal Android**: `channelId: "weather-alerts"` ahora referenciado en `scheduleAlertNotification()`
-- **typeEmoji**: añadido `default: return "⚠️"` para tipos desconocidos
-- **typeEmoji**: añadido caso `"fog"` → `"🌫️"`
-- **badge**: eliminado `badge: 1` hardcodeado del content; ahora gestionado con `setBadgeCount()`
-- **Deduplicación persistente**: `lastAlertIds` migrado de `Set<string>` en memoria a MMKV con TTL 24h
-- **IDs con fecha**: `` `local-${type}-${severity}-${lat}-${lon}-${dateStr}` `` para evitar duplicados entre días
-- **Niebla como tipo propio**: `makeAlert("fog", ...)` en lugar de `makeAlert("rain", ...)`
-- **FOG_CODES**: uso de códigos WMO 45/48 + visibilidad < 1000m para detección de niebla
-- **Código muerto eliminado**: `windMax` y `now` en `alerts.ts`
-- **Heat fusionado**: UV y temperatura combinados, tomando la severidad más alta
-- **Cleanup al desactivar**: `cancelAllAlertNotifications()` + `setBadgeCount(0)` al apagar notificaciones (settings + home)
-- **`.catch()`** en `requestNotificationPermissions()` (settings + home)
-- **`setupNotificationChannel()`** hecho async con `await`
-- **Toggle "Niebla"** en Settings con icono `CloudFog` (lucide)
-- **`fog: true`** en default settings + `fog` en tipo `WeatherAlert["type"]`
-- **`fog: "🌫️"`** en `AlertRow.iconMap`
-
-### Fase 11 — Calidad del Aire (AQI)
-- **Tipos**: `AirQualityData` + `getAQILabel()`, `getAQIDescription()`, `getAQIColor()` en `types/weather.ts`
-- **Escala EAQI**: 0-20 Bueno (#50F0E6), 20-40 Moderado (#50CCAA), 40-60 Deficiente (#F0E641), 60-80 Malo (#FF5050), 80-100 Muy malo (#960032), >100 Extremo (#7D2181)
-- **Servicio**: `getAirQuality(lat, lon)` en `services/openmeteo.ts` → `air-quality-api.open-meteo.com/v1`
-- **Hook**: `useAirQuality(lat, lon)` con TanStack Query (stale 30min, gcTime 60min, retry 1)
-- **Componente**: `AirQualityCard` en `components/weather/AirQualityCard.tsx`
-  - Header con icono Wind + AQI numérico en círculo coloreado
-  - Label + descripción del AQI actual
-  - Barra horizontal con gradiente EAQI (6 segmentos) y marcador
-  - Detalle expandible (tap): 4 barras de contaminantes (PM2.5 max=75, PM10 max=150, O3 max=200, NO2 max=200)
-  - Adaptación colored/monochrome
-- **Integración**: en Home debajo de WeatherDetails (AnimatedView delay 400)
-
-### Fase 12 — Fase Lunar + Orto/Ocaso Lunar
-- **Cálculo local**: `utils/lunar.ts` con algoritmo trigonométrico (sin API externa)
-  - `calculateMoonPhase(date)`: edad lunar desde luna nueva de referencia (6 ene 2000), 8 fases, iluminación %
-  - `calculateMoonTimes(date, lat, lon)`: orto/ocaso lunar aproximado
-- **Tipos**: `LunarPhaseData` en `types/weather.ts`
-- **Hook**: `useLunarPhase(lat, lon, daily)` con `useMemo` (sin query, instantáneo)
-- **Componente**: `LunarPhaseCard` en `components/weather/LunarPhaseCard.tsx`
-  - 8 SVGs custom con `react-native-svg` (NewMoon, WaxingCrescent, FirstQuarter, WaxingGibous, FullMoon, WaningGibous, LastQuarter, WaningCrescent)
-  - Luna coloreada (#FCD34D) o monocroma según preferencia de iconos
-  - Amanecer/Atardecer con iconos Sunrise/Sunset (lucide)
-  - Orto/Ocaso lunar con iconos Moon (lucide)
-  - Sección de tiempos con línea divisoria
-- **Integración**: en Home debajo de AirQualityCard (AnimatedView delay 500)
-- **Export**: ambos componentes en `components/weather/index.ts`
-
-### Seguridad — Hardening v3.0
-
-- **Paquetes eliminados**:
-  - `react-native-windows` (4 HIGH CVEs en `@xmldom/xmldom` ≤0.8.12, app es solo Android)
-  - `@types/react-native` (deprecated, React 19 incluye tipos propios)
-  - `react-native-web` (dep directa innecesaria, ya es transitive dep)
-- **AndroidManifest.xml**:
-  - Eliminados permisos peligrosos: `SYSTEM_ALERT_WINDOW`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`
-  - `allowBackup="false"` (claves API MMKV no deben copiarse en backup)
-- **WeatherMap WebView**:
-  - SRI hashes en Leaflet CDN (CSS + JS) — protege contra CDN comprometido/MITM
-  - `originWhitelist` restringido de `["*"]` a `["about", "data", "https"]`
-  - `sanitizeUrl()` añadida: solo permite `https://` y `data:`, rechaza todo lo demás
-  - URLs interpoladas en `injectJavaScript` pasan por `sanitizeUrl()` (tileUrl, initialTileUrl, url en radar)
-- **Dependencias actualizadas** (seguras dentro de SDK 54):
-  - `react-native-worklets` 0.5.1 → 0.8.1 (requerido por reanimated 4.3.0)
-  - `expo` → ~54.0.34, `@expo/metro-config` → ~54.0.15, `expo-linking` → ~8.0.12
-  - `expo-notifications` → ~0.32.17, `@tanstack/react-query` → ^5.100.6
-  - `lucide-react-native` → ^1.14.0, `react-native-svg` → ^15.15.4
-  - `react-native-nitro-modules` → ^0.35.6, `@react-native-community/slider` → ^5.2.0
-  - `react-native-safe-area-context` → ^5.7.0, `react-native-reanimated` → ~4.3.0
-  - `react-native-screens` → ~4.24.0
-- **Vulnerabilidades**: 24 → 13 (0 HIGH, 13 moderate transitivos de Expo SDK 54 — no fixeables sin SDK 55)
-
-### Calidad y Seguridad (en desarrollo)
-- **Bugs**: `formatTemperature()` / `formatWind()` aplicados en todos los componentes; GPS stale closure fix; `dismissRef` en AlertBanner; HourlyForecast timezone fix
-- **Rendimiento**: WeatherMap `html` en `useMemo` sin deps de animación; ThemeProvider `useMemo`; ThemedCard/ThemedText `StyleSheet.create`; HourlyForecast `ScrollView` → `FlatList`; TideChart SVG en `useMemo`
-- **Animaciones**: SwipeableCityRow y Skeleton migrados a Reanimated + GestureHandler (UI thread); WeatherParticles contadores reducidos
-- **Limpieza**: Eliminados `Original.png` (2,2 MB) + `assets/Old/` (464 KB); no-op `useEffect` en `useTheme`
-- **WebView**: `sanitizeUrl` solo permite `data:image/*`; `originWhitelist` sin entrada `data`; `onShouldStartLoadWithRequest` más estricto
-- **AEMET**: `res.ok` añadido al segundo fetch (`data.datos`)
-- **Search**: `AbortController` cancela peticiones en vuelo al escribir nueva búsqueda (race condition fix)
-
----
-
-## v3.2 — Integración AEMET + Corrección de Alertas
-
-### Umbrales de alerta ajustados (menos ruido)
-- **Viento**: ≥50 km/h amarillo (antes ≥38), ≥65 naranja (antes ≥50), ≥90 rojo (antes ≥70)
-- **UV**: ≥8 amarillo (antes ≥6), ≥10 naranja (antes ≥8), ≥12 rojo (antes ≥11)
-- **Temperatura**: naranja ≥40°C (antes ≥38), rojo ≥44°C (antes ≥42)
-- **Lluvia**: añadido umbral rojo ≥95% probabilidad (antes solo yellow ≥70%, orange ≥90%)
-- **Frío**: añadido umbral rojo ≤-20°C (antes solo yellow ≤-5°C, orange ≤-10°C)
-
-### Integración AEMET OpenData (alertas oficiales)
-- **API Key configurable**: nuevo campo `aemetApiKey` en `AppSettings`, persistido en MMKV
-- **Input en Settings**: sección "AEMET OpenData" con API key editable (mismo patrón que OWM), llama a `configureAEMET()` al guardar
-- **Init automático**: `_layout.tsx` configura AEMET al arrancar si hay key guardada
-- **Mapa de zonas**: `constants/aemetZones.ts` — mapeo `admin1` → código zona AEMET (17 CCAA + Ceuta/Melilla con variantes de nombre de Open-Meteo y expo-location)
-- **Utilidad `getAEMETZone(city)`**: deriva código de zona AEMET desde el campo `admin1` de `City`
-
-### Hook combinado de alertas (`hooks/useAlerts.ts`)
-- **`useMergedAlerts(weather, city)`**: AEMET como fuente principal, locales como fallback/complemento
-  - Si AEMET está configurada y responde OK: sus alertas reemplazan las locales del mismo tipo
-  - Tipos que AEMET no cubre: se mantienen alertas locales como complemento
-  - Si AEMET falla o no hay key: fallback completo a alertas locales
-- **`useAEMETAlerts(zonaCode)`**: query TanStack para avisos AEMET (stale 15min, gcTime 60min)
-- **`useLocalAlerts(weather)`**: sin cambios, genera alertas locales
-
-### Background fetch con AEMET (`services/backgroundAlerts.ts`)
-- Si `settings.aemetApiKey` existe, configura AEMET y hace fetch de avisos por zona
-- Merge AEMET+locales con misma lógica que el hook combinado
-- Badge count corregido: ahora muestra **total de alertas activas** (no solo nuevas)
-
-### 8 bugs corregidos en sistema de notificaciones
-1. **🔴 Badge count incorrecto en background**: `setBadgeCount(newAlerts)` → `setBadgeCount(totalActive)`. Antes sobreescribía el total con solo las nuevas de esa ejecución
-2. **🔴 Cantabria mapeada a Canarias**: `"Cantabria": "CAN"` → `"Cantabria": "SAN"`. Las ciudades cántabras recibían avisos de Canarias
-3. **🟡 ID AEMET no determinista**: `aemet-${zonaCode}-${i}` → `aemet-${zonaCode}-${type}-${severity}-${onset date}`. El índice del array cambiaba entre llamadas, rompiendo dedup
-4. **🟡 Fallback AEMET → rain**: `parseAEMETType()` ahora devuelve `null` para tipos no reconocidos (polvo, deshielo, etc.), que se filtran. Añadidos mapeos: niebla, polvo/arena/calima → `fog`, deshielo/hielo → `cold`
-5. **🟡 Toggle costera sin AEMET**: nota "Requiere API AEMET" bajo el toggle cuando no hay key configurada
-6. **🔵 rain.red sin threshold**: añadido ≥95% probabilidad de precipitación
-7. **🔵 Descripción calor rama muerta**: condición cambiada de `uvIndex >= 6` a `uvIndex >= 8` para coincidir con el nuevo umbral. Rama de "Temperaturas extremas" ahora accesible cuando la alerta viene solo por temperatura
-8. **🔵 cold.red sin threshold**: añadido ≤-20°C
-
-### Link AEMET condicional
-- `alert-detail.tsx`: enlace "Ver avisos AEMET" solo visible si hay API key configurada
-
-### Descripción de calor mejorada
-- Cuando la alerta de calor se origina solo por temperatura (sin UV alto), muestra "Temperaturas extremas..." en lugar del texto de UV
+- Eliminados archivos legacy: `index.html`, `script.js`, `style.css`, `Tiempo.py`, subdirectorio `Tiempo/`
