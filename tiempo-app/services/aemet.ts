@@ -132,10 +132,15 @@ function parseCAPAlert(parsed: any, zonaCode: string, subzonePatterns?: string[]
 
   if (subzonePatterns && subzonePatterns.length > 0 && areaDesc) {
     const descLower = areaDesc.toLowerCase();
-    const matches = subzonePatterns.some((p) =>
+    const matchesSubzone = subzonePatterns.some((p) =>
       descLower.includes(p.toLowerCase())
     );
-    if (!matches) return null;
+    if (!matchesSubzone) return null;
+
+    const adminPattern = subzonePatterns[0];
+    if (adminPattern && !descLower.includes(adminPattern.toLowerCase())) {
+      return null;
+    }
   }
 
   const onset = info.onset || new Date().toISOString();

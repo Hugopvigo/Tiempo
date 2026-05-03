@@ -25,6 +25,8 @@
 ### Versión
 - `app.json`, `package.json`, `package-lock.json` → 3.5.0
 - `versionCode` Android: 1 → 2
+- EAS Build production subido con runtime 3.5.0
+- Token Expo guardado en `.env` (gitignored)
 
 ---
 

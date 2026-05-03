@@ -79,7 +79,11 @@ export async function getWeather(lat: number, lon: number, cityName: string): Pr
   const isDay = current.is_day === 1;
 
   const now = new Date();
-  const currentHourIndex = data.hourly.time.findIndex((t) => new Date(t) >= now);
+  const currentHour = now.getHours();
+  const currentHourIndex = data.hourly.time.findIndex((t) => {
+    const hour = parseInt(t.split("T")[1]?.split(":")[0] ?? "0", 10);
+    return hour >= currentHour;
+  });
   const fallbackHourIndex = currentHourIndex >= 0 ? currentHourIndex : 0;
 
   return {

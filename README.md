@@ -1,4 +1,4 @@
-# Tiempo — Tu Clima en Tiempo Real - Version 3.3
+# Tiempo — Tu Clima en Tiempo Real - Version 3.5
 
 [![Expo](https://img.shields.io/badge/Expo-54+-000020.svg?style=flat&logo=expo&logoColor=white)](https://expo.dev)
 [![React Native](https://img.shields.io/badge/React_Native-0.81+-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactnative.dev)
@@ -25,7 +25,7 @@
 
 ## Caracteristicas Principales
 
-- **Pronostico Detallado:** Tiempo actual, prevision por horas (24h) y a 7 dias.
+- **Pronostico Detallado:** Tiempo actual, prevision por horas (24h), a 7 días, y **gráfico de probabilidad de lluvia** con área/línea SVG para las próximas 24h.
 - **Calidad del Aire:** Indice EAQI europeo con barra de progreso y detalle expandible (PM2.5, PM10, O3, NO2) via Open-Meteo Air Quality API.
 - **Fase Lunar:** 8 fases lunares con SVGs custom, iluminacion %, orto/ocaso lunar y amanecer/atardecer. Calculo local sin API externa.
 - **Mareas Dinamicas:** Gráficos sinusoidales con **Skia** para zonas costeras. Deteccion automatica de ciudades costeras vs interiores con datos de la Open-Meteo Marine API. Indicador de marea subiendo/bajando en tiempo real y horarios de pleamar/bajamar.
@@ -33,7 +33,7 @@
 - **Mapa Interactivo:** Capas de radar de lluvia (RainViewer), satelite infrarrojo de nubes, y capas adicionales de temperatura, viento, humedad y presion via OpenWeatherMap. Opacidad optimizada por capa y filtro CSS para mejorar visibilidad de humedad en modo claro. Animacion de radar en tiempo real con timeline de frames (play/pause/scrub).
 - **Widgets:** *(Postpuesto)* Requiere Expo SDK 55+. Widget compacto (2x1) y widget de previsión (4x2) para pantalla de inicio. Se retomará al migrar a Expo 55.
 - **Notificaciones Push:** Alertas meteorologicas en segundo plano con configuracion por tipo de alerta. Umbrales ajustados para menos ruido (viento ≥50 km/h, UV ≥8).
-- **Interfaz Adaptativa:** Fondos degradados dinamicos que cambian segun la condicion climatica y el modo (claro/oscuro).
+- **Interfaz Adaptativa:** Fondos degradados dinamicos que cambian segun la condicion climatica y el modo (claro/oscuro). Particulas animadas climaticas (lluvia, tormenta, nieve, niebla, nubes, destellos) con densidades mejoradas.
 - **Gestion de Ciudades:** Busqueda con autocompletado y almacenamiento local ultra rapido con **MMKV**.
 - **Geolocalizacion:** Acceso instantaneo al clima de tu ubicacion actual.
 - **Claves API configurables:** El usuario puede introducir su propia API Key de OpenWeatherMap y AEMET OpenData desde Ajustes. OWM desbloquea capas adicionales del mapa; AEMET activa alertas oficiales y notificaciones costeras.
