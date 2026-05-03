@@ -63,7 +63,7 @@ export function PrecipitationChart({ hourly }: PrecipitationChartProps) {
   if (!chartData || !chartData.hasData) return null;
 
   const lineColor = isDark ? "#5AC8FA" : "#007AFF";
-  const fillOpacity = isDark ? "0.15" : "0.12";
+  const fillOpacity = isDark ? "0.3" : "0.25";
   const gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
   const labelColor = isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
 

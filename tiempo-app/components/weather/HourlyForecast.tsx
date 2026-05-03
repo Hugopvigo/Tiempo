@@ -42,7 +42,7 @@ export function HourlyForecastCard({ hourly }: HourlyForecastProps) {
   ), [unit]);
 
   return (
-    <ThemedCard style={{ marginBottom: 12, paddingHorizontal: 20, paddingVertical: 18 }}>
+    <ThemedCard style={{ paddingHorizontal: 20, paddingVertical: 18 }}>
       <ThemedText
         secondary
         style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 14, letterSpacing: 0.5 }}
