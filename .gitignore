@@ -66,3 +66,4 @@ local-build-setup.sh
 # Root config files
 .androidStudio.md
 tiempo-app/Install.md
+EASinfo.md
