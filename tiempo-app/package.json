@@ -1,6 +1,6 @@
 {
   "name": "tiempo-app",
-  "version": "3.5.0",
+  "version": "4.0.0",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",

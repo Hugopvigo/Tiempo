@@ -74,10 +74,13 @@ export default function HomeScreen() {
             <TouchableOpacity
               onPress={() => setShowCitySelector(true)}
               activeOpacity={0.6}
-              style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingTop: 8, paddingBottom: 4, gap: 4 }}
+              style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", paddingTop: 8, paddingBottom: 4, paddingHorizontal: 24, gap: 4 }}
             >
-              <ThemedText style={{ fontSize: 24, fontWeight: "600" }}>
-                {activeCity.isLocation ? "Mi ubicación" : activeCity.name}
+              <ThemedText
+                numberOfLines={2}
+                style={{ fontSize: 30, fontWeight: "600", textAlign: "center", flexShrink: 1 }}
+              >
+                {activeCity.name}
               </ThemedText>
               <ChevronDown size={18} color={iconColor} />
             </TouchableOpacity>
@@ -114,7 +117,6 @@ export default function HomeScreen() {
               <View style={{ gap: 16 }}>
                 <AnimatedView delay={0}>
                   <CurrentWeather
-                    cityName=""
                     temperature={weather.current.temperature}
                     feelsLike={weather.current.feelsLike}
                     condition={weather.current.condition}

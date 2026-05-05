@@ -6,7 +6,6 @@ import { formatTemperature } from "@/constants/weather";
 import { useSettingsStore } from "@/stores/cityStore";
 
 interface CurrentWeatherProps {
-  cityName: string;
   temperature: number;
   feelsLike: number;
   condition: WeatherCondition;
@@ -16,7 +15,6 @@ interface CurrentWeatherProps {
 }
 
 export function CurrentWeather({
-  cityName,
   temperature,
   feelsLike,
   condition,
@@ -29,12 +27,6 @@ export function CurrentWeather({
 
   return (
     <View style={{ alignItems: "center", paddingTop: 20, paddingBottom: 24 }}>
-      {cityName ? (
-        <ThemedText style={{ fontSize: 34, fontWeight: "600", letterSpacing: 0.5 }}>
-          {cityName}
-        </ThemedText>
-      ) : null}
-
       <WeatherIcon condition={condition} size={40} colored />
 
       <ThemedText style={{ fontSize: 102, fontWeight: "200", marginTop: -4 }}>

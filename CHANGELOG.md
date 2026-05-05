@@ -1,5 +1,59 @@
 # Changelog
 
+## v4.0 — Rediseño UI + Mapa simplificado + Previsión colapsable
+
+### Rediseño de la cabecera de ciudad en Home
+- Nombre de ciudad aumentado a 30px, fontWeight 600, centrado con `numberOfLines={2}` y `flexShrink: 1`
+- Eliminada la lógica `"Mi ubicación"` vs nombre real: ahora siempre muestra `activeCity.name`
+- Añadido `paddingHorizontal: 24` para mejor espaciado lateral
+
+### CurrentWeather simplificado
+- Eliminada prop `cityName` del componente `CurrentWeather`
+- Eliminado el bloque de nombre de ciudad dentro de CurrentWeather (ya se muestra en la cabecera superior)
+- Interfaz más limpia: solo icono, temperatura, descripción y H/L
+
+### Previsión 7 días colapsable (como Calidad del Aire)
+- `DailyForecastCard` muestra solo **4 días** por defecto
+- Botón **"Más"** / **"Menos"** con chevron (`ChevronDown`/`ChevronUp`) para expandir/colapsar
+- Toda la tarjeta es `TouchableOpacity` para alternar expansión
+- Patrón idéntico al de `AirQualityCard` (`useState(false)` + renderizado condicional)
+
+### Capa de humedad eliminada del mapa
+- `MapLayer` type: eliminado `"humidity"` — ahora 5 capas: precipitación, nubes, temperatura, viento, presión
+- `LayerSelector`: eliminado botón de humedad (icono `Droplets`)
+- `useWeatherLayers`: eliminado `"humidity"` de `OWM_LAYER_MAP` y `availableLayers`
+- `WeatherMap`: eliminada inyección de capa de humedad
+- `map.tsx`: eliminado import de `LayerInfo`, eliminado componente `<LayerInfo>`
+
+### Etiqueta de capa activa en el mapa
+- `WeatherMap` recibe nueva prop `layerLabel` — texto descriptivo de la capa seleccionada
+- Se muestra debajo de la descripción del tiempo actual con línea divisoria superior
+- `map.tsx`: nuevo objeto `layerLabels` con nombres en español por capa
+
+### Botones del selector de capas mejorados en modo oscuro
+- Opacidad de fondo inactivo: 0.18 → 0.28
+- Opacidad de borde: 0.22 → 0.35
+- Color de icono inactivo: `rgba(255,255,255,0.5)` → `rgba(255,255,255,0.65)`
+- Aspecto más sólido y legible en tema oscuro
+
+### Correcciones visuales en AirQualityCard modo monocromo
+- AQI numérico en círculo: color explícito `isDark ? "#FFFFFF" : "#000000"` en modo monocromo (antes `undefined` = invisible en oscuro)
+- Label AQI: color `isDark ? "#F8FAFC" : undefined` en modo monocromo (antes invisible)
+
+### Pantalla de Mareas
+- Nombre de ciudad aumentado de 16px/500 a 22px/600
+- Eliminada la lógica `"Mi ubicación"` vs nombre real: siempre muestra `activeCity.name`
+
+### Pantalla de Ajustes
+- Título "Ajustes" reducido de 34px a 30px para mayor consistencia
+
+### Versión
+- `app.json`, `package.json` → 4.0.0
+- `versionCode` Android: 4 → 5
+- EAS Build production con runtime 4.0.0
+
+---
+
 ## v3.5 — Gráfico de lluvia + Partículas mejoradas + Botones mapa
 
 ### Nuevo: Gráfico de probabilidad de lluvia

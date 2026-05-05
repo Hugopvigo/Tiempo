@@ -13,7 +13,6 @@ const OWM_LAYER_MAP: Record<string, string> = {
   temperature: "temp_new",
   wind: "wind_new",
   clouds: "clouds_new",
-  humidity: "humidity",
   pressure: "pressure_new",
 };
 
@@ -97,7 +96,7 @@ export function useWeatherLayers() {
   const availableLayers = useMemo(() => {
     const layers: string[] = ["precipitation", "clouds"];
     if (owmApiKey) {
-      layers.push("temperature", "wind", "humidity", "pressure");
+      layers.push("temperature", "wind", "pressure");
     }
     return layers;
   }, [owmApiKey]);

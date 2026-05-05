@@ -1,7 +1,7 @@
 import { View, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeContext } from "@/components/theme";
-import { WeatherMap, LayerSelector, LayerInfo, RadarTimeline } from "@/components/map";
+import { WeatherMap, LayerSelector, RadarTimeline } from "@/components/map";
 import type { MapLayer } from "@/components/map";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { useCities } from "@/hooks/useCities";
@@ -33,6 +33,14 @@ export default function MapScreen() {
   } = useWeatherLayers();
 
   const isRadarLayer = selectedLayer === "precipitation";
+
+  const layerLabels: Record<string, string> = {
+    precipitation: "Radar de precipitación",
+    clouds: "Cobertura de nubes",
+    temperature: "Temperatura superficial",
+    wind: "Velocidad del viento",
+    pressure: "Presión a nivel del mar",
+  };
 
   const handleCityPress = useCallback((city: typeof cities[0]) => {
     setActiveCity(city);
@@ -69,10 +77,9 @@ export default function MapScreen() {
           frameIndex={frameIndex}
           pastCount={pastCount}
           onFrameChange={handleFrameChange}
+          layerLabel={layerLabels[selectedLayer]}
         />
       </View>
-
-      <LayerInfo layer={selectedLayer} />
 
       {isRadarLayer && (
         <RadarTimeline

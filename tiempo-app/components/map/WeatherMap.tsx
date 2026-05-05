@@ -1,5 +1,5 @@
 import { useRef, useCallback, useMemo, useState, useEffect } from "react";
-import { View, ActivityIndicator, Text, TouchableOpacity } from "react-native";
+import { View, ActivityIndicator, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { WebView as RNWebView } from "react-native-webview";
 import type { City } from "@/types/weather";
 import { useThemeContext , ThemedText } from "@/components/theme";
@@ -22,6 +22,7 @@ interface WeatherMapProps {
   frameIndex?: number;
   pastCount?: number;
   onFrameChange?: (index: number) => void;
+  layerLabel?: string;
 }
 
 function sanitizeUrl(url: string): string {
@@ -60,6 +61,7 @@ export function WeatherMap({
   frameIndex = -1,
   pastCount = 0,
   onFrameChange,
+  layerLabel,
 }: WeatherMapProps) {
   const { isDark } = useThemeContext();
   const { settings } = useSettingsStore();
@@ -465,6 +467,13 @@ window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(
             <ThemedText secondary style={{ fontSize: 11 }}>
               {current.description}
             </ThemedText>
+            {layerLabel && (
+              <View style={{ marginTop: 2, paddingTop: 4, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)" }}>
+                <ThemedText style={{ fontSize: 10, fontWeight: "500", opacity: 0.7 }}>
+                  {layerLabel}
+                </ThemedText>
+              </View>
+            )}
           </View>
         </View>
       )}

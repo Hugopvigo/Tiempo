@@ -150,23 +150,24 @@ tiempo-app/
 
 ### Fase 5 — Mapa Meteorológico
 - [x] Mapa WebView con Leaflet + CartoDB tiles (light_all / dark_all)
-- [x] Capas: radar lluvia (RainViewer), nubes (satélite/OWM), temperatura, viento, humedad, presión
+- [x] Capas: radar lluvia (RainViewer), nubes (satélite/OWM), temperatura, viento, presión (5 capas — humedad eliminada en v4.0)
 - [x] Selector de capas (`LayerSelector`) con 6 botones horizontales
 - [x] Marcadores de ciudades guardadas con divIcons personalizados
 - [x] Estilo mapa adaptado a modo claro/oscuro
 - [x] Clave API OpenWeatherMap configurable desde Settings
 - [x] Capas OWM V1 (humedad_m) — humedad migrada de V2 HRD0 a V1 humidity_m
 - [x] `useOwmClouds` alternancia entre satélite y tiles OWM para nubes
-- [x] Opacidad por capa (nubes 0.85, viento 0.8, humedad 0.85 en modo claro)
-- [x] Filtro CSS `brightness(0.65) saturate(1.5)` en pane overlay para humedad en modo claro
+- [x] Opacidad por capa (nubes 0.85, viento 0.8 en modo claro)
+- [x] Etiqueta de capa activa visible en el mapa (v4.0)
+- [x] Botones del selector de capas mejorados en modo oscuro (v4.0): fondo 0.28, borde 0.35, icono 0.65
 - [x] `errorTileUrl` para tiles fallidos
 
 ### Fase 6 — Capas adicionales OWM
-- [x] Capas de temperatura, viento, humedad y presion via OpenWeatherMap
+- [x] Capas de temperatura, viento y presion via OpenWeatherMap (5 capas — humedad eliminada en v4.0)
 - [x] Seccion "Claves API" en Settings con input de OpenWeatherMap API Key
-- [x] Capas V1 (humidity_m para humedad) — todas las capas usan API V1
+- [x] Capas V1 (humidity_m para humedad) — eliminada en v4.0
 - [x] Capas disponibles sin API key: precipitacion, nubes
-- [x] Capas disponibles con API key: temperatura, viento, humedad, presion
+- [x] Capas disponibles con API key: temperatura, viento, presion
 
 ### Fase 7 — Mareas v2
 - [x] `sea_level_height_msl` integrado en `getMarineWeather()`
@@ -224,23 +225,25 @@ tiempo-app/
 
 ## Version Actual
 
-**v3.5** — Gráfico de lluvia + Partículas mejoradas + Botones mapa:
-- Previsión actual + 7 días (Open-Meteo + AEMET)
-- **Gráfico de probabilidad de lluvia**: área/línea SVG con curva Bezier 24h, integrado entre previsión horaria y semanal
+**v4.0** — Rediseño UI + Mapa simplificado + Previsión colapsable:
+- Previsión actual + 7 días (Open-Meteo + AEMET) — **colapsable**: 4 días por defecto, expandible a 7
+- Cabecera de ciudad rediseñada: nombre grande centrado (30px, 2 líneas)
+- CurrentWeather simplificado: sin nombre de ciudad duplicado
+- **Gráfico de probabilidad de lluvia**: área/línea SVG con curva Bezier 24h
 - Gestión de ciudades con GPS y swipe-to-delete
 - Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
 - Alertas oficiales AEMET integradas: API key configurable, merge inteligente sin duplicados
 - Umbrales ajustados (menos ruido): viento 50/65/90, UV 8/10/12, temp 40/44
-- Mapa meteorológico interactivo con 6 capas (RainViewer, satélite, OWM) — opacidad por capa y filtro CSS para humedad en modo claro. Botones del selector con mayor opacidad en modo oscuro (0.10→0.18)
+- Mapa meteorológico interactivo con 5 capas (RainViewer, satélite, OWM) — etiqueta de capa activa, botones mejorados en modo oscuro. Capa de humedad eliminada
 - Animación de radar en tiempo real con timeline de frames (play/pause/scrub)
-- Calidad del Aire (AQI europeo) con detalle expandible (PM2.5, PM10, O3, NO2)
+- Calidad del Aire (AQI europeo) con detalle expandible (PM2.5, PM10, O3, NO2) — corrección colores monocromos en oscuro
 - Fase Lunar con SVGs custom + orto/ocaso lunar + amanecer/atardecer
 - *(Widgets postpuesto — requiere Expo 55)*
 - Estilo de iconos configurable (color/monocromo)
-- Animaciones de partículas climáticas más densas: lluvia 30, tormenta 40, nieve 20, niebla 8, destellos 10-15, nubes 3-5
+- Animaciones de partículas climáticas: lluvia 30, tormenta 40, nieve 20, niebla 8, destellos 10-15, nubes 3-5
 - Modo claro/oscuro con gradientes dinámicos
 - EAS Build configurado (development, preview, production — APK)
-- EAS Build production v3.5 subido (APK firmado)
+- EAS Build production v4.0 subido (APK firmado)
 
 ## Principios de Diseño (estilo Apple Weather)
 

@@ -55,7 +55,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? screenBackground.dark : screenBackground.light }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
-        <ThemedText style={{ fontSize: 34, fontWeight: "600", marginBottom: 24 }}>
+        <ThemedText style={{ fontSize: 30, fontWeight: "600", marginBottom: 24 }}>
           Ajustes
         </ThemedText>
 

@@ -1,8 +1,8 @@
 import { View, TouchableOpacity, ScrollView } from "react-native";
 import { ThemedText, useThemeContext } from "@/components/theme";
-import { CloudRain, Cloud, Thermometer, Wind, Droplets, Gauge } from "lucide-react-native";
+import { CloudRain, Cloud, Thermometer, Wind, Gauge } from "lucide-react-native";
 
-export type MapLayer = "precipitation" | "clouds" | "temperature" | "wind" | "humidity" | "pressure";
+export type MapLayer = "precipitation" | "clouds" | "temperature" | "wind" | "pressure";
 
 interface LayerSelectorProps {
   selected: MapLayer;
@@ -16,7 +16,6 @@ const layers: { id: MapLayer; label: string; icon: any; desc: string }[] = [
   { id: "clouds", label: "Nubes", icon: Cloud, desc: "Cobertura de nubes" },
   { id: "temperature", label: "Temp", icon: Thermometer, desc: "Temperatura superficial" },
   { id: "wind", label: "Viento", icon: Wind, desc: "Velocidad del viento" },
-  { id: "humidity", label: "Humedad", icon: Droplets, desc: "Humedad relativa" },
   { id: "pressure", label: "Presión", icon: Gauge, desc: "Presión a nivel del mar" },
 ];
 
@@ -61,13 +60,13 @@ export function LayerSelector({ selected, onSelect, availableLayers, showRadarTi
             ? "rgba(90,200,250,0.2)"
             : "rgba(0,122,255,0.15)"
           : isDark
-            ? "rgba(255,255,255,0.18)"
+            ? "rgba(255,255,255,0.28)"
             : "rgba(255,255,255,0.85)",
                 borderWidth: 1,
         borderColor: isActive
           ? activeColor
           : isDark
-            ? "rgba(255,255,255,0.22)"
+            ? "rgba(255,255,255,0.35)"
             : "rgba(0,0,0,0.08)",
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
@@ -79,7 +78,7 @@ export function LayerSelector({ selected, onSelect, availableLayers, showRadarTi
             >
               <Icon
                 size={16}
-                color={isActive ? activeColor : isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"}
+                color={isActive ? activeColor : isDark ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.4)"}
               />
         <ThemedText
           style={{

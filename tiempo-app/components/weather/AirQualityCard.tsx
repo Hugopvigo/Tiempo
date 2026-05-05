@@ -86,14 +86,14 @@ export function AirQualityCard({ data }: AirQualityCardProps) {
             alignItems: "center",
             justifyContent: "center",
           }}>
-            <ThemedText style={{ fontSize: 16, fontWeight: "700", color: isColored ? aqiColor : undefined }}>
+            <ThemedText style={{ fontSize: 16, fontWeight: "700", color: isColored ? aqiColor : (isDark ? "#FFFFFF" : "#000000") }}>
               {Math.round(aqi)}
             </ThemedText>
           </View>
         </View>
 
         <View style={{ alignItems: "center", marginBottom: 4 }}>
-          <ThemedText style={{ fontSize: 20, fontWeight: "600", color: isColored ? aqiColor : undefined }}>
+          <ThemedText style={{ fontSize: 20, fontWeight: "600", color: isColored ? aqiColor : (isDark ? "#F8FAFC" : undefined) }}>
             {aqiLabel}
           </ThemedText>
           <ThemedText secondary style={{ fontSize: 13, marginTop: 2 }}>

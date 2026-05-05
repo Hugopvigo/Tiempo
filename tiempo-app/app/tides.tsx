@@ -56,8 +56,8 @@ export default function TidesScreen() {
                 gap: 4,
               }}
             >
-              <ThemedText style={{ fontSize: 16, fontWeight: "500" }}>
-                {activeCity.isLocation ? "Mi ubicación" : activeCity.name}
+              <ThemedText style={{ fontSize: 22, fontWeight: "600" }}>
+                {activeCity.name}
               </ThemedText>
               <ChevronDown size={18} color={iconColor} />
             </TouchableOpacity>
@@ -150,8 +150,8 @@ export default function TidesScreen() {
               size={16}
               color={isDark ? "#5AC8FA" : "#007AFF"}
             />
-            <ThemedText style={{ fontSize: 16, fontWeight: "500" }}>
-              {activeCity.isLocation ? "Mi ubicación" : activeCity.name}
+            <ThemedText style={{ fontSize: 22, fontWeight: "600" }}>
+              {activeCity.name}
             </ThemedText>
             <ChevronDown size={18} color={iconColor} />
           </TouchableOpacity>

@@ -1,10 +1,11 @@
-import { View } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import { ThemedCard, ThemedText , useThemeContext } from "@/components/theme";
 import { WeatherIcon } from "./WeatherIcon";
 import type { DailyForecast } from "@/types/weather";
 import { formatTemperature } from "@/constants/weather";
 import { useSettingsStore } from "@/stores/cityStore";
-import { memo } from "react";
+import { memo, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react-native";
 
 interface DailyForecastProps {
   daily: DailyForecast[];
@@ -52,21 +53,37 @@ const DayRow = memo(function DayRow({ d, index, isDark, unit }: { d: DailyForeca
   );
 });
 
+const VISIBLE_DAYS = 4;
+
 export function DailyForecastCard({ daily }: DailyForecastProps) {
   const { isDark } = useThemeContext();
   const { settings } = useSettingsStore();
+  const [expanded, setExpanded] = useState(false);
+  const hasMore = daily.length > VISIBLE_DAYS;
+  const visibleDays = expanded ? daily : daily.slice(0, VISIBLE_DAYS);
+  const monoColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)";
 
   return (
     <ThemedCard style={{ marginBottom: 12, paddingHorizontal: 20, paddingVertical: 18 }}>
-      <ThemedText
-        secondary
-        style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 12, letterSpacing: 0.5 }}
-      >
-        Próximos 7 días
-      </ThemedText>
-      {daily.map((d, i) => (
-        <DayRow key={d.date} d={d} index={i} isDark={isDark} unit={settings.temperatureUnit} />
-      ))}
+      <TouchableOpacity onPress={() => hasMore && setExpanded(!expanded)} activeOpacity={0.7}>
+        <ThemedText
+          secondary
+          style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 12, letterSpacing: 0.5 }}
+        >
+          Próximos 7 días
+        </ThemedText>
+        {visibleDays.map((d, i) => (
+          <DayRow key={d.date} d={d} index={i} isDark={isDark} unit={settings.temperatureUnit} />
+        ))}
+      </TouchableOpacity>
+      {hasMore && (
+        <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7} style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", paddingVertical: 6, gap: 4 }}>
+          <ThemedText secondary style={{ fontSize: 13 }}>
+            {expanded ? "Menos" : "Más"}
+          </ThemedText>
+          {expanded ? <ChevronUp size={16} color={monoColor} /> : <ChevronDown size={16} color={monoColor} />}
+        </TouchableOpacity>
+      )}
     </ThemedCard>
   );
 }
