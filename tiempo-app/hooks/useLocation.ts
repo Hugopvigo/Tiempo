@@ -46,11 +46,13 @@ export function useLocation(): LocationState {
         const reverse = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lon });
         if (reverse.length > 0) {
           const r = reverse[0];
-          locationCity.name = r.city || r.subregion || "Mi ubicación";
+          locationCity.name = r.city || r.district || r.subregion || r.name || "Mi ubicación";
           locationCity.country = r.country || "";
-          locationCity.admin1 = r.region || "";
+          locationCity.admin1 = r.region || r.subregion || "";
         }
-      } catch {}
+      } catch (e) {
+        console.warn("reverseGeocode failed:", e);
+      }
 
       setCity(locationCity);
       return locationCity;

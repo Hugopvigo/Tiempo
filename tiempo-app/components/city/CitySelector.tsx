@@ -129,9 +129,9 @@ export function CitySelector({ visible, onClose }: CitySelectorProps) {
               marginHorizontal: 24,
               marginTop: 12,
               borderRadius: 100, // Forma de píldora
-              backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+              backgroundColor: isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.05)",
               borderWidth: 0.5,
-              borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
+              borderColor: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.05)",
             }}
           >
             <Plus size={20} color="#2196F3" />

@@ -29,9 +29,11 @@ export function CurrentWeather({
 
   return (
     <View style={{ alignItems: "center", paddingTop: 20, paddingBottom: 24 }}>
-      <ThemedText style={{ fontSize: 34, fontWeight: "600", letterSpacing: 0.5 }}>
-        {cityName}
-      </ThemedText>
+      {cityName ? (
+        <ThemedText style={{ fontSize: 34, fontWeight: "600", letterSpacing: 0.5 }}>
+          {cityName}
+        </ThemedText>
+      ) : null}
 
       <WeatherIcon condition={condition} size={40} colored />
 

@@ -37,7 +37,7 @@ export function BottomNavBar() {
             const color = isActive
               ? "#007AFF"
               : isDark
-                ? "rgba(255,255,255,0.4)"
+                ? "rgba(255,255,255,0.6)"
                 : "#718096";
 
             return (
