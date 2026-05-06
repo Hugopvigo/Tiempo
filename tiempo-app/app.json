@@ -59,11 +59,6 @@
       }
     },
     "owner": "hugopvigo",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/9829422f-1608-4ad5-b622-67aecada466f"
-    }
+"runtimeVersion": "4.0.0"
   }
 }
