@@ -30,7 +30,11 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ],
+<<<<<<< HEAD
       "versionCode": 6
+=======
+      "versionCode": 7
+>>>>>>> b57053b (Fix version)
     },
     "web": {
       "favicon": "./assets/favicon.png",
