@@ -59,8 +59,9 @@ export function calculateMoonTimes(
   if (Math.abs(cosH) > 1) return {};
 
   const H0 = Math.acos(cosH) / rad;
-  const T0 = (day + (lon / 360)) % 1;
-  const transit = (T0 + H0 / 360) % 1;
+  // thetaM changes ~12.29°/day, giving the correct ~50 min/day lunar transit shift
+  const T0 = (((thetaM - lon) / 360) % 1 + 1) % 1;
+  const set = (T0 + H0 / 360) % 1;
   const rise = (T0 - H0 / 360 + 1) % 1;
 
   const formatTime = (fraction: number): string => {
@@ -72,6 +73,6 @@ export function calculateMoonTimes(
 
   return {
     moonrise: formatTime(rise),
-    moonset: formatTime(transit),
+    moonset: formatTime(set),
   };
 }
