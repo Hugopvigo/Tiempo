@@ -89,6 +89,10 @@ tiempo-app/
 
 ---
 
+## Subir a Expo la nueva version
+
+eas build --platform android --profile preview
+
 ## Instalacion y Configuracion
 
 Sigue estos pasos para levantar el entorno de desarrollo:
