@@ -225,7 +225,7 @@ tiempo-app/
 
 ## Version Actual
 
-**v4.0** — Rediseño UI + Mapa simplificado + Previsión colapsable:
+**v4.1.0** — Nuevo pronóstico diario:
 - Previsión actual + 7 días (Open-Meteo + AEMET) — **colapsable**: 4 días por defecto, expandible a 7
 - Cabecera de ciudad rediseñada: nombre grande centrado (30px, 2 líneas)
 - CurrentWeather simplificado: sin nombre de ciudad duplicado

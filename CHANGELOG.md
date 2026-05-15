@@ -1,5 +1,19 @@
 # Changelog
 
+## v4.1.0 — Nuevo pronóstico diario
+
+### Nuevo pronóstico diario
+- Rediseño completo de la previsión diaria con mayor densidad de información
+- Nuevos datos visuales por día: condición, temperatura máx/mín, probabilidad de lluvia y viento
+- Mejoras en la presentación de los 7 días colapsables
+
+### Versión
+- `app.json`, `package.json` → 4.1.0
+- `versionCode` Android incrementado
+- EAS Build production con runtime 4.1.0
+
+---
+
 ## v4.0 — Rediseño UI + Mapa simplificado + Previsión colapsable
 
 ### Rediseño de la cabecera de ciudad en Home
