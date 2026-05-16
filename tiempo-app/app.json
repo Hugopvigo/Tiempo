@@ -40,6 +40,24 @@
     "plugins": [
       "expo-router",
       [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "WeatherWidget",
+              "label": "Tiempo - Widget del tiempo",
+              "description": "Temperatura actual y previsión del día",
+              "minWidth": "180dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 3,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "Tiempo necesita tu ubicación para mostrar el tiempo en tu zona."
