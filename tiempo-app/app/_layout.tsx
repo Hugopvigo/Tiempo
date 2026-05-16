@@ -1,4 +1,5 @@
 import "../global.css";
+import { Platform } from "react-native";
 import { Stack } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
@@ -10,6 +11,12 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { configureAEMET } from "@/services/aemet";
 import { useSettingsStore } from "@/stores/cityStore";
+
+// Registra el widget task handler para Android al nivel de módulo,
+// antes de cualquier render, para que Android pueda dispararlo en frío.
+if (Platform.OS === "android") {
+  require("@/widgets/widgetTaskHandler");
+}
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };

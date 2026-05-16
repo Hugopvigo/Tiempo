@@ -1,4 +1,4 @@
-import { View, ScrollView, RefreshControl , TouchableOpacity } from "react-native";
+import { View, ScrollView, RefreshControl, TouchableOpacity, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DynamicBackground, ThemedText, AnimatedView, WeatherParticles , useThemeContext } from "@/components/theme";
 import { CurrentWeather, HourlyForecastCard, DailyForecastCard, WeatherDetails, AirQualityCard, LunarPhaseCard, PrecipitationChart } from "@/components/weather";
@@ -16,6 +16,9 @@ import { ChevronDown } from "lucide-react-native";
 import { requestNotificationPermissions, setupNotificationChannel, setBadgeCount, cancelAllAlertNotifications } from "@/services/notifications";
 import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
 import { useSettingsStore } from "@/stores/cityStore";
+import { saveWidgetData } from "@/widgets/widgetStorage";
+import { WeatherWidget } from "@/widgets/WeatherWidget";
+import { requestWidgetUpdate } from "react-native-android-widget";
 
 export default function HomeScreen() {
   const { isDark } = useThemeContext();
@@ -54,6 +57,32 @@ export default function HomeScreen() {
       setBadgeCount(0);
     }
   }, [alerts.length, settings.notifications.enabled]);
+
+  useEffect(() => {
+    if (!weather || Platform.OS !== "android") return;
+
+    const daily0 = weather.daily[0];
+    const widgetData = {
+      cityName: weather.cityName,
+      temperature: weather.current.temperature,
+      tempMax: daily0?.tempMax ?? weather.current.temperature,
+      tempMin: daily0?.tempMin ?? weather.current.temperature,
+      condition: weather.current.condition,
+      description: weather.current.description,
+      unit: settings.temperatureUnit,
+      updatedAt: weather.updatedAt,
+    };
+
+    saveWidgetData(widgetData);
+    requestWidgetUpdate({
+      widgetName: "WeatherWidget",
+      renderWidget: () => ({
+        light: <WeatherWidget data={widgetData} isDark={false} />,
+        dark: <WeatherWidget data={widgetData} isDark={true} />,
+      }),
+      widgetNotFound: () => {},
+    }).catch(() => {});
+  }, [weather?.updatedAt, settings.temperatureUnit]);
 
   return (
   <DynamicBackground condition={condition}>
