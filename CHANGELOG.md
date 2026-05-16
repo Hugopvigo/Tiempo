@@ -1,5 +1,17 @@
 # Changelog
 
+## v4.3.0 — Más widgets
+
+### Nuevos widgets
+- Nuevos widgets de pantalla de inicio con más opciones de personalización y tamaños adicionales
+- Mejoras visuales en los widgets existentes: diseño más compacto y legible
+
+### Versión
+- `app.json`, `package.json` → 4.3.0
+- `versionCode` Android incrementado via EAS `autoIncrement`
+
+---
+
 ## v4.2.0 — Widget de pantalla de inicio
 
 ### Widget Android
