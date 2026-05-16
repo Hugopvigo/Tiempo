@@ -18,6 +18,9 @@ import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/b
 import { useSettingsStore } from "@/stores/cityStore";
 import { saveWidgetData } from "@/widgets/widgetStorage";
 import { WeatherWidget } from "@/widgets/WeatherWidget";
+import { ClockWeatherWidget } from "@/widgets/ClockWeatherWidget";
+import { ForecastWidget } from "@/widgets/ForecastWidget";
+import { RainWidget } from "@/widgets/RainWidget";
 import { requestWidgetUpdate } from "react-native-android-widget";
 
 export default function HomeScreen() {
@@ -71,17 +74,74 @@ export default function HomeScreen() {
       description: weather.current.description,
       unit: settings.temperatureUnit,
       updatedAt: weather.updatedAt,
+      forecast: weather.daily.slice(0, 5).map((d) => ({
+        date: d.date,
+        tempMax: d.tempMax,
+        tempMin: d.tempMin,
+        condition: d.condition,
+        precipitationChance: d.precipitationChance,
+      })),
     };
 
+    const now = new Date();
+    const time = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+
     saveWidgetData(widgetData);
-    requestWidgetUpdate({
-      widgetName: "WeatherWidget",
-      renderWidget: () => ({
-        light: <WeatherWidget data={widgetData} isDark={false} />,
-        dark: <WeatherWidget data={widgetData} isDark={true} />,
-      }),
-      widgetNotFound: () => {},
-    }).catch(() => {});
+
+    const updates: Array<{ name: string; render: () => any }> = [
+      {
+        name: "WeatherWidget",
+        render: () => ({
+          light: <WeatherWidget data={widgetData} background="light" />,
+          dark: <WeatherWidget data={widgetData} background="dark" />,
+        }),
+      },
+      {
+        name: "WeatherWidgetTransparent",
+        render: () => <WeatherWidget data={widgetData} background="transparent" />,
+      },
+      {
+        name: "ClockWeatherWidget",
+        render: () => ({
+          light: <ClockWeatherWidget data={widgetData} time={time} background="light" />,
+          dark: <ClockWeatherWidget data={widgetData} time={time} background="dark" />,
+        }),
+      },
+      {
+        name: "ClockWeatherWidgetTransparent",
+        render: () => <ClockWeatherWidget data={widgetData} time={time} background="transparent" />,
+      },
+      {
+        name: "ForecastWidget",
+        render: () => ({
+          light: <ForecastWidget data={widgetData} background="light" />,
+          dark: <ForecastWidget data={widgetData} background="dark" />,
+        }),
+      },
+      {
+        name: "ForecastWidgetTransparent",
+        render: () => <ForecastWidget data={widgetData} background="transparent" />,
+      },
+      {
+        name: "RainWidget",
+        render: () => ({
+          light: <RainWidget data={widgetData} background="light" />,
+          dark: <RainWidget data={widgetData} background="dark" />,
+        }),
+      },
+      {
+        name: "RainWidgetTransparent",
+        render: () => <RainWidget data={widgetData} background="transparent" />,
+      },
+    ];
+
+    for (const { name, render } of updates) {
+      requestWidgetUpdate({
+        widgetName: name,
+        renderWidget: render,
+        widgetNotFound: () => {},
+      }).catch(() => {});
+    }
   }, [weather?.updatedAt, settings.temperatureUnit]);
 
   return (

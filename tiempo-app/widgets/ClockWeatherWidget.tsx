@@ -1,5 +1,6 @@
 import { FlexWidget, TextWidget } from "react-native-android-widget";
 import type { WidgetWeatherData } from "./widgetStorage";
+import type { WidgetBackground } from "./WeatherWidget";
 
 const CONDITION_EMOJI: Record<string, string> = {
   clear: "☀️",
@@ -17,8 +18,6 @@ function fmt(temp: number, unit: "celsius" | "fahrenheit"): string {
   if (unit === "fahrenheit") return `${Math.round(temp * 9 / 5 + 32)}°`;
   return `${Math.round(temp)}°`;
 }
-
-export type WidgetBackground = "dark" | "light" | "transparent";
 
 function getColors(background: WidgetBackground) {
   if (background === "transparent") return {
@@ -43,10 +42,11 @@ function getColors(background: WidgetBackground) {
 
 interface Props {
   data: WidgetWeatherData | null;
+  time: string;
   background: WidgetBackground;
 }
 
-export function WeatherWidget({ data, background }: Props) {
+export function ClockWeatherWidget({ data, time, background }: Props) {
   const { bg, primary, secondary, accent } = getColors(background);
 
   if (!data) {
@@ -54,7 +54,7 @@ export function WeatherWidget({ data, background }: Props) {
       <FlexWidget
         style={{
           flex: 1,
-          flexDirection: "column",
+          flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
           backgroundColor: bg,
@@ -62,14 +62,7 @@ export function WeatherWidget({ data, background }: Props) {
           overflow: "hidden",
         }}
       >
-        <TextWidget
-          text="Tiempo"
-          style={{ color: secondary, fontSize: 14, fontWeight: "500" }}
-        />
-        <TextWidget
-          text="Sin datos"
-          style={{ color: secondary, fontSize: 12, marginTop: 4 }}
-        />
+        <TextWidget text="Tiempo" style={{ color: secondary, fontSize: 14, fontWeight: "500" }} />
       </FlexWidget>
     );
   }
@@ -80,74 +73,49 @@ export function WeatherWidget({ data, background }: Props) {
     <FlexWidget
       style={{
         flex: 1,
-        flexDirection: "column",
+        flexDirection: "row",
+        alignItems: "center",
         justifyContent: "space-between",
         backgroundColor: bg,
         borderRadius: 20,
         overflow: "hidden",
-        padding: 16,
+        paddingTop: 12,
+        paddingBottom: 12,
+        paddingLeft: 16,
+        paddingRight: 16,
       }}
     >
-      {/* City name */}
-      <TextWidget
-        text={data.cityName.toUpperCase()}
-        style={{
-          color: secondary,
-          fontSize: 11,
-          fontWeight: "600",
-          letterSpacing: 0.8,
-        }}
-        maxLines={1}
-        truncate="END"
-      />
-
-      {/* Temperature + emoji row */}
-      <FlexWidget
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          flexGap: 8,
-        }}
-      >
+      {/* Left: city name + time */}
+      <FlexWidget style={{ flexDirection: "column", justifyContent: "center" }}>
         <TextWidget
-          text={emoji}
-          style={{ fontSize: 28 }}
-        />
-        <TextWidget
-          text={fmt(data.temperature, data.unit)}
-          style={{
-            color: primary,
-            fontSize: 42,
-            fontWeight: "700",
-          }}
-        />
-      </FlexWidget>
-
-      {/* Description + max/min */}
-      <FlexWidget
-        style={{
-          flexDirection: "column",
-        }}
-      >
-        <TextWidget
-          text={data.description}
-          style={{ color: secondary, fontSize: 12, marginBottom: 4 }}
+          text={data.cityName.toUpperCase()}
+          style={{ color: secondary, fontSize: 10, fontWeight: "600", letterSpacing: 0.8 }}
           maxLines={1}
           truncate="END"
         />
-        <FlexWidget
-          style={{
-            flexDirection: "row",
-            flexGap: 10,
-          }}
-        >
+        <TextWidget
+          text={time}
+          style={{ color: primary, fontSize: 34, fontWeight: "700", marginTop: 2 }}
+        />
+      </FlexWidget>
+
+      {/* Right: emoji + temp + max/min */}
+      <FlexWidget style={{ flexDirection: "column", alignItems: "flex-end", justifyContent: "center" }}>
+        <FlexWidget style={{ flexDirection: "row", alignItems: "center", flexGap: 6 }}>
+          <TextWidget text={emoji} style={{ fontSize: 22 }} />
+          <TextWidget
+            text={fmt(data.temperature, data.unit)}
+            style={{ color: primary, fontSize: 34, fontWeight: "700" }}
+          />
+        </FlexWidget>
+        <FlexWidget style={{ flexDirection: "row", flexGap: 10, marginTop: 2 }}>
           <TextWidget
             text={`↑ ${fmt(data.tempMax, data.unit)}`}
-            style={{ color: accent, fontSize: 13, fontWeight: "600" }}
+            style={{ color: accent, fontSize: 12, fontWeight: "600" }}
           />
           <TextWidget
             text={`↓ ${fmt(data.tempMin, data.unit)}`}
-            style={{ color: secondary, fontSize: 13 }}
+            style={{ color: secondary, fontSize: 12 }}
           />
         </FlexWidget>
       </FlexWidget>

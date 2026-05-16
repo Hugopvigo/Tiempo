@@ -53,6 +53,83 @@
               "targetCellHeight": 2,
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "WeatherWidgetTransparent",
+              "label": "Tiempo - Hoy (transparente)",
+              "description": "Temperatura actual con fondo transparente",
+              "minWidth": "180dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 3,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "ClockWeatherWidget",
+              "label": "Tiempo - Reloj del tiempo",
+              "description": "Hora actual y temperatura en formato compacto",
+              "minWidth": "250dp",
+              "minHeight": "60dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 1,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "ClockWeatherWidgetTransparent",
+              "label": "Tiempo - Reloj (transparente)",
+              "description": "Hora y temperatura con fondo transparente",
+              "minWidth": "250dp",
+              "minHeight": "60dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 1,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "ForecastWidget",
+              "label": "Tiempo - Previsión 5 días",
+              "description": "Previsión del tiempo para los próximos 5 días",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "ForecastWidgetTransparent",
+              "label": "Tiempo - Previsión (transparente)",
+              "description": "Previsión 5 días con fondo transparente",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "RainWidget",
+              "label": "Tiempo - Lluvia 5 días",
+              "description": "Probabilidad de lluvia para los próximos 5 días",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            },
+            {
+              "name": "RainWidgetTransparent",
+              "label": "Tiempo - Lluvia (transparente)",
+              "description": "Probabilidad de lluvia con fondo transparente",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
             }
           ]
         }

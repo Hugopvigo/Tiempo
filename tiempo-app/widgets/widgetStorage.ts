@@ -4,6 +4,14 @@ import type { WeatherCondition } from "@/types/weather";
 const storage = createMMKV({ id: "tiempo-storage" });
 const WIDGET_KEY = "widget-data";
 
+export interface WidgetDailyForecast {
+  date: string;
+  tempMax: number;
+  tempMin: number;
+  condition: WeatherCondition;
+  precipitationChance: number;
+}
+
 export interface WidgetWeatherData {
   cityName: string;
   temperature: number;
@@ -13,6 +21,7 @@ export interface WidgetWeatherData {
   description: string;
   unit: "celsius" | "fahrenheit";
   updatedAt: number;
+  forecast: WidgetDailyForecast[];
 }
 
 export function saveWidgetData(data: WidgetWeatherData): void {

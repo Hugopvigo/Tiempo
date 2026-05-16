@@ -78,6 +78,13 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
             description: weather.current.description,
             unit: settings.temperatureUnit,
             updatedAt: weather.updatedAt,
+            forecast: weather.daily.slice(0, 5).map((d) => ({
+              date: d.date,
+              tempMax: d.tempMax,
+              tempMin: d.tempMin,
+              condition: d.condition,
+              precipitationChance: d.precipitationChance,
+            })),
           });
         }
 
