@@ -62,37 +62,31 @@ const DayRow = memo(function DayRow({
         {formatTemperature(d.tempMin, unit)}
       </ThemedText>
 
-      <View style={{ flex: 1, height: 8, borderRadius: 4, overflow: "hidden", backgroundColor: trackBg }}>
-        <LinearGradient
-          colors={["#60A5FA", "#FB923C"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
-        />
-        {barLeft > 0 && (
-          <View
+      <View style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: trackBg }}>
+        <View
+          style={{
+            position: "absolute",
+            left: pct(barLeft),
+            width: pct(barWidth),
+            top: 0,
+            bottom: 0,
+            borderRadius: 4,
+            overflow: "hidden",
+          }}
+        >
+          <LinearGradient
+            colors={["#60A5FA", "#FB923C"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
             style={{
               position: "absolute",
-              left: 0,
+              left: pct(-(barLeft / barWidth) * 100),
+              width: pct((100 / barWidth) * 100),
               top: 0,
-              width: pct(barLeft),
-              height: "100%",
-              backgroundColor: trackBg,
+              bottom: 0,
             }}
           />
-        )}
-        {barLeft + barWidth < 100 && (
-          <View
-            style={{
-              position: "absolute",
-              left: pct(barLeft + barWidth),
-              top: 0,
-              width: pct(100 - barLeft - barWidth),
-              height: "100%",
-              backgroundColor: trackBg,
-            }}
-          />
-        )}
+        </View>
       </View>
 
       <ThemedText style={{ fontSize: 17, fontWeight: "500", width: 40, textAlign: "right" }}>
