@@ -1,5 +1,25 @@
 # Changelog
 
+## v4.2.0 — Widget de pantalla de inicio
+
+### Widget Android
+- Nuevo widget nativo para la pantalla de inicio via `react-native-android-widget`
+- Muestra ciudad, temperatura actual, condición meteorológica (emoji), descripción y máx/mín del día
+- Soporte automático de tema claro y oscuro
+- Se actualiza al abrir la app y cada 30 minutos en segundo plano (Android `updatePeriodMillis`)
+- El background fetch existente también refresca los datos del widget con la ciudad activa
+
+### Pronóstico diario — corrección visual
+- Barras de temperatura: eliminado el sistema de máscaras sobre el gradiente que causaba un flash al pulsar la tarjeta y teñía el fondo de rojo/azul
+- Nueva implementación: gradiente recortado por un contenedor posicionado exactamente en el rango de temperatura, sin efectos secundarios con `activeOpacity`
+
+### Versión
+- `app.json`, `package.json` → 4.2.0
+- Runtime version → 4.2.0 (política `appVersion`)
+- `versionCode` Android incrementado via EAS `autoIncrement`
+
+---
+
 ## v4.1.0 — Nuevo pronóstico diario
 
 ### Nuevo pronóstico diario
