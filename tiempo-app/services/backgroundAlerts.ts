@@ -7,6 +7,7 @@ import { getAEMETZone, getAEMETSubzonePatterns } from "@/constants/aemetZones";
 import { scheduleAlertNotification, setBadgeCount } from "@/services/notifications";
 import { createMMKV } from "react-native-mmkv";
 import type { City, AppSettings, WeatherAlert } from "@/types/weather";
+import { saveWidgetData } from "@/widgets/widgetStorage";
 
 const storage = createMMKV({ id: "tiempo-storage" });
 const BACKGROUND_TASK = "background-alerts";
@@ -56,9 +57,30 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
     const dedupEntries = loadLastAlertIds();
     const dedupIds = new Set(dedupEntries.map((e) => e.id));
 
+    const activeCityJson = storage.getString("activeCity");
+    const activeCityId: string | undefined = activeCityJson
+      ? (JSON.parse(activeCityJson) as City).id
+      : undefined;
+
     for (const city of cities.slice(0, 3)) {
       try {
         const weather = await getWeather(city.lat, city.lon, city.name);
+
+        // Actualiza los datos del widget con la ciudad activa.
+        if (city.id === activeCityId) {
+          const daily0 = weather.daily[0];
+          saveWidgetData({
+            cityName: weather.cityName,
+            temperature: weather.current.temperature,
+            tempMax: daily0?.tempMax ?? weather.current.temperature,
+            tempMin: daily0?.tempMin ?? weather.current.temperature,
+            condition: weather.current.condition,
+            description: weather.current.description,
+            unit: settings.temperatureUnit,
+            updatedAt: weather.updatedAt,
+          });
+        }
+
         const localAlerts = generateAlerts(weather);
 
         let alerts: WeatherAlert[];
