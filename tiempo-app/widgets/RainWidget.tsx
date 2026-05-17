@@ -1,6 +1,7 @@
 import { FlexWidget, TextWidget, SvgWidget } from "react-native-android-widget";
 import type { WidgetWeatherData, WidgetDailyForecast } from "./widgetStorage";
-import type { WidgetBackground } from "./WeatherWidget";
+import { getColors, staleLabel } from "./widgetTheme";
+import type { WidgetBackground } from "./widgetTheme";
 
 function getDayLabel(dateStr: string): string {
   const date = new Date(dateStr + "T12:00:00");
@@ -12,85 +13,81 @@ function getDayLabel(dateStr: string): string {
     .replace(".", "");
 }
 
-function rainColor(pct: number): string {
-  if (pct < 10) return "#BFDBFE";
-  if (pct < 25) return "#93C5FD";
-  if (pct < 50) return "#60A5FA";
-  if (pct < 70) return "#3B82F6";
-  if (pct < 85) return "#2563EB";
-  return "#1D4ED8";
+// Base design dimensions (4x2 target: ~292x146dp)
+const BASE_W = 292;
+const BASE_H = 146;
+
+function getScale(width: number, height: number): number {
+  if (!width || !height) return 1;
+  return Math.max(0.7, Math.min(2.5, Math.min(width / BASE_W, height / BASE_H)));
 }
 
-function getColors(background: WidgetBackground) {
-  if (background === "transparent") return {
-    bg: "rgba(0, 0, 0, 0)",
-    primary: "#FFFFFF",
-    secondary: "rgba(255, 255, 255, 0.65)",
-    barEmpty: null as null,
-  } as const;
-  if (background === "dark") return {
-    bg: "#0F172A",
-    primary: "#F1F5F9",
-    secondary: "#94A3B8",
-    barEmpty: "#1E293B" as "#1E293B",
-  } as const;
-  return {
-    bg: "#FFFFFF",
-    primary: "#0F172A",
-    secondary: "#64748B",
-    barEmpty: "#E2E8F0" as "#E2E8F0",
-  } as const;
+function s(value: number, scale: number): number {
+  return Math.round(value * scale);
 }
 
-function buildSvg(
+function buildLineSvg(
   days: WidgetDailyForecast[],
   primary: string,
   secondary: string,
-  barEmpty: string | null
+  line: string,
+  dot: string,
 ): string {
   const W = 280;
-  const CHART_TOP = 4;
-  const CHART_BOTTOM = 56;
+  const H = 88;
+  const CHART_TOP = 22;
+  const CHART_BOTTOM = 62;
   const CHART_H = CHART_BOTTOM - CHART_TOP;
-  const SVG_H = 84;
   const colW = W / days.length;
-  const barW = Math.round(colW * 0.42);
 
-  const content = days
-    .map((day, i) => {
-      const cx = Math.round(colW * i + colW / 2);
-      const pct = Math.round(day.precipitationChance);
-      const barH = Math.max(4, Math.round((pct / 100) * CHART_H));
-      const barY = CHART_BOTTOM - barH;
-      const barX = Math.round(cx - barW / 2);
-      const emptyH = CHART_H - barH;
-      const label = getDayLabel(day.date);
+  const points = days.map((day, i) => {
+    const cx = Math.round(colW * i + colW / 2);
+    const pct = Math.round(day.precipitationChance);
+    // y=CHART_TOP at 100%, y=CHART_BOTTOM at 0%
+    const cy = Math.round(CHART_BOTTOM - (pct / 100) * CHART_H);
+    return { cx, cy, pct, label: getDayLabel(day.date) };
+  });
 
-      const emptyRect =
-        barEmpty && emptyH > 0
-          ? `<rect x="${barX}" y="${CHART_TOP}" width="${barW}" height="${emptyH}" rx="4" fill="${barEmpty}"/>`
-          : "";
+  const polylinePoints = points.map((p) => `${p.cx},${p.cy}`).join(" ");
 
-      const filledRect = `<rect x="${barX}" y="${barY}" width="${barW}" height="${barH}" rx="4" fill="${rainColor(pct)}"/>`;
+  const firstX = points[0].cx;
+  const lastX = points[points.length - 1].cx;
+  const areaPath =
+    `M${firstX},${CHART_BOTTOM} ` +
+    points.map((p) => `L${p.cx},${p.cy}`).join(" ") +
+    ` L${lastX},${CHART_BOTTOM} Z`;
 
-      const dayText = `<text x="${cx}" y="70" text-anchor="middle" font-size="10" font-weight="600" fill="${secondary}">${label}</text>`;
+  const elements: string[] = [
+    `<path d="${areaPath}" fill="${line}" fill-opacity="0.15"/>`,
+    `<polyline points="${polylinePoints}" fill="none" stroke="${line}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`,
+  ];
 
-      const pctText = `<text x="${cx}" y="${SVG_H}" text-anchor="middle" font-size="12" font-weight="700" fill="${primary}">${pct}%</text>`;
+  for (const p of points) {
+    elements.push(`<circle cx="${p.cx}" cy="${p.cy}" r="4.5" fill="${line}"/>`);
+    elements.push(`<circle cx="${p.cx}" cy="${p.cy}" r="2" fill="${dot}"/>`);
+    // % label above the dot, clamped so it doesn't clip at the top of the viewBox
+    const labelY = Math.max(13, p.cy - 8);
+    elements.push(
+      `<text x="${p.cx}" y="${labelY}" text-anchor="middle" font-size="11" font-weight="700" fill="${primary}">${p.pct}%</text>`,
+    );
+    elements.push(
+      `<text x="${p.cx}" y="${H}" text-anchor="middle" font-size="10" font-weight="600" fill="${secondary}">${p.label}</text>`,
+    );
+  }
 
-      return emptyRect + filledRect + dayText + pctText;
-    })
-    .join("");
-
-  return `<svg viewBox="0 0 ${W} ${SVG_H}" xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${elements.join("")}</svg>`;
 }
 
 interface Props {
   data: WidgetWeatherData | null;
   background: WidgetBackground;
+  width?: number;
+  height?: number;
 }
 
-export function RainWidget({ data, background }: Props) {
+export function RainWidget({ data, background, width = BASE_W, height = BASE_H }: Props) {
   const c = getColors(background);
+  const scale = getScale(width, height);
 
   if (!data || !data.forecast?.length) {
     return (
@@ -104,13 +101,14 @@ export function RainWidget({ data, background }: Props) {
           overflow: "hidden",
         }}
       >
-        <TextWidget text="Sin datos" style={{ color: c.secondary, fontSize: 14 }} />
+        <TextWidget text="Sin datos" style={{ color: c.secondary, fontSize: s(14, scale) }} />
       </FlexWidget>
     );
   }
 
-  const days = data.forecast.slice(0, 5);
-  const svg = buildSvg(days, c.primary, c.secondary, c.barEmpty);
+  const days = data.forecast.slice(0, 7);
+  const titleText = data.cityName.toUpperCase() + " · LLUVIA" + staleLabel(data.updatedAt);
+  const svg = buildLineSvg(days, c.primary, c.secondary, c.line, c.dot);
 
   return (
     <FlexWidget
@@ -120,24 +118,24 @@ export function RainWidget({ data, background }: Props) {
         backgroundColor: c.bg,
         borderRadius: 20,
         overflow: "hidden",
-        paddingTop: 12,
-        paddingBottom: 10,
-        paddingLeft: 14,
-        paddingRight: 14,
+        paddingTop: s(12, scale),
+        paddingBottom: s(10, scale),
+        paddingLeft: s(14, scale),
+        paddingRight: s(14, scale),
       }}
     >
       <TextWidget
-        text={data.cityName.toUpperCase() + " · LLUVIA"}
+        text={titleText}
         style={{
           color: c.secondary,
-          fontSize: 10,
+          fontSize: s(10, scale),
           fontWeight: "600",
           letterSpacing: 0.8,
         }}
         maxLines={1}
         truncate="END"
       />
-      <FlexWidget style={{ flex: 1, marginTop: 6 }}>
+      <FlexWidget style={{ flex: 1, marginTop: s(6, scale) }}>
         <SvgWidget
           svg={svg}
           style={{ width: "match_parent", height: "match_parent" }}

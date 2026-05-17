@@ -1,6 +1,7 @@
 import { FlexWidget, TextWidget } from "react-native-android-widget";
 import type { WidgetWeatherData } from "./widgetStorage";
-import type { WidgetBackground } from "./WeatherWidget";
+import { getColors, staleLabel } from "./widgetTheme";
+import type { WidgetBackground } from "./widgetTheme";
 
 const CONDITION_EMOJI: Record<string, string> = {
   clear: "☀️",
@@ -19,35 +20,30 @@ function fmt(temp: number, unit: "celsius" | "fahrenheit"): string {
   return `${Math.round(temp)}°`;
 }
 
-function getColors(background: WidgetBackground) {
-  if (background === "transparent") return {
-    bg: "rgba(0, 0, 0, 0)",
-    primary: "#FFFFFF",
-    secondary: "rgba(255, 255, 255, 0.65)",
-    accent: "#93C5FD",
-  } as const;
-  if (background === "dark") return {
-    bg: "#0F172A",
-    primary: "#F1F5F9",
-    secondary: "#94A3B8",
-    accent: "#38BDF8",
-  } as const;
-  return {
-    bg: "#FFFFFF",
-    primary: "#0F172A",
-    secondary: "#64748B",
-    accent: "#0EA5E9",
-  } as const;
+// Base design dimensions (4x1 target: ~292x73dp)
+const BASE_W = 292;
+const BASE_H = 73;
+
+function getScale(width: number, height: number): number {
+  if (!width || !height) return 1;
+  return Math.max(0.7, Math.min(2.5, Math.min(width / BASE_W, height / BASE_H)));
+}
+
+function s(value: number, scale: number): number {
+  return Math.round(value * scale);
 }
 
 interface Props {
   data: WidgetWeatherData | null;
   time: string;
   background: WidgetBackground;
+  width?: number;
+  height?: number;
 }
 
-export function ClockWeatherWidget({ data, time, background }: Props) {
+export function ClockWeatherWidget({ data, time, background, width = BASE_W, height = BASE_H }: Props) {
   const { bg, primary, secondary, accent } = getColors(background);
+  const scale = getScale(width, height);
 
   if (!data) {
     return (
@@ -62,12 +58,13 @@ export function ClockWeatherWidget({ data, time, background }: Props) {
           overflow: "hidden",
         }}
       >
-        <TextWidget text="Tiempo" style={{ color: secondary, fontSize: 14, fontWeight: "500" }} />
+        <TextWidget text="Tiempo" style={{ color: secondary, fontSize: s(14, scale), fontWeight: "500" }} />
       </FlexWidget>
     );
   }
 
   const emoji = CONDITION_EMOJI[data.condition] ?? "🌡️";
+  const cityText = data.cityName.toUpperCase() + staleLabel(data.updatedAt);
 
   return (
     <FlexWidget
@@ -79,43 +76,43 @@ export function ClockWeatherWidget({ data, time, background }: Props) {
         backgroundColor: bg,
         borderRadius: 20,
         overflow: "hidden",
-        paddingTop: 12,
-        paddingBottom: 12,
-        paddingLeft: 16,
-        paddingRight: 16,
+        paddingTop: s(10, scale),
+        paddingBottom: s(10, scale),
+        paddingLeft: s(16, scale),
+        paddingRight: s(16, scale),
       }}
     >
       {/* Left: city name + time */}
       <FlexWidget style={{ flexDirection: "column", justifyContent: "center" }}>
         <TextWidget
-          text={data.cityName.toUpperCase()}
-          style={{ color: secondary, fontSize: 10, fontWeight: "600", letterSpacing: 0.8 }}
+          text={cityText}
+          style={{ color: secondary, fontSize: s(10, scale), fontWeight: "600", letterSpacing: 0.8 }}
           maxLines={1}
           truncate="END"
         />
         <TextWidget
           text={time}
-          style={{ color: primary, fontSize: 34, fontWeight: "700", marginTop: 2 }}
+          style={{ color: primary, fontSize: s(34, scale), fontWeight: "700", marginTop: s(2, scale) }}
         />
       </FlexWidget>
 
       {/* Right: emoji + temp + max/min */}
       <FlexWidget style={{ flexDirection: "column", alignItems: "flex-end", justifyContent: "center" }}>
-        <FlexWidget style={{ flexDirection: "row", alignItems: "center", flexGap: 6 }}>
-          <TextWidget text={emoji} style={{ fontSize: 22 }} />
+        <FlexWidget style={{ flexDirection: "row", alignItems: "center", flexGap: s(6, scale) }}>
+          <TextWidget text={emoji} style={{ fontSize: s(22, scale) }} />
           <TextWidget
             text={fmt(data.temperature, data.unit)}
-            style={{ color: primary, fontSize: 34, fontWeight: "700" }}
+            style={{ color: primary, fontSize: s(34, scale), fontWeight: "700" }}
           />
         </FlexWidget>
-        <FlexWidget style={{ flexDirection: "row", flexGap: 10, marginTop: 2 }}>
+        <FlexWidget style={{ flexDirection: "row", flexGap: s(10, scale), marginTop: s(2, scale) }}>
           <TextWidget
             text={`↑ ${fmt(data.tempMax, data.unit)}`}
-            style={{ color: accent, fontSize: 12, fontWeight: "600" }}
+            style={{ color: accent, fontSize: s(12, scale), fontWeight: "600" }}
           />
           <TextWidget
             text={`↓ ${fmt(data.tempMin, data.unit)}`}
-            style={{ color: secondary, fontSize: 12 }}
+            style={{ color: secondary, fontSize: s(12, scale) }}
           />
         </FlexWidget>
       </FlexWidget>

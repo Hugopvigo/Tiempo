@@ -1,6 +1,7 @@
 import { FlexWidget, TextWidget } from "react-native-android-widget";
 import type { WidgetWeatherData, WidgetDailyForecast } from "./widgetStorage";
-import type { WidgetBackground } from "./WeatherWidget";
+import { getColors, staleLabel } from "./widgetTheme";
+import type { WidgetBackground } from "./widgetTheme";
 
 const CONDITION_EMOJI: Record<string, string> = {
   clear: "☀️",
@@ -29,38 +30,29 @@ function getDayLabel(dateStr: string): string {
     .replace(".", "");
 }
 
-function getColors(background: WidgetBackground) {
-  if (background === "transparent") return {
-    bg: "rgba(0, 0, 0, 0)",
-    primary: "#FFFFFF",
-    secondary: "rgba(255, 255, 255, 0.65)",
-    accent: "#93C5FD",
-    rain: "#7DD3FC",
-  } as const;
-  if (background === "dark") return {
-    bg: "#0F172A",
-    primary: "#F1F5F9",
-    secondary: "#94A3B8",
-    accent: "#38BDF8",
-    rain: "#38BDF8",
-  } as const;
-  return {
-    bg: "#FFFFFF",
-    primary: "#0F172A",
-    secondary: "#64748B",
-    accent: "#0EA5E9",
-    rain: "#0EA5E9",
-  } as const;
+// Base design dimensions (4x2 target: ~292x146dp)
+const BASE_W = 292;
+const BASE_H = 146;
+
+function getScale(width: number, height: number): number {
+  if (!width || !height) return 1;
+  return Math.max(0.7, Math.min(2.5, Math.min(width / BASE_W, height / BASE_H)));
+}
+
+function s(value: number, scale: number): number {
+  return Math.round(value * scale);
 }
 
 function DayColumn({
   day,
   unit,
   colors,
+  scale,
 }: {
   day: WidgetDailyForecast;
   unit: "celsius" | "fahrenheit";
   colors: ReturnType<typeof getColors>;
+  scale: number;
 }) {
   const emoji = CONDITION_EMOJI[day.condition] ?? "🌡️";
   const label = getDayLabel(day.date);
@@ -77,20 +69,20 @@ function DayColumn({
     >
       <TextWidget
         text={label}
-        style={{ color: colors.secondary, fontSize: 10, fontWeight: "600", letterSpacing: 0.4 }}
+        style={{ color: colors.secondary, fontSize: s(10, scale), fontWeight: "600", letterSpacing: 0.4 }}
       />
-      <TextWidget text={emoji} style={{ fontSize: 18, marginTop: 4, marginBottom: 4 }} />
+      <TextWidget text={emoji} style={{ fontSize: s(18, scale), marginTop: s(4, scale), marginBottom: s(4, scale) }} />
       <TextWidget
         text={fmt(day.tempMax, unit)}
-        style={{ color: colors.primary, fontSize: 13, fontWeight: "700" }}
+        style={{ color: colors.primary, fontSize: s(13, scale), fontWeight: "700" }}
       />
       <TextWidget
         text={fmt(day.tempMin, unit)}
-        style={{ color: colors.secondary, fontSize: 12, marginBottom: 2 }}
+        style={{ color: colors.secondary, fontSize: s(12, scale), marginBottom: s(2, scale) }}
       />
       <TextWidget
         text={rain}
-        style={{ color: colors.rain, fontSize: 11, fontWeight: "500" }}
+        style={{ color: colors.rain, fontSize: s(11, scale), fontWeight: "500" }}
       />
     </FlexWidget>
   );
@@ -99,10 +91,14 @@ function DayColumn({
 interface Props {
   data: WidgetWeatherData | null;
   background: WidgetBackground;
+  width?: number;
+  height?: number;
 }
 
-export function ForecastWidget({ data, background }: Props) {
+export function ForecastWidget({ data, background, width = BASE_W, height = BASE_H }: Props) {
   const c = getColors(background);
+  const scale = getScale(width, height);
+  const daysToShow = width >= 340 ? 7 : width >= 280 ? 6 : 5;
 
   if (!data || !data.forecast?.length) {
     return (
@@ -116,12 +112,13 @@ export function ForecastWidget({ data, background }: Props) {
           overflow: "hidden",
         }}
       >
-        <TextWidget text="Sin datos" style={{ color: c.secondary, fontSize: 14 }} />
+        <TextWidget text="Sin datos" style={{ color: c.secondary, fontSize: s(14, scale) }} />
       </FlexWidget>
     );
   }
 
-  const days = data.forecast.slice(0, 5);
+  const days = data.forecast.slice(0, daysToShow);
+  const cityText = data.cityName.toUpperCase() + staleLabel(data.updatedAt);
 
   return (
     <FlexWidget
@@ -132,20 +129,20 @@ export function ForecastWidget({ data, background }: Props) {
         backgroundColor: c.bg,
         borderRadius: 20,
         overflow: "hidden",
-        paddingTop: 12,
-        paddingBottom: 12,
-        paddingLeft: 14,
-        paddingRight: 14,
+        paddingTop: s(12, scale),
+        paddingBottom: s(12, scale),
+        paddingLeft: s(14, scale),
+        paddingRight: s(14, scale),
       }}
     >
       <TextWidget
-        text={data.cityName.toUpperCase()}
+        text={cityText}
         style={{
           color: c.secondary,
-          fontSize: 10,
+          fontSize: s(10, scale),
           fontWeight: "600",
           letterSpacing: 0.8,
-          marginBottom: 8,
+          marginBottom: s(8, scale),
         }}
         maxLines={1}
         truncate="END"
@@ -158,7 +155,7 @@ export function ForecastWidget({ data, background }: Props) {
         }}
       >
         {days.map((day) => (
-          <DayColumn key={day.date} day={day} unit={data.unit} colors={c} />
+          <DayColumn key={day.date} day={day} unit={data.unit} colors={c} scale={scale} />
         ))}
       </FlexWidget>
     </FlexWidget>
