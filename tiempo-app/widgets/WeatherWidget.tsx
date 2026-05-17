@@ -59,6 +59,7 @@ export function WeatherWidget({ data, background, width = BASE_W, height = BASE_
           borderRadius: 20,
           overflow: "hidden",
         }}
+        clickAction="OPEN_APP"
       >
         <TextWidget
           text="Tiempo"
@@ -86,6 +87,7 @@ export function WeatherWidget({ data, background, width = BASE_W, height = BASE_
         overflow: "hidden",
         padding: s(14, scale),
       }}
+      clickAction="OPEN_APP"
     >
       <TextWidget
         text={cityText}

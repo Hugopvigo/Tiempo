@@ -30,8 +30,8 @@ function getDayLabel(dateStr: string): string {
     .replace(".", "");
 }
 
-// Base design dimensions (4x2 target: ~292x146dp)
-const BASE_W = 292;
+// Base design dimensions (4x2 target: ~294x146dp)
+const BASE_W = 294;
 const BASE_H = 146;
 
 function getScale(width: number, height: number): number {
@@ -111,6 +111,7 @@ export function ForecastWidget({ data, background, width = BASE_W, height = BASE
           borderRadius: 20,
           overflow: "hidden",
         }}
+        clickAction="OPEN_APP"
       >
         <TextWidget text="Sin datos" style={{ color: c.secondary, fontSize: s(14, scale) }} />
       </FlexWidget>
@@ -134,6 +135,7 @@ export function ForecastWidget({ data, background, width = BASE_W, height = BASE
         paddingLeft: s(14, scale),
         paddingRight: s(14, scale),
       }}
+      clickAction="OPEN_APP"
     >
       <TextWidget
         text={cityText}

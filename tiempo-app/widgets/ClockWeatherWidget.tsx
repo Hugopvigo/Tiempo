@@ -20,13 +20,13 @@ function fmt(temp: number, unit: "celsius" | "fahrenheit"): string {
   return `${Math.round(temp)}°`;
 }
 
-// Base design dimensions (4x1 target: ~292x73dp)
-const BASE_W = 292;
-const BASE_H = 73;
+// Base design dimensions (4x1 target: ~294x72dp)
+const BASE_W = 294;
+const BASE_H = 72;
 
 function getScale(width: number, height: number): number {
-  if (!width || !height) return 1;
-  return Math.max(0.7, Math.min(2.5, Math.min(width / BASE_W, height / BASE_H)));
+  if (!height) return 1;
+  return Math.max(0.7, Math.min(2.5, height / BASE_H));
 }
 
 function s(value: number, scale: number): number {
@@ -47,18 +47,19 @@ export function ClockWeatherWidget({ data, time, background, width = BASE_W, hei
 
   if (!data) {
     return (
-      <FlexWidget
-        style={{
-          flex: 1,
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: bg,
-          borderRadius: 20,
-          overflow: "hidden",
-        }}
-      >
-        <TextWidget text="Tiempo" style={{ color: secondary, fontSize: s(14, scale), fontWeight: "500" }} />
+    <FlexWidget
+      style={{
+        flex: 1,
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: bg,
+        borderRadius: 20,
+        overflow: "hidden",
+      }}
+      clickAction="OPEN_APP"
+    >
+      <TextWidget text="Tiempo" style={{ color: secondary, fontSize: s(14, scale), fontWeight: "500" }} />
       </FlexWidget>
     );
   }
@@ -81,6 +82,7 @@ export function ClockWeatherWidget({ data, time, background, width = BASE_W, hei
         paddingLeft: s(16, scale),
         paddingRight: s(16, scale),
       }}
+      clickAction="OPEN_APP"
     >
       {/* Left: city name + time */}
       <FlexWidget style={{ flexDirection: "column", justifyContent: "center" }}>

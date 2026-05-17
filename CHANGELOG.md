@@ -1,5 +1,20 @@
 # Changelog
 
+## v4.5.1 — Widgets: clickable + ajuste de dimensiones base
+
+### Widgets ahora abren la app al tocar
+- `clickAction="OPEN_APP"` añadido en todos los widgets: `WeatherWidget`, `ForecastWidget`, `RainWidget`, `ClockWeatherWidget`
+- Aplica tanto al estado de carga (sin datos) como al estado normal
+
+### Ajuste de dimensiones base
+- `BASE_W` corregido de `292dp` a `294dp` en `ForecastWidget`, `RainWidget` y `ClockWeatherWidget` para coincidir con `targetCellWidth` real de Android
+- `ClockWeatherWidget`: `BASE_H` ajustado de `73dp` a `72dp`; `getScale` simplificado a escala solo por altura (`height / BASE_H`) en lugar de `min(width, height)` — el widget es horizontal y el ancho no debe limitar la escala
+
+### Versión
+- `app.json`, `package.json` → 4.5.1
+
+---
+
 ## v4.5.0 — Widgets adaptativos
 
 ### Widgets adaptativos al tamaño real
