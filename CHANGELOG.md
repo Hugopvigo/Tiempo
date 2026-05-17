@@ -1,5 +1,30 @@
 # Changelog
 
+## v4.5.0 — Widgets adaptativos
+
+### Widgets adaptativos al tamaño real
+- Todos los widgets leen `widgetInfo.width` y `widgetInfo.height` del sistema Android en cada actualización o redimensionado (`WIDGET_RESIZED`)
+- Nuevo sistema de escala proporcional (`getScale`): fuentes, padding, márgenes y gaps crecen o encogen según el espacio real disponible, con límites `[0.7×, 2.5×]`
+- `WeatherWidget` cambiado a tamaño objetivo **2×2** (`targetCellWidth: 2`, `targetCellHeight: 2`); `minWidth` reducido a `110dp` para encajar en celdas pequeñas
+- `ForecastWidget` muestra **5, 6 o 7 días** de forma dinámica según el ancho disponible; el task handler almacena hasta 7 días de previsión
+
+### Gráfica de lluvia rediseñada
+- `RainWidget`: barras verticales reemplazadas por una **gráfica de línea** con área rellena semitransparente, puntos dobles (contorno + relleno) y etiquetas de porcentaje posicionadas dinámicamente sobre cada punto
+- Muestra hasta 7 días de probabilidad de lluvia
+
+### Tema centralizado
+- Nuevo archivo `widgets/widgetTheme.ts` con `getColors()`, `WidgetColors`, `WidgetBackground` y `staleLabel()`
+- Eliminadas las 4 copias duplicadas de `getColors` que existían en cada widget
+
+### Indicador de datos obsoletos
+- Todos los widgets muestran `· hace Xh` junto al nombre de ciudad cuando los datos tienen más de 1 hora de antigüedad (red caída + caché disponible)
+
+### Versión
+- `app.json`, `package.json` → 4.5.0
+- `versionCode` Android incrementado via EAS `autoIncrement`
+
+---
+
 ## v4.3.0 — Más widgets
 
 ### Nuevos widgets

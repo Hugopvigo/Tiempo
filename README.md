@@ -1,4 +1,4 @@
-# Tiempo — Tu Clima en Tiempo Real - Version 4.3.0
+# Tiempo — Tu Clima en Tiempo Real - Version 4.5.0
 
 [![Expo](https://img.shields.io/badge/Expo-54+-000020.svg?style=flat&logo=expo&logoColor=white)](https://expo.dev)
 [![React Native](https://img.shields.io/badge/React_Native-0.81+-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactnative.dev)
@@ -31,7 +31,7 @@
 - **Mareas Dinamicas:** Gráficos sinusoidales con **Skia** para zonas costeras. Deteccion automatica de ciudades costeras vs interiores con datos de la Open-Meteo Marine API. Indicador de marea subiendo/bajando en tiempo real y horarios de pleamar/bajamar.
 - **Alertas Oficiales:** Integracion directa con avisos de la AEMET (lluvia, tormenta, nieve, viento, calor, frio, costera). AEMET como fuente principal cuando hay API key configurada, alertas locales como fallback. Merge inteligente sin duplicados.
 - **Mapa Interactivo:** 5 capas: radar de lluvia (RainViewer), satelite infrarrojo de nubes, y capas de temperatura, viento y presion via OpenWeatherMap. Etiqueta de capa activa visible en el mapa. Opacidad optimizada por capa y filtro CSS para mejorar visibilidad en modo claro. Animacion de radar en tiempo real con timeline de frames (play/pause/scrub).
-- **Widget de pantalla de inicio:** Widget nativo Android con temperatura actual, condición, descripción y máx/mín del día. Soporte de tema claro/oscuro automático. Actualización en segundo plano cada 30 minutos.
+- **Widgets de pantalla de inicio:** 4 widgets nativos Android adaptativos: tiempo actual (2×2), reloj+tiempo (4×1), previsión 5-7 días (4×2) y gráfica de lluvia en línea (4×2). Todos escalan fuentes y layout al tamaño real del widget. Indicador `· hace Xh` cuando los datos tienen más de 1 hora. Soporte de tema claro/oscuro automático. Actualización en segundo plano cada 30 minutos.
 - **Notificaciones Push:** Alertas meteorologicas en segundo plano con configuracion por tipo de alerta. Umbrales ajustados para menos ruido (viento ≥50 km/h, UV ≥8).
 - **Interfaz Adaptativa:** Cabecera de ciudad con nombre grande centrado. Fondos degradados dinamicos que cambian segun la condicion climatica y el modo (claro/oscuro). Particulas animadas climaticas (lluvia, tormenta, nieve, niebla, nubes, destellos) con densidades mejoradas.
 - **Gestion de Ciudades:** Busqueda con autocompletado y almacenamiento local ultra rapido con **MMKV**.

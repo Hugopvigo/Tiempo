@@ -2,7 +2,7 @@
   "expo": {
     "name": "Tiempo",
     "slug": "tiempo-app",
-    "version": "4.3.0",
+    "version": "4.5.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -47,9 +47,9 @@
               "name": "WeatherWidget",
               "label": "Tiempo - Widget del tiempo",
               "description": "Temperatura actual y previsión del día",
-              "minWidth": "180dp",
+              "minWidth": "110dp",
               "minHeight": "110dp",
-              "targetCellWidth": 3,
+              "targetCellWidth": 2,
               "targetCellHeight": 2,
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
@@ -58,9 +58,9 @@
               "name": "WeatherWidgetTransparent",
               "label": "Tiempo - Hoy (transparente)",
               "description": "Temperatura actual con fondo transparente",
-              "minWidth": "180dp",
+              "minWidth": "110dp",
               "minHeight": "110dp",
-              "targetCellWidth": 3,
+              "targetCellWidth": 2,
               "targetCellHeight": 2,
               "resizeMode": "horizontal|vertical",
               "updatePeriodMillis": 1800000
