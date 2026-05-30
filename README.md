@@ -166,4 +166,10 @@ Este proyecto esta bajo la Licencia MIT. Consulta el archivo [LICENSE](../LICENS
 
 ---
 
-Desarrollado con ❤️ por Hugo Perez-Vigo
+<div align="center">
+
+Hecho con ❤️ y ⚡ para ahorrar dinero y energía por **[Hugo Perez-Vigo](https://hugopvigo.es/)** · [@hugopvigo](http://twitter.com/hugopvigo)
+
+**[⬆ Volver arriba](#tiempo--tu-clima-en-tiempo-real---version-451)**
+
+</div>
