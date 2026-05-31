@@ -4,7 +4,7 @@
 [![React Native](https://img.shields.io/badge/React_Native-0.81+-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactnative.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6.svg?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![NativeWind](https://img.shields.io/badge/NativeWind-v4-06B6D4.svg?style=flat&logo=tailwindcss&logoColor=white)](https://www.nativewind.dev)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 **Tiempo** es una aplicacion meteorologica de alto rendimiento para Android, disenada para ofrecer datos precisos con una estetica minimalista inspirada en Apple Weather. Combina datos oficiales de la **AEMET** para Espana con la cobertura global de **Open-Meteo**.
 
@@ -162,7 +162,7 @@ Como obtener una API Key gratuita de OpenWeatherMap:
 
 ## Licencia
 
-Este proyecto esta bajo la Licencia MIT. Consulta el archivo [LICENSE](../LICENSE) para mas detalles.
+Este proyecto está bajo **CC BY-NC-SA 4.0** — Consulta [LICENSE](LICENSE) para más detalles.
 
 ---
 
