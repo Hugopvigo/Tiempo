@@ -62,6 +62,7 @@ export default function HomeScreen() {
   }, [alerts.length, settings.notifications.enabled]);
 
   useEffect(() => {
+    (async () => {
     if (!weather || Platform.OS !== "android") return;
 
     const daily0 = weather.daily[0];
@@ -74,7 +75,7 @@ export default function HomeScreen() {
       description: weather.current.description,
       unit: settings.temperatureUnit,
       updatedAt: weather.updatedAt,
-      forecast: weather.daily.slice(0, 5).map((d) => ({
+      forecast: weather.daily.slice(0, 7).map((d) => ({
         date: d.date,
         tempMax: d.tempMax,
         tempMin: d.tempMin,
@@ -88,60 +89,102 @@ export default function HomeScreen() {
 
     saveWidgetData(widgetData);
 
+    // Tamaño objetivo por widget (debe coincidir con app.json).
+    // El push desde la app se renderiza al tamaño base; el task handler
+    // sobrescribirá con el tamaño real al dispararse WIDGET_RESIZED o
+    // updatePeriodMillis. Sin este mapa los widgets quedaban al BASE por defecto.
+    const WIDGET_BASE_SIZE: Record<string, { w: number; h: number }> = {
+      WeatherWidget: { w: 146, h: 146 },
+      WeatherWidgetTransparent: { w: 146, h: 146 },
+      ClockWeatherWidget: { w: 294, h: 72 },
+      ClockWeatherWidgetTransparent: { w: 294, h: 72 },
+      ForecastWidget: { w: 294, h: 146 },
+      ForecastWidgetTransparent: { w: 294, h: 146 },
+      RainWidget: { w: 294, h: 146 },
+      RainWidgetTransparent: { w: 294, h: 146 },
+    };
+
     const updates: Array<{ name: string; render: () => any }> = [
       {
         name: "WeatherWidget",
-        render: () => ({
-          light: <WeatherWidget data={widgetData} background="light" />,
-          dark: <WeatherWidget data={widgetData} background="dark" />,
-        }),
+        render: () => {
+          const { w, h } = WIDGET_BASE_SIZE.WeatherWidget;
+          return {
+            light: <WeatherWidget data={widgetData} background="light" width={w} height={h} />,
+            dark: <WeatherWidget data={widgetData} background="dark" width={w} height={h} />,
+          };
+        },
       },
       {
         name: "WeatherWidgetTransparent",
-        render: () => <WeatherWidget data={widgetData} background="transparent" />,
+        render: () => {
+          const { w, h } = WIDGET_BASE_SIZE.WeatherWidgetTransparent;
+          return <WeatherWidget data={widgetData} background="transparent" width={w} height={h} />;
+        },
       },
       {
         name: "ClockWeatherWidget",
-        render: () => ({
-          light: <ClockWeatherWidget data={widgetData} time={time} background="light" />,
-          dark: <ClockWeatherWidget data={widgetData} time={time} background="dark" />,
-        }),
+        render: () => {
+          const { w, h } = WIDGET_BASE_SIZE.ClockWeatherWidget;
+          return {
+            light: <ClockWeatherWidget data={widgetData} time={time} background="light" width={w} height={h} />,
+            dark: <ClockWeatherWidget data={widgetData} time={time} background="dark" width={w} height={h} />,
+          };
+        },
       },
       {
         name: "ClockWeatherWidgetTransparent",
-        render: () => <ClockWeatherWidget data={widgetData} time={time} background="transparent" />,
+        render: () => {
+          const { w, h } = WIDGET_BASE_SIZE.ClockWeatherWidgetTransparent;
+          return <ClockWeatherWidget data={widgetData} time={time} background="transparent" width={w} height={h} />;
+        },
       },
       {
         name: "ForecastWidget",
-        render: () => ({
-          light: <ForecastWidget data={widgetData} background="light" />,
-          dark: <ForecastWidget data={widgetData} background="dark" />,
-        }),
+        render: () => {
+          const { w, h } = WIDGET_BASE_SIZE.ForecastWidget;
+          return {
+            light: <ForecastWidget data={widgetData} background="light" width={w} height={h} />,
+            dark: <ForecastWidget data={widgetData} background="dark" width={w} height={h} />,
+          };
+        },
       },
       {
         name: "ForecastWidgetTransparent",
-        render: () => <ForecastWidget data={widgetData} background="transparent" />,
+        render: () => {
+          const { w, h } = WIDGET_BASE_SIZE.ForecastWidgetTransparent;
+          return <ForecastWidget data={widgetData} background="transparent" width={w} height={h} />;
+        },
       },
       {
         name: "RainWidget",
-        render: () => ({
-          light: <RainWidget data={widgetData} background="light" />,
-          dark: <RainWidget data={widgetData} background="dark" />,
-        }),
+        render: () => {
+          const { w, h } = WIDGET_BASE_SIZE.RainWidget;
+          return {
+            light: <RainWidget data={widgetData} background="light" width={w} height={h} />,
+            dark: <RainWidget data={widgetData} background="dark" width={w} height={h} />,
+          };
+        },
       },
       {
         name: "RainWidgetTransparent",
-        render: () => <RainWidget data={widgetData} background="transparent" />,
+        render: () => {
+          const { w, h } = WIDGET_BASE_SIZE.RainWidgetTransparent;
+          return <RainWidget data={widgetData} background="transparent" width={w} height={h} />;
+        },
       },
     ];
 
-    for (const { name, render } of updates) {
-      requestWidgetUpdate({
-        widgetName: name,
-        renderWidget: render,
-        widgetNotFound: () => {},
-      }).catch(() => {});
-    }
+    await Promise.all(
+      updates.map(({ name, render }) =>
+        requestWidgetUpdate({
+          widgetName: name,
+          renderWidget: render,
+          widgetNotFound: () => {},
+        }).catch(() => {}),
+      ),
+    );
+    })();
   }, [weather?.updatedAt, settings.temperatureUnit]);
 
   return (

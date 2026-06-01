@@ -1,5 +1,29 @@
 # Changelog
 
+## v4.5.2 — Widgets: fix de días en previsión y push con tamaño real
+
+### Bug fix: `forecast` se guardaba con 5 días en algunos paths
+- `app/index.tsx` y `services/backgroundAlerts.ts` hacían `weather.daily.slice(0, 5)` al guardar en MMKV
+- `widgetTaskHandler.tsx` ya guardaba 7 días → los `ForecastWidget` y `RainWidget` veían 5 días (o menos) cuando la fuente era la app o la background task
+- Unificado a `slice(0, 7)` en los 3 puntos — ahora `ForecastWidget` puede mostrar 7 días y `RainWidget` siempre tiene los 7 puntos
+
+### Bug fix: `requestWidgetUpdate` desde la app no pasaba `width`/`height`
+- Los 8 renders manuales en `app/index.tsx` no propagaban las dimensiones del widget
+- El task handler sí las recibe de `widgetInfo`, pero el push "inmediato" al abrir la app renderizaba al tamaño base (`BASE_W`/`BASE_H`) por defecto
+- Añadido mapa `WIDGET_BASE_SIZE` con las dimensiones objetivo de cada widget (alineadas con `app.json`); el push ahora se renderiza al tamaño correcto desde el primer momento
+- Bucle secuencial reemplazado por `Promise.all` para no bloquear el render
+
+### Mantenimiento: XML provider actualizado
+- `widgetprovider_weatherwidget.xml` tenía valores obsoletos (`minWidth=180dp`, `targetCellWidth=3`) que no coincidían con `app.json`
+- Actualizado a `minWidth=146dp`, `targetCellHeight=2`, `targetCellWidth=2` para coincidir con la config real
+- `strings.xml` → `expo_runtime_version` 4.1.0 → 4.5.2
+
+### Versión
+- `app.json`, `package.json` → 4.5.2
+- `versionCode` Android: 22 → 23 (EAS `autoIncrement`)
+
+---
+
 ## v4.5.1 — Widgets: clickable + ajuste de dimensiones base
 
 ### Widgets ahora abren la app al tocar
