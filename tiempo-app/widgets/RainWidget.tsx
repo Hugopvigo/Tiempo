@@ -16,21 +16,26 @@ function getDayLabel(dateStr: string): string {
 }
 
 /**
- * Font/spacing sizes derived from a ratio-capped reference dimension.
- * Layout itself is 100% flex-weight based (no pixel positioning), so the
- * chart always fills the real widget slot regardless of how Android
- * reports width/height.
+ * The library renders to a bitmap of the reported height x width
+ * (scaleType=matrix, drawn 1:1). So the reported HEIGHT is a reliable
+ * canvas dimension. We compute the bar track height in explicit dp from
+ * it and give each bar an explicit dp height = track * pct/100. This is
+ * fully deterministic — no fragile flex-weight games, no SVG letterboxing.
  */
 function sizes(w: number, h: number) {
-  const ref = Math.max(50, Math.min(h, w / 2.01));
-  return {
-    padV:  Math.round(ref * 0.082),
-    padH:  Math.round(ref * 0.096),
-    title: Math.round(ref * 0.078),
-    pct:   Math.round(ref * 0.072),
-    day:   Math.round(ref * 0.072),
-    gap:   Math.round(ref * 0.04),
-  };
+  const ref = Math.max(70, Math.min(h, 210));
+  const padV = Math.round(ref * 0.075);
+  const title = Math.round(ref * 0.085);
+  const pct = Math.round(ref * 0.075);
+  const day = Math.round(ref * 0.08);
+  const gap = Math.round(ref * 0.03);
+  // Vertical budget left for the bar track after title, %label, day label, paddings
+  const lineH = (f: number) => Math.round(f * 1.3);
+  const track = Math.max(
+    20,
+    ref - padV * 2 - lineH(title) - lineH(pct) - lineH(day) - gap * 3,
+  );
+  return { ref, padV, padH: Math.round(ref * 0.06), title, pct, day, gap, track };
 }
 
 function DayBar({
@@ -44,11 +49,8 @@ function DayBar({
 }) {
   const pct = Math.max(0, Math.min(100, Math.round(day.precipitationChance)));
   const label = getDayLabel(day.date);
-
-  // Integer weights (native reads weight as int). Bar grows from the bottom;
-  // a minimum weight keeps a thin visible nub even at 0%.
-  const barWeight = Math.max(3, pct);
-  const spacerWeight = Math.max(1, 100 - pct);
+  // Explicit dp height for the bar (min nub so 0% still shows a baseline)
+  const barH = Math.max(3, Math.round((sz.track * pct) / 100));
 
   return (
     <FlexWidget
@@ -56,10 +58,9 @@ function DayBar({
         flex: 1,
         flexDirection: "column",
         alignItems: "center",
-        height: "match_parent",
+        justifyContent: "flex-end",
       }}
     >
-      {/* % label */}
       <TextWidget
         text={`${pct}%`}
         style={{
@@ -70,30 +71,26 @@ function DayBar({
         }}
       />
 
-      {/* Bar track (fills remaining vertical space) */}
+      {/* Fixed-height track; bar sits at the bottom */}
       <FlexWidget
         style={{
-          flex: 1,
+          height: sz.track,
+          width: "match_parent",
           flexDirection: "column",
           justifyContent: "flex-end",
           alignItems: "center",
-          width: "match_parent",
         }}
       >
-        {/* empty top spacer */}
-        <FlexWidget style={{ flex: spacerWeight, width: "match_parent" }} />
-        {/* the colored bar */}
         <FlexWidget
           style={{
-            flex: barWeight,
-            width: "60%",
+            height: barH,
+            width: "55%",
             backgroundColor: colors.line,
             borderRadius: 6,
           }}
         />
       </FlexWidget>
 
-      {/* day label */}
       <TextWidget
         text={label}
         style={{
@@ -168,12 +165,12 @@ export function RainWidget({ data, background, width = 294, height = 146 }: Prop
         truncate="END"
       />
 
-      {/* Bars row fills all remaining space */}
       <FlexWidget
         style={{
           flex: 1,
           flexDirection: "row",
           alignItems: "flex-end",
+          justifyContent: "space-between",
           width: "match_parent",
         }}
       >

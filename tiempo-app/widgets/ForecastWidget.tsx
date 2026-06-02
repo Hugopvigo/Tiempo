@@ -33,26 +33,27 @@ function getDayLabel(dateStr: string): string {
 }
 
 /**
- * All sizes derived purely from actual widget dimensions.
- * No fixed base, no artificial clamping — scales to any size Android gives.
+ * The library renders the whole widget to a bitmap of the reported
+ * height x width (scaleType=matrix, drawn 1:1 top-left). So the reported
+ * HEIGHT is a reliable canvas dimension; we size everything from it.
+ * A high cap prevents fonts exploding if the widget is made very tall;
+ * width never shrinks fonts (columns fill width via match_parent + flex).
  */
 function sizes(w: number, h: number) {
-  // Cap height by the 4x2 aspect ratio (2.01) so fonts never outgrow horizontal space
-  const ref = Math.min(h, w / 2.01);
-  const height = Math.max(50, ref);
+  const ref = Math.max(70, Math.min(h, 210));
   return {
-    padV:    Math.round(height * 0.082),
-    padH:    Math.round(height * 0.096),
-    title:   Math.round(height * 0.075),
-    titleMB: Math.round(height * 0.055),
-    day:     Math.round(height * 0.075),
-    emoji:   Math.round(height * 0.135),
-    emojiMT: Math.round(height * 0.027),
-    emojiMB: Math.round(height * 0.027),
-    tMax:    Math.round(height * 0.092),
-    tMin:    Math.round(height * 0.085),
-    tMinMB:  Math.round(height * 0.014),
-    rain:    Math.round(height * 0.075),
+    padV:    Math.round(ref * 0.075),
+    padH:    Math.round(ref * 0.06),
+    title:   Math.round(ref * 0.085),
+    titleMB: Math.round(ref * 0.04),
+    day:     Math.round(ref * 0.085),
+    emoji:   Math.round(ref * 0.16),
+    emojiMT: Math.round(ref * 0.02),
+    emojiMB: Math.round(ref * 0.02),
+    tMax:    Math.round(ref * 0.11),
+    tMin:    Math.round(ref * 0.10),
+    tMinMB:  Math.round(ref * 0.012),
+    rain:    Math.round(ref * 0.085),
   };
 }
 
@@ -171,6 +172,7 @@ export function ForecastWidget({ data, background, width = 294, height = 146 }: 
           flex: 1,
           flexDirection: "row",
           alignItems: "center",
+          width: "match_parent",
         }}
       >
         {days.map((day) => (
