@@ -2,7 +2,7 @@
   "expo": {
     "name": "Tiempo",
     "slug": "tiempo-app",
-    "version": "4.5.1",
+    "version": "4.5.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -69,22 +69,22 @@
               "name": "ClockWeatherWidget",
               "label": "Tiempo - Reloj del tiempo",
               "description": "Hora actual y temperatura en formato compacto",
-              "minWidth": "294dp",
+              "minWidth": "250dp",
               "minHeight": "72dp",
-              "targetCellWidth": 10,
+              "targetCellWidth": 4,
               "targetCellHeight": 1,
-              "resizeMode": "vertical",
+              "resizeMode": "horizontal",
               "updatePeriodMillis": 1800000
             },
             {
               "name": "ClockWeatherWidgetTransparent",
               "label": "Tiempo - Reloj (transparente)",
               "description": "Hora y temperatura con fondo transparente",
-              "minWidth": "294dp",
+              "minWidth": "250dp",
               "minHeight": "72dp",
-              "targetCellWidth": 10,
+              "targetCellWidth": 4,
               "targetCellHeight": 1,
-              "resizeMode": "vertical",
+              "resizeMode": "horizontal",
               "updatePeriodMillis": 1800000
             },
             {

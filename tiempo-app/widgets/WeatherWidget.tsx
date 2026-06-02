@@ -23,17 +23,21 @@ function fmt(temp: number, unit: "celsius" | "fahrenheit"): string {
   return `${Math.round(temp)}°`;
 }
 
-// Base design dimensions (2x2 target: ~146x146dp)
-const BASE_W = 146;
-const BASE_H = 146;
-
-function getScale(width: number, height: number): number {
-  if (!width || !height) return 1;
-  return Math.max(0.7, Math.min(2.5, Math.min(width / BASE_W, height / BASE_H)));
-}
-
-function s(value: number, scale: number): number {
-  return Math.round(value * scale);
+/**
+ * 2x2 widget — square aspect ratio (1:1).
+ * ref = min(width, height) so content never overflows either axis.
+ */
+function sizes(w: number, h: number) {
+  const ref = Math.max(80, Math.min(w, h));
+  return {
+    pad:     Math.round(ref * 0.096),
+    city:    Math.round(ref * 0.075),
+    emoji:   Math.round(ref * 0.178),
+    temp:    Math.round(ref * 0.274),
+    desc:    Math.round(ref * 0.082),
+    maxMin:  Math.round(ref * 0.089),
+    gap:     Math.round(ref * 0.041),
+  };
 }
 
 interface Props {
@@ -43,9 +47,9 @@ interface Props {
   height?: number;
 }
 
-export function WeatherWidget({ data, background, width = BASE_W, height = BASE_H }: Props) {
+export function WeatherWidget({ data, background, width = 146, height = 146 }: Props) {
   const { bg, primary, secondary, accent } = getColors(background);
-  const scale = getScale(width, height);
+  const sz = sizes(width, height);
 
   if (!data) {
     return (
@@ -63,11 +67,11 @@ export function WeatherWidget({ data, background, width = BASE_W, height = BASE_
       >
         <TextWidget
           text="Tiempo"
-          style={{ color: secondary, fontSize: s(14, scale), fontWeight: "500" }}
+          style={{ color: secondary, fontSize: sz.city, fontWeight: "500" }}
         />
         <TextWidget
           text="Sin datos"
-          style={{ color: secondary, fontSize: s(12, scale), marginTop: s(4, scale) }}
+          style={{ color: secondary, fontSize: sz.desc, marginTop: sz.gap }}
         />
       </FlexWidget>
     );
@@ -85,7 +89,7 @@ export function WeatherWidget({ data, background, width = BASE_W, height = BASE_
         backgroundColor: bg,
         borderRadius: 20,
         overflow: "hidden",
-        padding: s(14, scale),
+        padding: sz.pad,
       }}
       clickAction="OPEN_APP"
     >
@@ -93,7 +97,7 @@ export function WeatherWidget({ data, background, width = BASE_W, height = BASE_
         text={cityText}
         style={{
           color: secondary,
-          fontSize: s(11, scale),
+          fontSize: sz.city,
           fontWeight: "600",
           letterSpacing: 0.8,
         }}
@@ -105,31 +109,31 @@ export function WeatherWidget({ data, background, width = BASE_W, height = BASE_
         style={{
           flexDirection: "row",
           alignItems: "center",
-          flexGap: s(6, scale),
+          flexGap: sz.gap,
         }}
       >
-        <TextWidget text={emoji} style={{ fontSize: s(26, scale) }} />
+        <TextWidget text={emoji} style={{ fontSize: sz.emoji }} />
         <TextWidget
           text={fmt(data.temperature, data.unit)}
-          style={{ color: primary, fontSize: s(40, scale), fontWeight: "700" }}
+          style={{ color: primary, fontSize: sz.temp, fontWeight: "700" }}
         />
       </FlexWidget>
 
       <FlexWidget style={{ flexDirection: "column" }}>
         <TextWidget
           text={data.description}
-          style={{ color: secondary, fontSize: s(12, scale), marginBottom: s(3, scale) }}
+          style={{ color: secondary, fontSize: sz.desc, marginBottom: sz.gap }}
           maxLines={1}
           truncate="END"
         />
-        <FlexWidget style={{ flexDirection: "row", flexGap: s(10, scale) }}>
+        <FlexWidget style={{ flexDirection: "row", flexGap: sz.gap }}>
           <TextWidget
             text={`↑ ${fmt(data.tempMax, data.unit)}`}
-            style={{ color: accent, fontSize: s(13, scale), fontWeight: "600" }}
+            style={{ color: accent, fontSize: sz.maxMin, fontWeight: "600" }}
           />
           <TextWidget
             text={`↓ ${fmt(data.tempMin, data.unit)}`}
-            style={{ color: secondary, fontSize: s(13, scale) }}
+            style={{ color: secondary, fontSize: sz.maxMin }}
           />
         </FlexWidget>
       </FlexWidget>
