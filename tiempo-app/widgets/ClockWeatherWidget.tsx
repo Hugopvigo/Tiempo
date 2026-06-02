@@ -20,17 +20,24 @@ function fmt(temp: number, unit: "celsius" | "fahrenheit"): string {
   return `${Math.round(temp)}°`;
 }
 
-// Base design dimensions (4x1 target: ~294x72dp)
-const BASE_W = 294;
-const BASE_H = 72;
-
-function getScale(width: number, height: number): number {
-  if (!height) return 1;
-  return Math.max(0.7, Math.min(2.5, height / BASE_H));
-}
-
-function s(value: number, scale: number): number {
-  return Math.round(value * scale);
+/**
+ * Sizes derived from the actual height, but capped by the widget's
+ * natural aspect ratio (4:1 = 270:72 ≈ 3.75) so fonts never outgrow
+ * the horizontal space even when the user enlarges the widget.
+ */
+function sizes(w: number, h: number) {
+  // "ref" height: actual height but never more than what a 4:1 ratio allows
+  const ref = Math.max(40, Math.min(h, w / 3.75));
+  return {
+    padV:   Math.round(ref * 0.11),
+    padH:   Math.round(ref * 0.19),
+    city:   Math.round(ref * 0.13),
+    time:   Math.round(ref * 0.38),
+    emoji:  Math.round(ref * 0.27),
+    temp:   Math.round(ref * 0.38),
+    detail: Math.round(ref * 0.14),
+    gap:    Math.round(ref * 0.05),
+  };
 }
 
 interface Props {
@@ -41,25 +48,25 @@ interface Props {
   height?: number;
 }
 
-export function ClockWeatherWidget({ data, time, background, width = BASE_W, height = BASE_H }: Props) {
+export function ClockWeatherWidget({ data, time, background, width = 270, height = 72 }: Props) {
   const { bg, primary, secondary, accent } = getColors(background);
-  const scale = getScale(width, height);
+  const sz = sizes(width, height);
 
   if (!data) {
     return (
-    <FlexWidget
-      style={{
-        flex: 1,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: bg,
-        borderRadius: 20,
-        overflow: "hidden",
-      }}
-      clickAction="OPEN_APP"
-    >
-      <TextWidget text="Tiempo" style={{ color: secondary, fontSize: s(14, scale), fontWeight: "500" }} />
+      <FlexWidget
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: bg,
+          borderRadius: 20,
+          overflow: "hidden",
+        }}
+        clickAction="OPEN_APP"
+      >
+        <TextWidget text="Tiempo" style={{ color: secondary, fontSize: sz.city, fontWeight: "500" }} />
       </FlexWidget>
     );
   }
@@ -77,10 +84,10 @@ export function ClockWeatherWidget({ data, time, background, width = BASE_W, hei
         backgroundColor: bg,
         borderRadius: 20,
         overflow: "hidden",
-        paddingTop: s(10, scale),
-        paddingBottom: s(10, scale),
-        paddingLeft: s(16, scale),
-        paddingRight: s(16, scale),
+        paddingTop: sz.padV,
+        paddingBottom: sz.padV,
+        paddingLeft: sz.padH,
+        paddingRight: sz.padH,
       }}
       clickAction="OPEN_APP"
     >
@@ -88,33 +95,33 @@ export function ClockWeatherWidget({ data, time, background, width = BASE_W, hei
       <FlexWidget style={{ flexDirection: "column", justifyContent: "center" }}>
         <TextWidget
           text={cityText}
-          style={{ color: secondary, fontSize: s(10, scale), fontWeight: "600", letterSpacing: 0.8 }}
+          style={{ color: secondary, fontSize: sz.city, fontWeight: "600", letterSpacing: 0.8 }}
           maxLines={1}
           truncate="END"
         />
         <TextWidget
           text={time}
-          style={{ color: primary, fontSize: s(34, scale), fontWeight: "700", marginTop: s(2, scale) }}
+          style={{ color: primary, fontSize: sz.time, fontWeight: "700", marginTop: sz.gap }}
         />
       </FlexWidget>
 
       {/* Right: emoji + temp + max/min */}
       <FlexWidget style={{ flexDirection: "column", alignItems: "flex-end", justifyContent: "center" }}>
-        <FlexWidget style={{ flexDirection: "row", alignItems: "center", flexGap: s(6, scale) }}>
-          <TextWidget text={emoji} style={{ fontSize: s(22, scale) }} />
+        <FlexWidget style={{ flexDirection: "row", alignItems: "center", flexGap: sz.gap }}>
+          <TextWidget text={emoji} style={{ fontSize: sz.emoji }} />
           <TextWidget
             text={fmt(data.temperature, data.unit)}
-            style={{ color: primary, fontSize: s(34, scale), fontWeight: "700" }}
+            style={{ color: primary, fontSize: sz.temp, fontWeight: "700" }}
           />
         </FlexWidget>
-        <FlexWidget style={{ flexDirection: "row", flexGap: s(10, scale), marginTop: s(2, scale) }}>
+        <FlexWidget style={{ flexDirection: "row", flexGap: sz.gap * 2, marginTop: sz.gap }}>
           <TextWidget
             text={`↑ ${fmt(data.tempMax, data.unit)}`}
-            style={{ color: accent, fontSize: s(12, scale), fontWeight: "600" }}
+            style={{ color: accent, fontSize: sz.detail, fontWeight: "600" }}
           />
           <TextWidget
             text={`↓ ${fmt(data.tempMin, data.unit)}`}
-            style={{ color: secondary, fontSize: s(12, scale) }}
+            style={{ color: secondary, fontSize: sz.detail }}
           />
         </FlexWidget>
       </FlexWidget>
