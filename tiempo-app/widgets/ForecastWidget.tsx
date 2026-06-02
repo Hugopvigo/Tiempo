@@ -15,6 +15,8 @@ const CONDITION_EMOJI: Record<string, string> = {
   night_cloudy: "🌑",
 };
 
+const DAYS_TO_SHOW = 5;
+
 function fmt(temp: number, unit: "celsius" | "fahrenheit"): string {
   if (unit === "fahrenheit") return `${Math.round(temp * 9 / 5 + 32)}°`;
   return `${Math.round(temp)}°`;
@@ -110,8 +112,10 @@ export function ForecastWidget({ data, background, width = 294, height = 146 }: 
   const c = getColors(background);
   const sz = sizes(width, height);
 
-  // More days when widget is wider
-  const daysToShow = width >= 340 ? 7 : width >= 270 ? 6 : 5;
+  // Fixed 5-day forecast (matches widget label). Columns are flex:1 so they
+  // always fill the real slot width regardless of how Android reports `width`,
+  // which is unreliable in portrait (reports MIN_WIDTH, often under-estimated).
+  const daysToShow = DAYS_TO_SHOW;
 
   if (!data || !data.forecast?.length) {
     return (
