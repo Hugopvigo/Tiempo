@@ -115,11 +115,13 @@ interface Props {
   background: WidgetBackground;
   width?: number;
   height?: number;
+  screenW?: number;
 }
 
-export function RainWidget({ data, background, width = 294, height = 146 }: Props) {
+export function RainWidget({ data, background, width = 294, height = 146, screenW = 0 }: Props) {
   const c = getColors(background);
-  const sz = sizes(width, height);
+  const effectiveW = screenW > 0 ? Math.round(screenW * 0.93) : width;
+  const sz = sizes(effectiveW, height);
 
   if (!data || !data.forecast?.length) {
     return (

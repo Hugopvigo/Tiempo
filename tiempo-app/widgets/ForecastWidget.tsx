@@ -125,11 +125,15 @@ interface Props {
   background: WidgetBackground;
   width?: number;
   height?: number;
+  screenW?: number;
 }
 
-export function ForecastWidget({ data, background, width = 294, height = 146 }: Props) {
+export function ForecastWidget({ data, background, width = 294, height = 146, screenW = 0 }: Props) {
   const c = getColors(background);
-  const sz = sizes(width, height);
+  // screenW is reliable (actual device screen width). Use it as floor for widget width.
+  // A 4-wide widget on a full-width launcher ≈ screenW * 0.93 (small edge margins).
+  const effectiveW = screenW > 0 ? Math.round(screenW * 0.93) : width;
+  const sz = sizes(effectiveW, height);
 
   // Fixed 5-day forecast (matches widget label). Columns are flex:1 so they
   // always fill the real slot width regardless of how Android reports `width`,

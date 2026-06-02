@@ -62,7 +62,11 @@ async function handler({ widgetAction, widgetInfo, renderWidget }: WidgetTaskHan
   if (widgetAction === "WIDGET_DELETED") return;
 
   const data = await fetchFreshData();
-  const { widgetName, width, height } = widgetInfo;
+  const { widgetName, width, height, screenInfo } = widgetInfo;
+  const screenW = screenInfo?.screenWidthDp ?? 0;
+
+  // DEBUG: log real values so we can diagnose sizing
+  console.log(`[Widget] ${widgetName} w=${width} h=${height} screenW=${screenW}`);
 
   if (widgetName === "WeatherWidget") {
     renderWidget({
@@ -74,25 +78,25 @@ async function handler({ widgetAction, widgetInfo, renderWidget }: WidgetTaskHan
   } else if (widgetName === "ClockWeatherWidget") {
     const time = currentTime();
     renderWidget({
-      light: <ClockWeatherWidget data={data} time={time} background="light" width={width} height={height} />,
-      dark: <ClockWeatherWidget data={data} time={time} background="dark" width={width} height={height} />,
+      light: <ClockWeatherWidget data={data} time={time} background="light" width={width} height={height} screenW={screenW} />,
+      dark: <ClockWeatherWidget data={data} time={time} background="dark" width={width} height={height} screenW={screenW} />,
     });
   } else if (widgetName === "ClockWeatherWidgetTransparent") {
-    renderWidget(<ClockWeatherWidget data={data} time={currentTime()} background="transparent" width={width} height={height} />);
+    renderWidget(<ClockWeatherWidget data={data} time={currentTime()} background="transparent" width={width} height={height} screenW={screenW} />);
   } else if (widgetName === "ForecastWidget") {
     renderWidget({
-      light: <ForecastWidget data={data} background="light" width={width} height={height} />,
-      dark: <ForecastWidget data={data} background="dark" width={width} height={height} />,
+      light: <ForecastWidget data={data} background="light" width={width} height={height} screenW={screenW} />,
+      dark: <ForecastWidget data={data} background="dark" width={width} height={height} screenW={screenW} />,
     });
   } else if (widgetName === "ForecastWidgetTransparent") {
-    renderWidget(<ForecastWidget data={data} background="transparent" width={width} height={height} />);
+    renderWidget(<ForecastWidget data={data} background="transparent" width={width} height={height} screenW={screenW} />);
   } else if (widgetName === "RainWidget") {
     renderWidget({
-      light: <RainWidget data={data} background="light" width={width} height={height} />,
-      dark: <RainWidget data={data} background="dark" width={width} height={height} />,
+      light: <RainWidget data={data} background="light" width={width} height={height} screenW={screenW} />,
+      dark: <RainWidget data={data} background="dark" width={width} height={height} screenW={screenW} />,
     });
   } else if (widgetName === "RainWidgetTransparent") {
-    renderWidget(<RainWidget data={data} background="transparent" width={width} height={height} />);
+    renderWidget(<RainWidget data={data} background="transparent" width={width} height={height} screenW={screenW} />);
   }
 }
 
