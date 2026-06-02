@@ -56,6 +56,8 @@ export function WeatherWidget({ data, background, width = 146, height = 146 }: P
       <FlexWidget
         style={{
           flex: 1,
+          width: "match_parent",
+          height: "match_parent",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
@@ -84,6 +86,8 @@ export function WeatherWidget({ data, background, width = 146, height = 146 }: P
     <FlexWidget
       style={{
         flex: 1,
+        width: "match_parent",
+        height: "match_parent",
         flexDirection: "column",
         justifyContent: "space-between",
         backgroundColor: bg,

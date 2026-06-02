@@ -126,6 +126,8 @@ export function RainWidget({ data, background, width = 294, height = 146 }: Prop
       <FlexWidget
         style={{
           flex: 1,
+          width: "match_parent",
+          height: "match_parent",
           justifyContent: "center",
           alignItems: "center",
           backgroundColor: c.bg,
@@ -146,6 +148,8 @@ export function RainWidget({ data, background, width = 294, height = 146 }: Prop
     <FlexWidget
       style={{
         flex: 1,
+        width: "match_parent",
+        height: "match_parent",
         flexDirection: "column",
         backgroundColor: c.bg,
         borderRadius: 20,

@@ -57,6 +57,8 @@ export function ClockWeatherWidget({ data, time, background, width = 270, height
       <FlexWidget
         style={{
           flex: 1,
+          width: "match_parent",
+          height: "match_parent",
           flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
@@ -78,6 +80,8 @@ export function ClockWeatherWidget({ data, time, background, width = 270, height
     <FlexWidget
       style={{
         flex: 1,
+        width: "match_parent",
+        height: "match_parent",
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",

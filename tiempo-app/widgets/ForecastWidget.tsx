@@ -139,6 +139,8 @@ export function ForecastWidget({ data, background, width = 294, height = 146 }: 
       <FlexWidget
         style={{
           flex: 1,
+          width: "match_parent",
+          height: "match_parent",
           justifyContent: "center",
           alignItems: "center",
           backgroundColor: c.bg,
@@ -159,6 +161,8 @@ export function ForecastWidget({ data, background, width = 294, height = 146 }: 
     <FlexWidget
       style={{
         flex: 1,
+        width: "match_parent",
+        height: "match_parent",
         flexDirection: "column",
         justifyContent: "space-between",
         backgroundColor: c.bg,
