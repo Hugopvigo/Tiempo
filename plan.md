@@ -204,46 +204,37 @@ tiempo-app/
 - [x] Al cambiar capa no-radar, auto-stop de animacion
 - [x] `LayerSelector` recibe `showRadarTimeline` prop para ajustar posicion
 
-### Fase 10 — Widgets de Pantalla de Inicio *(POSTPUESTO — requiere Expo SDK 55+, actual en 54)*
-- [ ] Widget pequeno (2x1): ciudad + temperatura + condicion + max/min
-- [ ] Widget mediano (4x2): ciudad + temperatura + condicion + prevision 4 dias
-- [ ] Layouts XML: `widget_weather_small.xml`, `widget_weather_medium.xml`
-- [ ] Backgrounds adaptativos claro/oscuro: `widget_bg_dark.xml`, `widget_bg_light.xml`
-- [ ] `WeatherWidgetProvider` (Kotlin): lee datos de SharedPreferences, actualiza RemoteViews
-- [ ] `WeatherWidgetMediumProvider` (Kotlin): extiende provider para widget mediano
-- [ ] Modulo nativo Expo `tiempo-widget`: `TiempoWidgetModule` escribe en SharedPreferences + broadcast
-- [ ] Hook `useWidgetUpdater`: escribe datos del clima en widget cada 5 min (debounce)
-- [ ] Integracion en Home: `useWidgetUpdater(cityName, weather)`
-- [ ] Declaracion en AndroidManifest.xml con APPWIDGET_UPDATE + custom broadcast
-- [ ] `widget_weather_small_info.xml` + `widget_weather_medium_info.xml` (AppWidgetProviderInfo)
-- [ ] Auto-update cada 30 min via `updatePeriodMillis`
-- [ ] Click en widget abre la app (PendingIntent → MainActivity)
-- [ ] Colores de texto adaptativos segun modo del sistema (isDarkMode)
-> **NOTA:** `expo-widgets` y `@expo/ui` (que incluye `ComposeViewFunctionDefinitionBuilder`) requieren Expo 55.
-> La app usa Expo 54, por lo que la integracion crashea con `ClassNotFoundException`.
-> Se retomara esta fase al migrar a Expo SDK 55.
+### Fase 10 — Widgets de Pantalla de Inicio
+- [x] 4 widgets nativos Android con `react-native-android-widget` (Expo 54 compatible)
+- [x] `WeatherWidget` (2x2): ciudad, temperatura actual, condición (emoji), descripción, máx/mín
+- [x] `ClockWeatherWidget` (1x4): hora actual, ciudad, temperatura, condición, máx/mín
+- [x] `ForecastWidget` (2x4): previsión 5-7 días con emojis de condición, máx/mín, % lluvia
+- [x] `RainWidget` (2x4): barras de probabilidad de lluvia para 5 días
+- [x] Variantes transparentes de los 4 widgets (total 8 widgets)
+- [x] Widgets redimensionables al ancho completo de la pantalla (`maxResizeWidth: 1000dp`)
+- [x] `clickAction="OPEN_APP"` en todos los widgets
+- [x] Tema centralizado (`widgets/widgetTheme.ts`) con claro/oscuro/transparente
+- [x] Indicador `· hace Xh` para datos obsoletos
+- [x] Escalado proporcional de fuentes al tamaño real del widget
+- [x] Actualización en segundo plano cada 30 min (`updatePeriodMillis: 1800000`)
+- [x] Push de datos desde la app al abrir con `requestWidgetUpdate()`
 
 ## Version Actual
 
-**v4.1.0** — Nuevo pronóstico diario:
-- Previsión actual + 7 días (Open-Meteo + AEMET) — **colapsable**: 4 días por defecto, expandible a 7
-- Cabecera de ciudad rediseñada: nombre grande centrado (30px, 2 líneas)
-- CurrentWeather simplificado: sin nombre de ciudad duplicado
-- **Gráfico de probabilidad de lluvia**: área/línea SVG con curva Bezier 24h
+**v4.6.0** — Widgets redimensionables al ancho completo:
+- 8 widgets nativos Android: tiempo actual (2×2), reloj+tiempo, previsión 5-7 días, lluvia
+- Redimensionables al 100% del ancho de pantalla (`maxResizeWidth: 1000dp`, `match_parent`)
+- Previsión actual + 7 días (Open-Meteo + AEMET) — colapsable: 4-7 días expandible
+- Gráfico de probabilidad de lluvia: área/línea SVG con curva Bezier 24h
 - Gestión de ciudades con GPS y swipe-to-delete
 - Mareas con gráfico SVG, tabla 7 días, estado del mar, horarios de pleamar/bajamar
-- Alertas oficiales AEMET integradas: API key configurable, merge inteligente sin duplicados
-- Umbrales ajustados (menos ruido): viento 50/65/90, UV 8/10/12, temp 40/44
-- Mapa meteorológico interactivo con 5 capas (RainViewer, satélite, OWM) — etiqueta de capa activa, botones mejorados en modo oscuro. Capa de humedad eliminada
-- Animación de radar en tiempo real con timeline de frames (play/pause/scrub)
-- Calidad del Aire (AQI europeo) con detalle expandible (PM2.5, PM10, O3, NO2) — corrección colores monocromos en oscuro
+- Alertas AEMET integradas con merge inteligente, notificaciones push configurables
+- Mapa interactivo: 5 capas (lluvia, nubes, temperatura, viento, presión) + animación radar
+- Calidad del Aire (AQI europeo) con detalle expandible (PM2.5, PM10, O3, NO2)
 - Fase Lunar con SVGs custom + orto/ocaso lunar + amanecer/atardecer
-- *(Widgets postpuesto — requiere Expo 55)*
-- Estilo de iconos configurable (color/monocromo)
-- Animaciones de partículas climáticas: lluvia 30, tormenta 40, nieve 20, niebla 8, destellos 10-15, nubes 3-5
-- Modo claro/oscuro con gradientes dinámicos
-- EAS Build configurado (development, preview, production — APK)
-- EAS Build production v4.0 subido (APK firmado)
+- Animaciones de partículas climáticas: lluvia, tormenta, nieve, niebla, destellos, nubes
+- Modo claro/oscuro con gradientes dinámicos, iconos color/monocromo
+- EAS Build configurado (development, preview, production — APK firmado)
 
 ## Principios de Diseño (estilo Apple Weather)
 
