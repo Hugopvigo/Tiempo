@@ -1,5 +1,22 @@
 # Changelog
 
+## v4.6.0 — Widgets redimensionables al ancho completo
+
+### Nuevo: `maxResizeWidth`/`maxResizeHeight` en todos los widgets
+- Los 8 widgets ahora tienen `maxResizeWidth: "1000dp"` y `maxResizeHeight: "1000dp"` — el launcher limita automáticamente al ancho máximo de la pantalla
+- `ClockWeatherWidget` cambiado de `resizeMode: "vertical"` a `"horizontal|vertical"` para permitir redimensionamiento horizontal
+- Sin estos parámetros Android limitaba los widgets a ~2× su `minWidth`
+
+### Bug fix: widgets no rellenaban el marco de redimensionamiento
+- Los 4 widgets (`WeatherWidget`, `ClockWeatherWidget`, `ForecastWidget`, `RainWidget`) ahora tienen `width: "match_parent"` y `height: "match_parent"` en su `FlexWidget` raíz
+- Antes el marco azul de resize se expandía pero el contenido del widget (tarjeta oscura) se quedaba en su tamaño mínimo
+
+### Versión
+- `app.json`, `package.json` → 4.6.0
+- `README.md`, `index.html` actualizados
+
+---
+
 ## v4.5.2 — Widgets: fix de días en previsión y push con tamaño real
 
 ### Bug fix: `forecast` se guardaba con 5 días en algunos paths
