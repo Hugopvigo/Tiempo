@@ -46,13 +46,11 @@ interface Props {
   background: WidgetBackground;
   width?: number;
   height?: number;
-  screenW?: number;
 }
 
-export function ClockWeatherWidget({ data, time, background, width = 270, height = 72, screenW = 0 }: Props) {
+export function ClockWeatherWidget({ data, time, background, width = 270, height = 72 }: Props) {
   const { bg, primary, secondary, accent } = getColors(background);
-  const effectiveW = screenW > 0 ? Math.round(screenW * 0.93) : width;
-  const sz = sizes(effectiveW, height);
+  const sz = sizes(width, height);
 
   if (!data) {
     return (

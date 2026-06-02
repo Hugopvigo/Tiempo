@@ -125,42 +125,14 @@ interface Props {
   background: WidgetBackground;
   width?: number;
   height?: number;
-  screenW?: number;
 }
 
-export function ForecastWidget({ data, background, width = 294, height = 146, screenW = 0 }: Props) {
+export function ForecastWidget({ data, background, width = 294, height = 146 }: Props) {
   const c = getColors(background);
-  // screenW is reliable (actual device screen width). Use it as floor for widget width.
-  // A 4-wide widget on a full-width launcher ≈ screenW * 0.93 (small edge margins).
-  const effectiveW = screenW > 0 ? Math.round(screenW * 0.93) : width;
-  const sz = sizes(effectiveW, height);
-
-  // Fixed 5-day forecast (matches widget label). Columns are flex:1 so they
-  // always fill the real slot width regardless of how Android reports `width`,
-  // which is unreliable in portrait (reports MIN_WIDTH, often under-estimated).
+  // w and h are reliable on this launcher — use them directly.
+  // estW = max(w, h*2) is a safety floor for phones where w is under-reported.
+  const sz = sizes(width, height);
   const daysToShow = DAYS_TO_SHOW;
-
-  // DEBUG OVERLAY — muestra dimensiones reales para diagnosticar MIUI
-  return (
-    <FlexWidget
-      style={{
-        flex: 1,
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: c.bg,
-        borderRadius: 20,
-        overflow: "hidden",
-        padding: 8,
-      }}
-      clickAction="OPEN_APP"
-    >
-      <TextWidget text="DEBUG DIMS" style={{ color: c.secondary, fontSize: 10, fontWeight: "600" }} maxLines={1} />
-      <TextWidget text={`w=${width} h=${height}`} style={{ color: c.primary, fontSize: 14, fontWeight: "700" }} maxLines={1} />
-      <TextWidget text={`screenW=${screenW}`} style={{ color: c.primary, fontSize: 14, fontWeight: "700" }} maxLines={1} />
-      <TextWidget text={`effW=${effectiveW}`} style={{ color: c.rain, fontSize: 14, fontWeight: "700" }} maxLines={1} />
-    </FlexWidget>
-  );
 
   if (!data || !data.forecast?.length) {
     return (
