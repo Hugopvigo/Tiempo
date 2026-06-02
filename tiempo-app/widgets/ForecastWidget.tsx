@@ -79,24 +79,34 @@ function DayColumn({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
+        width: "match_parent",
       }}
     >
       <TextWidget
         text={label}
-        style={{ color: colors.secondary, fontSize: sz.day, fontWeight: "600", letterSpacing: 0.4 }}
+        style={{ color: colors.secondary, fontSize: sz.day, fontWeight: "600" }}
+        maxLines={1}
+        truncate="END"
       />
-      <TextWidget text={emoji} style={{ fontSize: sz.emoji, marginTop: sz.emojiMT, marginBottom: sz.emojiMB }} />
+      <TextWidget
+        text={emoji}
+        style={{ fontSize: sz.emoji, marginTop: sz.emojiMT, marginBottom: sz.emojiMB }}
+        maxLines={1}
+      />
       <TextWidget
         text={fmt(day.tempMax, unit)}
         style={{ color: colors.primary, fontSize: sz.tMax, fontWeight: "700" }}
+        maxLines={1}
       />
       <TextWidget
         text={fmt(day.tempMin, unit)}
         style={{ color: colors.secondary, fontSize: sz.tMin, marginBottom: sz.tMinMB }}
+        maxLines={1}
       />
       <TextWidget
         text={rain}
         style={{ color: colors.rain, fontSize: sz.rain, fontWeight: "500" }}
+        maxLines={1}
       />
     </FlexWidget>
   );

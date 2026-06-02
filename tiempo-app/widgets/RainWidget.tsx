@@ -69,6 +69,7 @@ function DayBar({
           fontWeight: "700",
           marginBottom: sz.gap,
         }}
+        maxLines={1}
       />
 
       {/* Fixed-height track; bar sits at the bottom */}
@@ -98,8 +99,9 @@ function DayBar({
           fontSize: sz.day,
           fontWeight: "600",
           marginTop: sz.gap,
-          letterSpacing: 0.3,
         }}
+        maxLines={1}
+        truncate="END"
       />
     </FlexWidget>
   );
