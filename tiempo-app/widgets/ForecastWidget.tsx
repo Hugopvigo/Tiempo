@@ -33,27 +33,35 @@ function getDayLabel(dateStr: string): string {
 }
 
 /**
- * The library renders the whole widget to a bitmap of the reported
- * height x width (scaleType=matrix, drawn 1:1 top-left). So the reported
- * HEIGHT is a reliable canvas dimension; we size everything from it.
- * A high cap prevents fonts exploding if the widget is made very tall;
- * width never shrinks fonts (columns fill width via match_parent + flex).
+ * Font sizes are based on estimated COLUMN WIDTH, not widget height.
+ * This prevents truncation regardless of how many columns are shown.
+ *
+ * Android under-reports width in portrait (MIN_WIDTH). For a 4×2 widget
+ * the real width ≈ 2×height, so we use max(reported, height×2) as floor.
  */
 function sizes(w: number, h: number) {
-  const ref = Math.max(70, Math.min(h, 210));
+  const safeH  = Math.max(70, Math.min(h, 210));
+  // Best-guess total width: never let under-reporting shrink fonts
+  const estW   = Math.max(w, safeH * 2);
+  const padH   = Math.round(safeH * 0.06);
+  const padV   = Math.round(safeH * 0.06);
+  // Column width available to each day (5 cols + small gaps)
+  const colW   = Math.max(30, Math.round((estW - padH * 2) / DAYS_TO_SHOW));
+
   return {
-    padV:    Math.round(ref * 0.075),
-    padH:    Math.round(ref * 0.06),
-    title:   Math.round(ref * 0.085),
-    titleMB: Math.round(ref * 0.04),
-    day:     Math.round(ref * 0.085),
-    emoji:   Math.round(ref * 0.16),
-    emojiMT: Math.round(ref * 0.02),
-    emojiMB: Math.round(ref * 0.02),
-    tMax:    Math.round(ref * 0.11),
-    tMin:    Math.round(ref * 0.10),
-    tMinMB:  Math.round(ref * 0.012),
-    rain:    Math.round(ref * 0.085),
+    padV,
+    padH,
+    title:   Math.round(safeH * 0.08),
+    titleMB: Math.round(safeH * 0.035),
+    // All per-column text sized from colW so they always fit
+    day:     Math.round(colW * 0.22),
+    emoji:   Math.round(colW * 0.34),
+    emojiMT: Math.round(colW * 0.04),
+    emojiMB: Math.round(colW * 0.04),
+    tMax:    Math.round(colW * 0.26),
+    tMin:    Math.round(colW * 0.23),
+    tMinMB:  Math.round(colW * 0.02),
+    rain:    Math.round(colW * 0.20),
   };
 }
 

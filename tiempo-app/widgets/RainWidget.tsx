@@ -23,19 +23,22 @@ function getDayLabel(dateStr: string): string {
  * fully deterministic — no fragile flex-weight games, no SVG letterboxing.
  */
 function sizes(w: number, h: number) {
-  const ref = Math.max(70, Math.min(h, 210));
-  const padV = Math.round(ref * 0.075);
-  const title = Math.round(ref * 0.085);
-  const pct = Math.round(ref * 0.075);
-  const day = Math.round(ref * 0.08);
-  const gap = Math.round(ref * 0.03);
-  // Vertical budget left for the bar track after title, %label, day label, paddings
-  const lineH = (f: number) => Math.round(f * 1.3);
-  const track = Math.max(
+  const safeH  = Math.max(70, Math.min(h, 210));
+  const estW   = Math.max(w, safeH * 2);
+  const padV   = Math.round(safeH * 0.07);
+  const padH   = Math.round(safeH * 0.06);
+  const title  = Math.round(safeH * 0.085);
+  const gap    = Math.round(safeH * 0.03);
+  // Column width → text sizes sized to always fit
+  const colW   = Math.max(30, Math.round((estW - padH * 2) / DAYS_TO_SHOW));
+  const pct    = Math.round(colW * 0.22);
+  const day    = Math.round(colW * 0.20);
+  const lineH  = (f: number) => Math.round(f * 1.3);
+  const track  = Math.max(
     20,
-    ref - padV * 2 - lineH(title) - lineH(pct) - lineH(day) - gap * 3,
+    safeH - padV * 2 - lineH(title) - lineH(pct) - lineH(day) - gap * 3,
   );
-  return { ref, padV, padH: Math.round(ref * 0.06), title, pct, day, gap, track };
+  return { safeH, padV, padH, title, pct, day, gap, track };
 }
 
 function DayBar({
