@@ -233,10 +233,6 @@ export async function getAEMETForecast(municipioCode: string) {
   return aemetFetch<any>(`/api/prediccion/especifica/municipio/diaria/${municipioCode}`);
 }
 
-export async function getAEMETTides(puertoCode: string) {
-  return aemetFetch<any>(`/api/prediccion/maritiva/puerto/${puertoCode}`);
-}
-
 export function isAEMETConfigured(): boolean {
   return config.apiKey !== "";
 }

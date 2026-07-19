@@ -1,5 +1,27 @@
 # Changelog
 
+## v4.6.1 — Fix alertas AEMET de CCAA equivocada, notificaciones y orientación de widgets
+
+### Bug fix: llegaban avisos de Murcia teniendo Madrid en ciudades
+- La tabla `ZONE_TO_CCAA` no coincidía con los códigos oficiales de AEMET OpenData: Madrid pedía el área 73, que es la Región de Murcia (Madrid es 72). Casi toda la tabla estaba desplazada (CYL/CLM intercambiadas, VAL es 77, EXT 70, GAL 71…). Corregida según la especificación oficial
+- El filtro de subzonas hacía match por substring: el patrón "Oeste" de Madrid coincidía con "Noroeste de Murcia". Ahora el match es por palabra completa e insensible a acentos
+- Si un aviso CAP cubría varias `<area>`, el filtro de subzonas se saltaba por completo. Ahora se evalúan todas las áreas
+- El id del aviso incluye la subzona: antes dos avisos del mismo tipo/severidad/día compartían id y el dedup silenciaba uno
+
+### Bug fix: notificaciones Android sin sonido ni heads-up
+- `channelId` estaba en `content`, donde expo-notifications lo ignora — las notificaciones salían por el canal por defecto. Movido al `trigger`, que es donde la librería lo espera
+
+### Fiabilidad: tarea en background definida en cada arranque
+- `_layout.tsx` importa ahora `backgroundAlerts` a nivel de módulo y re-registra canal + background fetch al arrancar si las notificaciones están activas; antes dependía de tocar el toggle de ajustes
+
+### Bug fix: widgets con orientación invertida (v4.6.0)
+- El commit 09421d3 invirtió ancho y alto: reloj 4×1 → 1×4, previsión/lluvia 4×2 → 2×4, pero los componentes son horizontales. Restaurados 4×1 y 4×2 conservando `maxResize 1000dp` y `match_parent`
+
+### Limpieza
+- Eliminada `getAEMETTides()`: código muerto que apuntaba a un endpoint inexistente (`prediccion/maritiva/puerto`); las mareas usan Open-Meteo Marine
+
+---
+
 ## v4.6.0 — Widgets redimensionables al ancho completo
 
 ### Nuevo: `maxResizeWidth`/`maxResizeHeight` en todos los widgets

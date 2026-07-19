@@ -38,7 +38,10 @@ function sizes(w: number, h: number) {
     20,
     safeH - padV * 2 - lineH(title) - lineH(pct) - lineH(day) - gap * 3,
   );
-  return { safeH, padV, padH, title, pct, day, gap, track };
+  // Ancho de barra en dp explícitos: la librería no soporta porcentajes
+  // (cualquier string ≠ wrap_content se convierte en match_parent en nativo).
+  const barW   = Math.round(colW * 0.55);
+  return { safeH, padV, padH, title, pct, day, gap, track, barW };
 }
 
 function DayBar({
@@ -88,7 +91,7 @@ function DayBar({
         <FlexWidget
           style={{
             height: barH,
-            width: "55%",
+            width: sz.barW,
             backgroundColor: colors.line,
             borderRadius: 6,
           }}
