@@ -11,6 +11,8 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { configureAEMET } from "@/services/aemet";
 import { useSettingsStore } from "@/stores/cityStore";
+import { registerBackgroundFetch } from "@/services/backgroundAlerts";
+import { setupNotificationChannel } from "@/services/notifications";
 
 // Registra el widget task handler para Android al nivel de módulo,
 // antes de cualquier render, para que Android pueda dispararlo en frío.
@@ -55,6 +57,16 @@ export default function RootLayout() {
       configureAEMET(settings.aemetApiKey);
     }
   }, [settings.aemetApiKey]);
+
+  // Asegura canal y tarea en background en cada arranque; si solo se hiciera
+  // al activar el toggle en ajustes, una tarea desregistrada por el sistema
+  // dejaría de comprobar alertas hasta volver a tocar el toggle.
+  useEffect(() => {
+    if (settings.notifications.enabled) {
+      setupNotificationChannel();
+      registerBackgroundFetch();
+    }
+  }, [settings.notifications.enabled]);
   const [queryClient] = useState(
     () =>
     new QueryClient({

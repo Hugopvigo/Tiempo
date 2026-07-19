@@ -38,6 +38,8 @@ const ADMIN1_TO_AEMET_ZONE: Record<string, string> = {
   "Melilla": "MEL",
 };
 
+// Códigos oficiales del parámetro `area` de /api/avisos_cap/ultimoelaborado/area/{area}
+// según la especificación de AEMET OpenData (AEMET_OpenData_specification.json).
 const ZONE_TO_CCAA: Record<string, string> = {
   AND: "61",
   ARA: "62",
@@ -45,17 +47,17 @@ const ZONE_TO_CCAA: Record<string, string> = {
   IB: "64",
   CAN: "65",
   SAN: "66",
-  CLM: "67",
-  CYL: "68",
+  CYL: "67",
+  CLM: "68",
   CAT: "69",
-  VAL: "70",
-  EXT: "71",
-  GAL: "72",
-  MAD: "73",
-  MUR: "74",
-  NAV: "75",
-  PVA: "76",
-  RIO: "77",
+  EXT: "70",
+  GAL: "71",
+  MAD: "72",
+  MUR: "73",
+  NAV: "74",
+  PVA: "75",
+  RIO: "76",
+  VAL: "77",
   CEU: "78",
   MEL: "79",
 };

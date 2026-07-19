@@ -94,6 +94,10 @@ function parseTar(buffer: ArrayBuffer): string[] {
   return files;
 }
 
+interface CAPArea {
+  areaDesc?: string;
+}
+
 interface CAPAlertInfo {
   language?: string;
   event?: string;
@@ -104,10 +108,29 @@ interface CAPAlertInfo {
   expires?: string;
   headline?: string;
   description?: string;
-  area?: { areaDesc?: string };
+  area?: CAPArea | CAPArea[];
 }
 
-function parseCAPAlert(parsed: any, zonaCode: string, subzonePatterns?: string[]): WeatherAlert | null {
+function stripAccents(s: string): string {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Match por palabra completa e insensible a acentos: "Oeste" hace match con
+// "Sur, Vegas y Oeste" pero no con "Noroeste de Murcia".
+function matchesSubzone(areaDescs: string[], patterns: string[]): boolean {
+  return patterns.some((p) => {
+    const pat = stripAccents(p).trim();
+    if (!pat) return false;
+    const re = new RegExp(`(^|[^a-z])${escapeRegExp(pat)}([^a-z]|$)`);
+    return areaDescs.some((desc) => re.test(stripAccents(desc)));
+  });
+}
+
+export function parseCAPAlert(parsed: any, zonaCode: string, subzonePatterns?: string[]): WeatherAlert | null {
   const alert = parsed.alert || parsed["alert"] || parsed;
   if (!alert) return null;
 
@@ -128,22 +151,26 @@ function parseCAPAlert(parsed: any, zonaCode: string, subzonePatterns?: string[]
   const severity = CAP_SEVERITY[capSeverity];
   if (!severity) return null;
 
-  const areaDesc = info.area?.areaDesc || "";
+  const areas = Array.isArray(info.area) ? info.area : info.area ? [info.area] : [];
+  const areaDescs = areas
+    .map((a) => a?.areaDesc)
+    .filter((d): d is string => Boolean(d));
 
-  if (subzonePatterns && subzonePatterns.length > 0 && areaDesc) {
-    const descLower = areaDesc.toLowerCase();
-    const matchesSubzone = subzonePatterns.some((p) =>
-      descLower.includes(p.toLowerCase())
-    );
-    if (!matchesSubzone) return null;
+  if (subzonePatterns && subzonePatterns.length > 0 && areaDescs.length > 0) {
+    if (!matchesSubzone(areaDescs, subzonePatterns)) return null;
   }
 
   const onset = info.onset || new Date().toISOString();
   const expires = info.expires || new Date(Date.now() + 24 * 3600000).toISOString();
+  const areaDesc = areaDescs.join("; ");
   const description = [info.description, areaDesc].filter(Boolean).join("\n");
 
+  // El slug del área distingue avisos del mismo tipo/severidad/día en subzonas
+  // distintas; sin él colisionarían los ids y el dedup suprimiría avisos reales.
+  const areaSlug = stripAccents(areaDesc).replace(/[^a-z0-9]/g, "").slice(0, 24);
+
   return {
-    id: `aemet-${zonaCode}-${type}-${severity}-${onset.slice(0, 10)}`,
+    id: `aemet-${zonaCode}-${type}-${severity}-${onset.slice(0, 10)}${areaSlug ? `-${areaSlug}` : ""}`,
     title: info.headline || event,
     description,
     severity,

@@ -28,9 +28,10 @@ export async function scheduleAlertNotification(alert: WeatherAlert): Promise<st
       body: alert.description,
       sound: alert.severity === "red" || alert.severity === "orange",
       data: { alertId: alert.id, type: alert.type },
-      ...(Platform.OS === "android" ? { channelId: "weather-alerts" } : {}),
     },
-    trigger: null,
+    // En Android el canal se indica en el trigger; en content se ignora y la
+    // notificación saldría por el canal por defecto (sin sonido ni heads-up).
+    trigger: Platform.OS === "android" ? { channelId: "weather-alerts" } : null,
   });
 }
 
