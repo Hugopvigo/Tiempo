@@ -1,3 +1,7 @@
+<meta property="og:title" content="TIEMPO">
+<meta property="og:description" content="Una app del tiempo para Android: previsión global de Open-Meteo y avisos oficiales de la AEMET.">
+<meta property="og:image" content="https://raw.githubusercontent.com/Hugopvigo/Tiempo/main/docs/capturas/og.png">
+
 <p align="center">
   <img src="docs/capturas/00-cabecera.png" alt="Tiempo — app meteorológica para Android" width="100%">
 </p>
