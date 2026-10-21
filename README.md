@@ -121,6 +121,12 @@ npm run build:prod        # app-bundle para producción
 Las últimas APKs publicadas están en la
 [página de releases](https://github.com/Hugopvigo/Tiempo/releases).
 
+> **Estado de las versiones:** la última APK publicada es la **v4.2**
+> (release `Version_4.2`, asset `App_Tiempo_Version_4_2.apk`). El código del
+> repositorio va por la **v4.6.1** (`tiempo-app/package.json`), que todavía no
+> está compilada ni subida como release. El botón de descarga de la landing
+> enlaza por eso a la v4.2.
+
 ## Cómo está hecho
 
 | Capa | Tecnología |
