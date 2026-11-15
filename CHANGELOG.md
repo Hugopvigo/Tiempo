@@ -1,5 +1,25 @@
 # Changelog
 
+## Sin publicar — Notificaciones rehechas y pulido visual
+
+### Notificaciones
+- El título dice nivel, fenómeno y zona ("Aviso naranja: lluvias en Rías Baixas") y el cuerpo, las horas y lo que se espera ("Hoy de 12:00 a 18:00. Precipitación acumulada en una hora: 30 mm.")
+- Nuevas: el aviso sube de nivel (sustituye a la notificación anterior), el aviso termina (sin sonido), resumen de la mañana a las 08:00 y lluvia en la próxima hora. Las dos últimas se activan en Ajustes y vienen apagadas
+- La previsión propia (sin aviso de AEMET) se anuncia como "Previsión", no como aviso oficial, y no se repite en 24 h salvo que suba de nivel
+- `getAEMETAlerts` devuelve `null` cuando la consulta falla (AEMET responde a ratos sin `datos` o con un cuerpo que no es un tar): antes se confundía con "no hay avisos" y la previsión propia duplicaba el aviso oficial
+- Tocar una notificación abre el detalle del aviso
+- Tres canales en Android: avisos, resumen y lluvia próxima, y fin de avisos. Tras actualizar, los avisos vigentes se notifican una vez más con el formato nuevo
+
+### Avisos
+- El banner de inicio es un bloque del color del nivel con lo que se espera y el periodo
+- El detalle muestra la vigencia en una barra, la silueta de la zona con la ciudad marcada (polígono de AEMET) y los umbrales habituales de cada nivel
+
+### Inicio
+- Tarjetas planas, sin sombra, con el mismo radio, relleno y separación; títulos de tarjeta en un único estilo
+- La gráfica de lluvia pasa de probabilidad a milímetros por hora, con el total y el pico
+- Próximos días con barras planas y filas de la misma altura; detalles alineados a la izquierda
+- Barra inferior con etiquetas y toda la pestaña pulsable
+
 ## v4.7.0 — Avisos AEMET por polígono
 
 - El tar de OpenData trae un `<polygon>` (lat,lon, WGS84) por zona. Si el aviso los trae y la ciudad tiene coordenadas, solo se muestran las zonas que contienen la ciudad, con ~2 km de margen porque los polígonos llevan dos decimales. Getafe deja de ver los avisos de la Sierra y cualquier municipio sin zona asignada a mano recibe los de su zona exacta
