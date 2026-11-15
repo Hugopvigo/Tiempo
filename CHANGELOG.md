@@ -1,5 +1,26 @@
 # Changelog
 
+## Sin publicar — Lluvia que salía como nieve, avisos locales con umbrales Meteoalerta y retoques de inicio
+
+### Bug fix: "va a nevar" cuando solo llovía
+- `weatherCodeToCondition` tenía intercambiados los rangos WMO 60-69 (lluvia) y 70-79 (nieve): cada hora de lluvia se pintaba con copo y generaba el aviso local "Nevada" y su notificación; la nieve real salía como lluvia. El código 3 (cubierto) caía en "parcialmente nublado". Tabla literal según la documentación de Open-Meteo; no era un problema de lectura de AEMET
+- `alerts.ts` compara condiciones directamente en vez de condición → código → conjunto
+
+### Bug fix: lectura de avisos CAP de AEMET
+- El tar se decodificaba byte a byte (Latin-1) y los XML son UTF-8: tildes y eñes rotas en los títulos y el filtro de subzonas fallaba con nombres como "A Coruña"
+- Se descartan avisos caducados (`expires` pasado), cancelaciones (`msgType` Cancel) y pruebas (`status` distinto de Actual)
+- El mapeo de fenómeno compara sin acentos y cubre aludes, galernas y rissagues
+
+### Avisos locales por cantidades, no por probabilidad
+- Antes saltaba "Lluvia significativa" con un 70 % de probabilidad y "ola de calor" con UV 8. Ahora Open-Meteo aporta precipitación (mm), nieve (cm) y rachas por hora, y se aplican los umbrales más frecuentes del Anexo 1 del Plan Meteoalerta (15/30/60 mm en 1 h, 40/80/120 mm en 12 h, 2/5/20 cm de nieve en 24 h, rachas 70/90/130 km/h, máximas 36/39/42 °C, mínimas -4/-8/-12 °C). El UV ya no genera avisos
+- Las descripciones dicen la cantidad prevista ("Hasta 22 mm en una hora en Vigo")
+
+### Interfaz
+- Inicio: "Máx. 18° · Mín. 9°" en vez de "H:/L:", sensación térmica cuando difiere 2° o más, horas "Ahora"/"14h", fila de probabilidad alineada y gráfico de precipitación al ancho real de la tarjeta
+- Avisos: icono por fenómeno (lluvia, nieve, viento…) en banner, lista y detalle; chip de nivel junto al título y "Hasta las 11:00" con el fin del aviso
+
+---
+
 ## v4.6.1 — Fix alertas AEMET de CCAA equivocada, notificaciones y orientación de widgets
 
 ### Bug fix: llegaban avisos de Murcia teniendo Madrid en ciudades
