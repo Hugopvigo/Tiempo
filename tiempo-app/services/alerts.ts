@@ -1,8 +1,4 @@
-import type { WeatherData, WeatherAlert, WeatherCondition } from "@/types/weather";
-
-const STORM_CODES = new Set([95, 96, 99]);
-const SNOW_CODES = new Set([71, 73, 75, 77, 85, 86]);
-const FOG_CODES = new Set([45, 48]);
+import type { WeatherData, WeatherAlert } from "@/types/weather";
 
 export function generateAlerts(weather: WeatherData): WeatherAlert[] {
   const alerts: WeatherAlert[] = [];
@@ -34,9 +30,7 @@ export function generateAlerts(weather: WeatherData): WeatherAlert[] {
     alerts.push(makeAlert("heat", heatSev, weather, dateStr));
   }
 
-  const hasStorm = weather.hourly.some((h) =>
-    STORM_CODES.has(getWeatherCodeFromCondition(h.condition))
-  );
+  const hasStorm = weather.hourly.some((h) => h.condition === "storm");
   if (hasStorm) {
     alerts.push(makeAlert("storm", "orange", weather, dateStr));
   }
@@ -50,9 +44,7 @@ export function generateAlerts(weather: WeatherData): WeatherAlert[] {
     alerts.push(makeAlert("rain", "yellow", weather, dateStr));
   }
 
-  const hasSnow = weather.hourly.some((h) =>
-    SNOW_CODES.has(getWeatherCodeFromCondition(h.condition))
-  );
+  const hasSnow = weather.hourly.some((h) => h.condition === "snow");
   if (hasSnow) {
     alerts.push(makeAlert("snow", "yellow", weather, dateStr));
   }
@@ -65,8 +57,7 @@ export function generateAlerts(weather: WeatherData): WeatherAlert[] {
     alerts.push(makeAlert("cold", "yellow", weather, dateStr));
   }
 
-  const hasFog = FOG_CODES.has(getWeatherCodeFromCondition(weather.current.condition))
-    || weather.current.visibility < 1000;
+  const hasFog = weather.current.condition === "fog" || weather.current.visibility < 1000;
   if (hasFog) {
     alerts.push(makeAlert("fog", "yellow", weather, dateStr));
   }
@@ -149,20 +140,6 @@ function makeAlert(
   };
 }
 
-function getWeatherCodeFromCondition(condition: WeatherCondition): number {
-  const map: Record<WeatherCondition, number> = {
-    clear: 0,
-    partly_cloudy: 2,
-    cloudy: 3,
-    fog: 45,
-    rain: 61,
-    storm: 95,
-    snow: 71,
-    night_clear: 0,
-    night_cloudy: 3,
-  };
-  return map[condition] ?? 0;
-}
 
 function severityOrder(s: WeatherAlert["severity"]): number {
   return s === "red" ? 0 : s === "orange" ? 1 : 2;
