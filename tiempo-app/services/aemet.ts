@@ -180,9 +180,16 @@ export function parseCAPAlert(
   // distintas; sin él colisionarían los ids y el dedup suprimiría avisos reales.
   const areaSlug = stripAccents(areaDesc).replace(/[^a-z0-9]/g, "").slice(0, 24);
 
+  // "Aviso de lluvias de nivel amarillo. Suroeste de A Coruña" → "Aviso de lluvias":
+  // el nivel lo dice el chip y la zona va en la descripción.
+  const title = (info.headline || event)
+    .replace(/\.\s.*$/, "")
+    .replace(/\s+de nivel (amarillo|naranja|rojo)/i, "")
+    .trim();
+
   return {
     id: `aemet-${zonaCode}-${type}-${severity}-${onset.slice(0, 10)}${areaSlug ? `-${areaSlug}` : ""}`,
-    title: info.headline || event,
+    title,
     description,
     severity,
     type,

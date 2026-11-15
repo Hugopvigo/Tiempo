@@ -76,7 +76,7 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
   const top = active[0];
   const color = alertColors[top.severity];
   const Icon = ALERT_ICON[top.type];
-  const validity = validityLabel(top.endTime);
+  const validity = validityLabel(top.startTime, top.endTime);
 
   return (
     <TouchableOpacity

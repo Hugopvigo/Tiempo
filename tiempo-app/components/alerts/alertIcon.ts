@@ -22,15 +22,23 @@ export function severityLabel(s: WeatherAlert["severity"]): string {
   }
 }
 
-// "Hasta las 11:00" si acaba hoy; "Hasta mañana 09:00" o "Hasta el lun 09:00" si no.
-export function validityLabel(endIso: string, now: Date = new Date()): string {
+function whenLabel(d: Date, now: Date): string {
+  const time = d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  if (d.toDateString() === now.toDateString()) return `las ${time}`;
+  const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+  if (d.toDateString() === tomorrow.toDateString()) return `mañana a las ${time}`;
+  return `el ${d.toLocaleDateString("es-ES", { weekday: "short", day: "numeric" })}, ${time}`;
+}
+
+// "Hasta las 11:00", "Hasta mañana a las 09:00" o, si aún no ha empezado,
+// "Desde mañana a las 09:00 hasta el lun 3, 12:00".
+export function validityLabel(startIso: string, endIso: string, now: Date = new Date()): string {
   const end = new Date(endIso);
   if (isNaN(end.getTime())) return "";
-  const time = end.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-  const sameDay = end.toDateString() === now.toDateString();
-  if (sameDay) return `Hasta las ${time}`;
-  const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
-  if (end.toDateString() === tomorrow.toDateString()) return `Hasta mañana a las ${time}`;
-  const day = end.toLocaleDateString("es-ES", { weekday: "short", day: "numeric" });
-  return `Hasta el ${day}, ${time}`;
+  const start = new Date(startIso);
+  const until = `hasta ${whenLabel(end, now)}`;
+  if (!isNaN(start.getTime()) && start.getTime() > now.getTime() + 60 * 60 * 1000) {
+    return `Desde ${whenLabel(start, now)} ${until}`;
+  }
+  return until.charAt(0).toUpperCase() + until.slice(1);
 }

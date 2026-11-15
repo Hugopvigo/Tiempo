@@ -85,7 +85,7 @@ export function PrecipitationChart({ hourly }: PrecipitationChartProps) {
       >
         Probabilidad de lluvia
       </ThemedText>
-      <View onLayout={(e) => setWidth(Math.round(e.nativeEvent.layout.width))}>
+      <View style={{ height: 160 }} onLayout={(e) => setWidth(Math.round(e.nativeEvent.layout.width))}>
         {chartData && (
         <Svg width={chartData.W} height={chartData.H}>
           <Path d={chartData.fillD} fill={lineColor} opacity={Number(fillOpacity)} />
