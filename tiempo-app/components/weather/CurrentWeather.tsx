@@ -37,9 +37,15 @@ export function CurrentWeather({
         {description}
       </ThemedText>
 
-      <ThemedText secondary style={{ fontSize: 18, marginTop: 2 }}>
-        H:{formatTemperature(tempMax, unit)} L:{formatTemperature(tempMin, unit)}
+      <ThemedText secondary style={{ fontSize: 17, marginTop: 2 }}>
+        Máx. {formatTemperature(tempMax, unit)}  ·  Mín. {formatTemperature(tempMin, unit)}
       </ThemedText>
+
+      {Math.abs(feelsLike - temperature) >= 2 && (
+        <ThemedText secondary style={{ fontSize: 15, marginTop: 6 }}>
+          Sensación de {formatTemperature(feelsLike, unit)}
+        </ThemedText>
+      )}
     </View>
   );
 }

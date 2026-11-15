@@ -10,24 +10,24 @@ interface HourlyForecastProps {
   hourly: HourlyForecast[];
 }
 
-const HourItem = memo(function HourItem({ h, unit }: { h: HourlyForecast; unit: "celsius" | "fahrenheit" }) {
+const HourItem = memo(function HourItem({ h, unit, isFirst }: { h: HourlyForecast; unit: "celsius" | "fahrenheit"; isFirst: boolean }) {
   const hour = parseInt(h.time.split("T")[1]?.split(":")[0] ?? "0", 10);
-  const label = hour === 0 ? "0" : `${hour}`;
+  const label = isFirst ? "Ahora" : `${hour}h`;
+  const showRain = h.precipitationChance >= 10;
 
   return (
     <View style={{ alignItems: "center", width: 64, gap: 6, paddingVertical: 4 }}>
-      <ThemedText secondary style={{ fontSize: 13 }}>
+      <ThemedText secondary style={{ fontSize: 13, fontWeight: isFirst ? "600" : "400" }}>
         {label}
       </ThemedText>
       <WeatherIcon condition={h.condition} size={22} />
       <ThemedText style={{ fontSize: 17, fontWeight: "500" }}>
         {formatTemperature(h.temperature, unit)}
       </ThemedText>
-      {h.precipitationChance > 0 && (
-        <ThemedText secondary style={{ fontSize: 11 }}>
-          {h.precipitationChance}%
-        </ThemedText>
-      )}
+      {/* Fila siempre presente para que iconos y temperaturas queden alineados. */}
+      <ThemedText style={{ fontSize: 11, height: 14, color: "#60A5FA", fontWeight: "500" }}>
+        {showRain ? `${h.precipitationChance}%` : ""}
+      </ThemedText>
     </View>
   );
 });
@@ -37,8 +37,8 @@ export function HourlyForecastCard({ hourly }: HourlyForecastProps) {
   const unit = settings.temperatureUnit;
   const data = hourly.slice(0, 25);
 
-  const renderItem = useCallback(({ item }: { item: HourlyForecast }) => (
-    <HourItem h={item} unit={unit} />
+  const renderItem = useCallback(({ item, index }: { item: HourlyForecast; index: number }) => (
+    <HourItem h={item} unit={unit} isFirst={index === 0} />
   ), [unit]);
 
   return (

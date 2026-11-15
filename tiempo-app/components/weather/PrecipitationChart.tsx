@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { View } from "react-native";
 import Svg, { Path, Line, Text as SvgText } from "react-native-svg";
 import { ThemedCard, ThemedText, useThemeContext } from "@/components/theme";
@@ -10,12 +10,15 @@ interface PrecipitationChartProps {
 
 export function PrecipitationChart({ hourly }: PrecipitationChartProps) {
   const { isDark } = useThemeContext();
+  // Ancho real de la tarjeta: con 340 fijos el gráfico se salía o quedaba corto
+  // según la pantalla.
+  const [width, setWidth] = useState(0);
 
   const chartData = useMemo(() => {
     const points = hourly.slice(0, 24);
-    if (points.length === 0) return null;
+    if (points.length === 0 || width === 0) return null;
 
-    const W = 340;
+    const W = width;
     const H = 160;
     const padL = 36;
     const padR = 12;
@@ -58,9 +61,10 @@ export function PrecipitationChart({ hourly }: PrecipitationChartProps) {
     const hasData = points.some((p) => p.precipitationChance > 0);
 
     return { W, H, padL, padR, padT, padB, chartW, chartH, pathD, fillD, gridSteps, hourTicks, hourLabels, hasData };
-  }, [hourly]);
+  }, [hourly, width]);
 
-  if (!chartData || !chartData.hasData) return null;
+  const hasData = hourly.slice(0, 24).some((p) => p.precipitationChance > 0);
+  if (!hasData) return null;
 
   const lineColor = isDark ? "#5AC8FA" : "#007AFF";
   const fillOpacity = isDark ? "0.3" : "0.25";
@@ -81,7 +85,8 @@ export function PrecipitationChart({ hourly }: PrecipitationChartProps) {
       >
         Probabilidad de lluvia
       </ThemedText>
-      <View style={{ alignItems: "center" }}>
+      <View onLayout={(e) => setWidth(Math.round(e.nativeEvent.layout.width))}>
+        {chartData && (
         <Svg width={chartData.W} height={chartData.H}>
           <Path d={chartData.fillD} fill={lineColor} opacity={Number(fillOpacity)} />
           <Path d={chartData.pathD} fill="none" stroke={lineColor} strokeWidth={2.5} />
@@ -133,6 +138,7 @@ export function PrecipitationChart({ hourly }: PrecipitationChartProps) {
             );
           })}
         </Svg>
+        )}
       </View>
     </ThemedCard>
   );
