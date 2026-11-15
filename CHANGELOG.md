@@ -4,7 +4,8 @@
 
 ### Bug fix: "va a nevar" cuando solo llovía
 - `weatherCodeToCondition` tenía intercambiados los rangos WMO 60-69 (lluvia) y 70-79 (nieve): cada hora de lluvia se pintaba con copo y generaba el aviso local "Nevada" y su notificación; la nieve real salía como lluvia. El código 3 (cubierto) caía en "parcialmente nublado". Tabla literal según la documentación de Open-Meteo
-- Segunda causa, en el lado AEMET: el filtro de subzonas usaba la comunidad como patrón. "Madrid" casaba con "Sierra de Madrid", así que la capital recibía los avisos de nieve de la Sierra (y Getafe, *solo* esos); y "Galicia"/"Andalucía" no aparecen en ningún nombre de zona, con lo que fuera de Galicia y Madrid se descartaban todos los avisos de AEMET. Ahora sin patrón se muestran todos los avisos de la comunidad, y Madrid capital solo los de "Metropolitana y Henares"
+- Segunda causa, en el lado AEMET: el filtro de subzonas usaba la comunidad como patrón. "Madrid" casaba con "Sierra de Madrid", así que la capital recibía los avisos de nieve de la Sierra (y Getafe, *solo* esos); y "Galicia"/"Andalucía" no aparecen en ningún nombre de zona, con lo que fuera de Galicia y Madrid se descartaban todos los avisos de AEMET. Ahora los avisos se acotan a las zonas de la provincia de la ciudad (nueva tabla `meteoalertaZonas.ts` con las 182 zonas del Anexo 1 del Plan Meteoalerta; la ciudad guarda la provincia desde el buscador y el GPS), y Madrid capital, Alcalá, Vigo y Pontevedra a su zona exacta. Las ciudades guardadas antes de esta versión no tienen provincia: ven toda su comunidad hasta que se vuelvan a añadir
+- Tercera causa: Open-Meteo devuelve "Comunidad Autónoma de Galicia", "…del País Vasco", "…de las Islas Baleares", y la tabla de comunidades solo tenía el nombre a secas. Las ciudades añadidas desde el buscador no tenían zona AEMET y no recibían ningún aviso oficial; solo funcionaba la ciudad por defecto
 - `alerts.ts` compara condiciones directamente en vez de condición → código → conjunto
 
 ### Bug fix: lectura de avisos CAP de AEMET
@@ -18,7 +19,7 @@
 
 ### Interfaz
 - Inicio: "Máx. 18° · Mín. 9°" en vez de "H:/L:", sensación térmica cuando difiere 2° o más, horas "Ahora"/"14h", fila de probabilidad alineada y gráfico de precipitación al ancho real de la tarjeta
-- Avisos: icono por fenómeno (lluvia, nieve, viento…) en banner, lista y detalle; chip de nivel junto al título y "Hasta las 11:00" con el fin del aviso
+- Avisos: icono por fenómeno (lluvia, nieve, viento…) en banner, lista y detalle; chip de nivel junto al título; "Hasta las 11:00" con el fin del aviso o "Desde mañana a las 09:00 hasta…" si aún no ha empezado; el título AEMET pasa de "Aviso de lluvias de nivel amarillo. Suroeste de A Coruña" a "Aviso de lluvias" (nivel en el chip, zona en la descripción); el gráfico de precipitación ya no salta al medir el ancho
 
 ---
 
