@@ -23,6 +23,17 @@
 - Inicio: "Máx. 18° · Mín. 9°" en vez de "H:/L:", sensación térmica cuando difiere 2° o más, horas "Ahora"/"14h", fila de probabilidad alineada y gráfico de precipitación al ancho real de la tarjeta
 - Avisos: icono por fenómeno (lluvia, nieve, viento…) en banner, lista y detalle; chip de nivel junto al título; "Hasta las 11:00" con el fin del aviso o "Desde mañana a las 09:00 hasta…" si aún no ha empezado; el título AEMET pasa de "Aviso de lluvias de nivel amarillo. Suroeste de A Coruña" a "Aviso de lluvias" (nivel en el chip, zona en la descripción); el gráfico de precipitación ya no salta al medir el ancho
 
+### Bug fix: la ciudad por GPS se quedaba sin avisos de AEMET
+- La comunidad se resolvía contra una tabla con literales exactos ("Madrid", "Galicia"…), pero el geocodificador del dispositivo devuelve otras formas ("Comunidad de Madrid", "Comunidad Autónoma de Madrid", "Provincia de Madrid") y Open-Meteo otras ("Comunidad Autónoma de Galicia", "Comunidad Valenciana", "Ciudad Autónoma de Ceuta"). La resolución ahora normaliza el nombre (sin acentos, sin prefijos) y, si la comunidad no se reconoce, cae a la provincia (en España cada provincia pertenece a una sola comunidad)
+- La zona concreta por municipio se aplicaba sin mirar la provincia: Vigo (Pontevedra) y Vigo (Asturias) recibían los avisos de "Rias Baixas". Ahora la zona concreta solo se usa si es de la provincia de la ciudad
+
+### Mejora: municipios del área metropolitana de Madrid y zonas por isla
+- Getafe, Leganés, Alcorcón, Móstoles, Fuenlabrada, Parla, Torrejón de Ardoz, Coslada, San Fernando de Henares y Alcalá de Henares pasan a la zona "Metropolitana y Henares"; Aranjuez a "Sur, Vegas y Oeste". Antes, con el filtro por provincia, Getafe recibía también los avisos de nieve de la Sierra de Madrid
+- En Baleares y Canarias la provincia es toda la comunidad: Palma, Ibiza, Mahón, Las Palmas, Santa Cruz de Tenerife, Arrecife y Puerto del Rosario se acotan a las zonas de su isla
+
+### Mantenimiento
+- `services/notifications.ts` importaba el formato de los avisos desde `components/`, lo que arrastraba los iconos de Lucide a la tarea en segundo plano. Movido a `utils/alertFormat.ts`
+
 ---
 
 ## v4.6.1 — Fix alertas AEMET de CCAA equivocada, notificaciones y orientación de widgets

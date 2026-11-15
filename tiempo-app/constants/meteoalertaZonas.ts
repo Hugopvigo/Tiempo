@@ -225,10 +225,26 @@ const PROVINCE_ALIASES: Record<string, string> = {
 
 /** Nombres de zona Meteoalerta de la provincia de una ciudad; vacío si no se conoce. */
 export function zoneNamesForProvince(admin2: string | undefined): string[] {
-  if (!admin2) return [];
-  const key = normProvince(admin2);
-  const wanted = norm(PROVINCE_ALIASES[key] ?? key);
+  const wanted = provinceKey(admin2);
+  if (!wanted) return [];
   return METEOALERTA_ZONAS.filter((z) => norm(z.province) === wanted).map((z) => z.name);
+}
+
+/**
+ * Clave canónica de provincia: sin acentos, en minúsculas y con los prefijos
+ * que usa cada fuente eliminados ("Provincia de La Coruña" → "la coruna",
+ * "Bizkaia" → "bizkaia"). Es la misma clave con la que se indexan las zonas.
+ */
+export function provinceKey(admin2: string | undefined): string {
+  if (!admin2) return "";
+  const key = normProvince(admin2);
+  return norm(PROVINCE_ALIASES[key] ?? key);
+}
+
+/** Provincia de una zona Meteoalerta por su nombre; vacío si no existe. */
+export function zoneProvinceKey(zoneName: string): string {
+  const zone = METEOALERTA_ZONAS.find((z) => norm(z.name) === norm(zoneName));
+  return zone ? norm(zone.province) : "";
 }
 
 export function zoneNamesForCity(city: City): string[] {

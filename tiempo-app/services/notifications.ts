@@ -1,7 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import type { WeatherAlert } from "@/types/weather";
-import { validityLabel } from "@/components/alerts/alertIcon";
+import { validityLabel } from "@/utils/alertFormat";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

@@ -6,7 +6,8 @@ import type { WeatherAlert } from "@/types/weather";
 import { alertColors } from "@/constants/theme";
 import { Clock, Shield, ExternalLink } from "lucide-react-native";
 import { isAEMETConfigured } from "@/services/aemet";
-import { ALERT_ICON, severityLabel as shortSeverityLabel } from "@/components/alerts/alertIcon";
+import { ALERT_ICON } from "@/components/alerts/alertIcon";
+import { severityLabel as shortSeverityLabel } from "@/utils/alertFormat";
 
 export default function AlertDetailScreen() {
   const { isDark } = useThemeContext();
