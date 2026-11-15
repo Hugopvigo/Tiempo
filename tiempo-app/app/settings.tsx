@@ -60,9 +60,7 @@ export default function SettingsScreen() {
         </ThemedText>
 
         <ThemedCard style={{ marginBottom: 16 }}>
-          <ThemedText
-            secondary
-            style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 16, letterSpacing: 0.5 }}
+          <ThemedText style={{ fontSize: 15, fontWeight: "600" }}
           >
             Apariencia
           </ThemedText>
@@ -93,9 +91,7 @@ export default function SettingsScreen() {
         })}
       </View>
 
-      <ThemedText
-        secondary
-        style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginTop: 16, marginBottom: 12, letterSpacing: 0.5 }}
+      <ThemedText style={{ fontSize: 15, fontWeight: "600" }}
       >
         Iconos
       </ThemedText>
@@ -129,9 +125,7 @@ export default function SettingsScreen() {
 
         <ThemedCard style={{ marginBottom: 16 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <ThemedText
-              secondary
-              style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}
+            <ThemedText style={{ fontSize: 15, fontWeight: "600" }}
             >
               Ciudades
             </ThemedText>
@@ -162,9 +156,7 @@ export default function SettingsScreen() {
         </ThemedCard>
 
 <ThemedCard style={{ marginBottom: 16 }}>
-      <ThemedText
-        secondary
-        style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 16, letterSpacing: 0.5 }}
+      <ThemedText style={{ fontSize: 15, fontWeight: "600" }}
       >
         Unidades
           </ThemedText>
@@ -217,9 +209,7 @@ export default function SettingsScreen() {
         <ThemedCard style={{ marginBottom: 16 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 }}>
             <Bell size={16} color={iconColor} />
-            <ThemedText
-              secondary
-              style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}
+            <ThemedText style={{ fontSize: 15, fontWeight: "600" }}
             >
               Notificaciones
             </ThemedText>
@@ -349,9 +339,7 @@ export default function SettingsScreen() {
         <ThemedCard style={{ marginBottom: 16 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <Key size={16} color={iconColor} />
-            <ThemedText
-              secondary
-              style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}
+            <ThemedText style={{ fontSize: 15, fontWeight: "600" }}
             >
               Claves API
             </ThemedText>
