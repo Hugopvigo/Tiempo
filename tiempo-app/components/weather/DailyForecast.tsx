@@ -1,6 +1,6 @@
 import { View, TouchableOpacity, type DimensionValue } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { ThemedCard, ThemedText, useThemeContext } from "@/components/theme";
+import { ThemedCard, ThemedText, CardTitle, useThemeContext } from "@/components/theme";
+import { rainColor, trackColor, textColor } from "@/constants/theme";
 import { WeatherIcon } from "./WeatherIcon";
 import type { DailyForecast } from "@/types/weather";
 import { formatTemperature } from "@/constants/weather";
@@ -29,20 +29,22 @@ const DayRow = memo(function DayRow({
   const rawBarWidth = range > 0 ? ((d.tempMax - d.tempMin) / range) * 100 : 4;
   const barWidth = Math.min(Math.max(rawBarWidth, 4), 100 - barLeft);
 
-  const trackBg = isDark ? "rgba(51, 65, 85, 1)" : "rgba(226, 232, 240, 1)";
+  const trackBg = isDark ? trackColor.dark : trackColor.light;
+  const barColor = isDark ? textColor.dark : textColor.light;
+  const rain = isDark ? rainColor.dark : rainColor.light;
 
   return (
     <View
       style={{
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 10,
+        minHeight: 44,
         gap: 8,
         borderTopWidth: index > 0 ? 0.5 : 0,
         borderTopColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
       }}
     >
-      <ThemedText style={{ fontSize: 17, fontWeight: "500", width: 56 }}>
+      <ThemedText style={{ fontSize: 16, fontWeight: "600", width: 44 }}>
         {dayLabel}
       </ThemedText>
 
@@ -51,18 +53,18 @@ const DayRow = memo(function DayRow({
       </View>
 
       {d.precipitationChance > 0 ? (
-        <ThemedText style={{ fontSize: 13, width: 32, textAlign: "right", color: "#60A5FA" }}>
+        <ThemedText style={{ fontSize: 13, width: 36, textAlign: "right", color: rain, fontWeight: "600" }}>
           {d.precipitationChance}%
         </ThemedText>
       ) : (
-        <View style={{ width: 32 }} />
+        <View style={{ width: 36 }} />
       )}
 
-      <ThemedText secondary style={{ fontSize: 17, width: 40, textAlign: "right" }}>
+      <ThemedText secondary style={{ fontSize: 16, width: 38, textAlign: "right" }}>
         {formatTemperature(d.tempMin, unit)}
       </ThemedText>
 
-      <View style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: trackBg }}>
+      <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: trackBg }}>
         <View
           style={{
             position: "absolute",
@@ -70,26 +72,13 @@ const DayRow = memo(function DayRow({
             width: pct(barWidth),
             top: 0,
             bottom: 0,
-            borderRadius: 4,
-            overflow: "hidden",
+            borderRadius: 3,
+            backgroundColor: barColor,
           }}
-        >
-          <LinearGradient
-            colors={["#60A5FA", "#FB923C"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              position: "absolute",
-              left: pct(-(barLeft / barWidth) * 100),
-              width: pct((100 / barWidth) * 100),
-              top: 0,
-              bottom: 0,
-            }}
-          />
-        </View>
+        />
       </View>
 
-      <ThemedText style={{ fontSize: 17, fontWeight: "500", width: 40, textAlign: "right" }}>
+      <ThemedText style={{ fontSize: 16, fontWeight: "600", width: 38, textAlign: "right" }}>
         {formatTemperature(d.tempMax, unit)}
       </ThemedText>
     </View>
@@ -115,14 +104,9 @@ export function DailyForecastCard({ daily }: DailyForecastProps) {
   }, [daily]);
 
   return (
-    <ThemedCard style={{ marginBottom: 12, paddingHorizontal: 16, paddingVertical: 16 }}>
+    <ThemedCard style={{ paddingBottom: 8 }}>
       <TouchableOpacity onPress={() => hasMore && setExpanded(!expanded)} activeOpacity={0.7}>
-        <ThemedText
-          secondary
-          style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 12, letterSpacing: 0.5 }}
-        >
-          Próximos 7 días
-        </ThemedText>
+        <CardTitle aside="Lluvia y temperaturas">{`Próximos ${daily.length} días`}</CardTitle>
         {visibleDays.map((d, i) => (
           <DayRow
             key={d.date}
@@ -139,10 +123,10 @@ export function DailyForecastCard({ daily }: DailyForecastProps) {
         <TouchableOpacity
           onPress={() => setExpanded(!expanded)}
           activeOpacity={0.7}
-          style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", paddingVertical: 6, gap: 4 }}
+          style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", minHeight: 44, gap: 4 }}
         >
           <ThemedText secondary style={{ fontSize: 13 }}>
-            {expanded ? "Menos" : "Más"}
+            {expanded ? "Ver menos días" : "Ver más días"}
           </ThemedText>
           {expanded ? <ChevronUp size={16} color={monoColor} /> : <ChevronDown size={16} color={monoColor} />}
         </TouchableOpacity>

@@ -1,5 +1,6 @@
 import { View, FlatList } from "react-native";
-import { ThemedCard, ThemedText } from "@/components/theme";
+import { ThemedCard, ThemedText, CardTitle, useThemeContext } from "@/components/theme";
+import { rainColor } from "@/constants/theme";
 import { WeatherIcon } from "./WeatherIcon";
 import type { HourlyForecast } from "@/types/weather";
 import { formatTemperature } from "@/constants/weather";
@@ -10,14 +11,14 @@ interface HourlyForecastProps {
   hourly: HourlyForecast[];
 }
 
-const HourItem = memo(function HourItem({ h, unit, isFirst }: { h: HourlyForecast; unit: "celsius" | "fahrenheit"; isFirst: boolean }) {
+const HourItem = memo(function HourItem({ h, unit, isFirst, rain }: { h: HourlyForecast; unit: "celsius" | "fahrenheit"; isFirst: boolean; rain: string }) {
   const hour = parseInt(h.time.split("T")[1]?.split(":")[0] ?? "0", 10);
-  const label = isFirst ? "Ahora" : `${hour}h`;
+  const label = isFirst ? "Ahora" : `${String(hour).padStart(2, "0")} h`;
   const showRain = h.precipitationChance >= 10;
 
   return (
     <View style={{ alignItems: "center", width: 64, gap: 6, paddingVertical: 4 }}>
-      <ThemedText secondary style={{ fontSize: 13, fontWeight: isFirst ? "600" : "400" }}>
+      <ThemedText secondary={!isFirst} style={{ fontSize: 13, fontWeight: isFirst ? "600" : "400" }}>
         {label}
       </ThemedText>
       <WeatherIcon condition={h.condition} size={22} />
@@ -25,7 +26,7 @@ const HourItem = memo(function HourItem({ h, unit, isFirst }: { h: HourlyForecas
         {formatTemperature(h.temperature, unit)}
       </ThemedText>
       {/* Fila siempre presente para que iconos y temperaturas queden alineados. */}
-      <ThemedText style={{ fontSize: 11, height: 14, color: "#60A5FA", fontWeight: "500" }}>
+      <ThemedText style={{ fontSize: 12, height: 16, color: rain, fontWeight: "600" }}>
         {showRain ? `${h.precipitationChance}%` : ""}
       </ThemedText>
     </View>
@@ -34,21 +35,18 @@ const HourItem = memo(function HourItem({ h, unit, isFirst }: { h: HourlyForecas
 
 export function HourlyForecastCard({ hourly }: HourlyForecastProps) {
   const { settings } = useSettingsStore();
+  const { isDark } = useThemeContext();
   const unit = settings.temperatureUnit;
+  const rain = isDark ? rainColor.dark : rainColor.light;
   const data = hourly.slice(0, 25);
 
   const renderItem = useCallback(({ item, index }: { item: HourlyForecast; index: number }) => (
-    <HourItem h={item} unit={unit} isFirst={index === 0} />
-  ), [unit]);
+    <HourItem h={item} unit={unit} isFirst={index === 0} rain={rain} />
+  ), [unit, rain]);
 
   return (
-    <ThemedCard style={{ paddingHorizontal: 20, paddingVertical: 18 }}>
-      <ThemedText
-        secondary
-        style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", marginBottom: 14, letterSpacing: 0.5 }}
-      >
-        Previsión horaria
-      </ThemedText>
+    <ThemedCard>
+      <CardTitle>Por horas</CardTitle>
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}

@@ -1,143 +1,102 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { View } from "react-native";
-import Svg, { Path, Line, Text as SvgText } from "react-native-svg";
-import { ThemedCard, ThemedText, useThemeContext } from "@/components/theme";
+import Svg, { Line, Rect, Text as SvgText } from "react-native-svg";
+import { ThemedCard, CardTitle, useThemeContext } from "@/components/theme";
+import { rainColor, secondaryTextColor, textColor, trackColor } from "@/constants/theme";
 import type { HourlyForecast } from "@/types/weather";
 
 interface PrecipitationChartProps {
   hourly: HourlyForecast[];
 }
 
+const H = 132;
+const PAD_TOP = 18; // sitio para la cifra del pico
+const PAD_BOTTOM = 22; // etiquetas de hora
+const MIN_SCALE_MM = 4; // una llovizna no debe dibujar barras hasta arriba
+const MIN_TOTAL_MM = 0.1;
+
+function formatMm(mm: number): string {
+  return mm < 10 ? mm.toFixed(1).replace(".", ",").replace(",0", "") : String(Math.round(mm));
+}
+
+/**
+ * Lluvia prevista hora a hora, en milímetros: una barra por hora, la cifra del
+ * pico y el total del periodo. Sin lluvia no se muestra.
+ */
 export function PrecipitationChart({ hourly }: PrecipitationChartProps) {
   const { isDark } = useThemeContext();
-  // Ancho real de la tarjeta: con 340 fijos el gráfico se salía o quedaba corto
-  // según la pantalla.
+  // Ancho real de la tarjeta, para que las 24 barras la llenen de borde a borde.
   const [width, setWidth] = useState(0);
 
-  const chartData = useMemo(() => {
-    const points = hourly.slice(0, 24);
+  const points = useMemo(() => hourly.slice(0, 24), [hourly]);
+  const total = useMemo(() => points.reduce((acc, p) => acc + p.precipitation, 0), [points]);
+
+  const chart = useMemo(() => {
     if (points.length === 0 || width === 0) return null;
+    const slot = width / points.length;
+    const barW = Math.max(3, Math.min(10, slot - 4));
+    const plotH = H - PAD_TOP - PAD_BOTTOM;
+    const peak = Math.max(...points.map((p) => p.precipitation));
+    const scale = Math.max(peak, MIN_SCALE_MM);
+    const baseY = PAD_TOP + plotH;
 
-    const W = width;
-    const H = 160;
-    const padL = 36;
-    const padR = 12;
-    const padT = 14;
-    const padB = 30;
-    const chartW = W - padL - padR;
-    const chartH = H - padT - padB;
-
-    const maxVal = 100;
-    const minVal = 0;
-    const range = maxVal - minVal;
-
-    const getX = (i: number) => padL + (i / (points.length - 1)) * chartW;
-    const getY = (val: number) => padT + chartH - ((val - minVal) / range) * chartH;
-
-    let pathD = `M ${getX(0)} ${getY(points[0].precipitationChance)}`;
-    for (let i = 1; i < points.length; i++) {
-      const x0 = getX(i - 1);
-      const y0 = getY(points[i - 1].precipitationChance);
-      const x1 = getX(i);
-      const y1 = getY(points[i].precipitationChance);
-      const cx = (x0 + x1) / 2;
-      pathD += ` C ${cx} ${y0}, ${cx} ${y1}, ${x1} ${y1}`;
-    }
-
-    const fillD =
-      pathD +
-      ` L ${getX(points.length - 1)} ${padT + chartH}` +
-      ` L ${getX(0)} ${padT + chartH} Z`;
-
-    const gridValues = [0, 25, 50, 75, 100];
-    const gridSteps = gridValues.map((val) => ({ val, y: getY(val) }));
-
-    const hourTicks = [0, 6, 12, 18, 23];
-    const hourLabels = hourTicks.map((h) => {
-      const hour = parseInt(points[h]?.time?.split("T")[1]?.split(":")[0] ?? `${h}`, 10);
-      return `${hour}h`;
+    const bars = points.map((p, i) => {
+      const h = p.precipitation > 0 ? Math.max(2, (p.precipitation / scale) * plotH) : 0;
+      return { x: i * slot + (slot - barW) / 2, y: baseY - h, h, hour: parseInt(p.time.split("T")[1]?.slice(0, 2) ?? "0", 10) };
     });
+    const peakIndex = points.findIndex((p) => p.precipitation === peak);
+    return { slot, barW, baseY, bars, peak, peakIndex };
+  }, [points, width]);
 
-    const hasData = points.some((p) => p.precipitationChance > 0);
+  if (total < MIN_TOTAL_MM) return null;
 
-    return { W, H, padL, padR, padT, padB, chartW, chartH, pathD, fillD, gridSteps, hourTicks, hourLabels, hasData };
-  }, [hourly, width]);
-
-  const hasData = hourly.slice(0, 24).some((p) => p.precipitationChance > 0);
-  if (!hasData) return null;
-
-  const lineColor = isDark ? "#5AC8FA" : "#007AFF";
-  const fillOpacity = isDark ? "0.3" : "0.25";
-  const gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
-  const labelColor = isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const rain = isDark ? rainColor.dark : rainColor.light;
+  const label = isDark ? secondaryTextColor.dark : secondaryTextColor.light;
+  const strong = isDark ? textColor.dark : textColor.light;
+  const base = isDark ? trackColor.dark : trackColor.light;
 
   return (
     <ThemedCard>
-      <ThemedText
-        secondary
-        style={{
-          fontSize: 13,
-          fontWeight: "600",
-          textTransform: "uppercase",
-          marginBottom: 12,
-          letterSpacing: 0.5,
-        }}
-      >
-        Probabilidad de lluvia
-      </ThemedText>
-      <View style={{ height: 160 }} onLayout={(e) => setWidth(Math.round(e.nativeEvent.layout.width))}>
-        {chartData && (
-        <Svg width={chartData.W} height={chartData.H}>
-          <Path d={chartData.fillD} fill={lineColor} opacity={Number(fillOpacity)} />
-          <Path d={chartData.pathD} fill="none" stroke={lineColor} strokeWidth={2.5} />
-
-          {chartData.gridSteps.map(({ val, y }, i) => (
-            <React.Fragment key={i}>
-              <Line
-                x1={chartData.padL}
-                y1={y}
-                x2={chartData.W - chartData.padR}
-                y2={y}
-                stroke={gridColor}
-                strokeWidth={1}
-              />
+      <CardTitle aside={`${formatMm(total)} mm`} asideColor={rain}>
+        Lluvia, próximas 24 horas
+      </CardTitle>
+      <View style={{ height: H }} onLayout={(e) => setWidth(Math.round(e.nativeEvent.layout.width))}>
+        {chart && (
+          <Svg width={width} height={H}>
+            <Line x1={0} y1={chart.baseY} x2={width} y2={chart.baseY} stroke={base} strokeWidth={1} />
+            {chart.bars.map((b, i) =>
+              b.h > 0 ? (
+                <Rect key={i} x={b.x} y={b.y} width={chart.barW} height={b.h} rx={Math.min(3, chart.barW / 2)} fill={rain} />
+              ) : null
+            )}
+            {chart.peakIndex >= 0 && (
               <SvgText
-                x={chartData.padL - 6}
-                y={y + 4}
-                textAnchor="end"
-                fill={labelColor}
-                fontSize={12}
+                x={Math.min(Math.max(chart.bars[chart.peakIndex].x + chart.barW / 2, 22), width - 22)}
+                y={chart.bars[chart.peakIndex].y - 5}
+                textAnchor="middle"
+                fill={rain}
+                fontSize={11}
+                fontWeight="600"
               >
-                {val}
+                {`${formatMm(chart.peak)} mm`}
               </SvgText>
-            </React.Fragment>
-          ))}
-
-          {chartData.hourTicks.map((h) => {
-            const x = chartData.padL + (h / 23) * chartData.chartW;
-            return (
-              <React.Fragment key={h}>
-                <Line
-                  x1={x}
-                  y1={chartData.padT}
-                  x2={x}
-                  y2={chartData.padT + chartData.chartH}
-                  stroke={gridColor}
-                  strokeWidth={1}
-                />
+            )}
+            {chart.bars.map((b, i) =>
+              i % 3 === 0 ? (
                 <SvgText
-                  x={x}
-                  y={chartData.padT + chartData.chartH + 18}
-                  textAnchor="middle"
-                  fill={labelColor}
-                  fontSize={12}
+                  key={`h${i}`}
+                  x={i === 0 ? 0 : b.x + chart.barW / 2}
+                  y={H - 5}
+                  textAnchor={i === 0 ? "start" : "middle"}
+                  fill={i === 0 ? strong : label}
+                  fontSize={11}
+                  fontWeight={i === 0 ? "600" : "400"}
                 >
-                  {chartData.hourLabels[chartData.hourTicks.indexOf(h)]}
+                  {i === 0 ? "Ahora" : String(b.hour).padStart(2, "0")}
                 </SvgText>
-              </React.Fragment>
-            );
-          })}
-        </Svg>
+              ) : null
+            )}
+          </Svg>
         )}
       </View>
     </ThemedCard>
