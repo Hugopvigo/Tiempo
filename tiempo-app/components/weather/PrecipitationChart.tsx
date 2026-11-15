@@ -19,6 +19,11 @@ function formatMm(mm: number): string {
   return mm < 10 ? mm.toFixed(1).replace(".", ",").replace(",0", "") : String(Math.round(mm));
 }
 
+/** Hay lluvia que enseñar en las próximas 24 horas. */
+export function hasRainAhead(hourly: HourlyForecast[]): boolean {
+  return hourly.slice(0, 24).reduce((acc, p) => acc + p.precipitation, 0) >= MIN_TOTAL_MM;
+}
+
 /**
  * Lluvia prevista hora a hora, en milímetros: una barra por hora, la cifra del
  * pico y el total del periodo. Sin lluvia no se muestra.

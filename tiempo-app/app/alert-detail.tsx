@@ -2,6 +2,7 @@ import { View, ScrollView, Linking, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeContext, ThemedText, ThemedCard, CardTitle } from "@/components/theme";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import type { WeatherAlert } from "@/types/weather";
 import { alertColors, alertInk, screenBackground, trackColor, textColor } from "@/constants/theme";
 import { ChevronLeft, ExternalLink } from "lucide-react-native";
@@ -90,7 +91,11 @@ export default function AlertDetailScreen() {
 
   const color = alertColors[alert.severity];
   const official = alert.source === "aemet";
-  const thresholds = THRESHOLDS[alert.type];
+  // AEMET avisa de lluvia por acumulado en 1 h o en 12 h: se enseña la escala que toca.
+  const thresholds =
+    alert.type === "rain" && /12 h/i.test(alert.detail ?? alert.description)
+      ? { values: UMBRAL.lluvia12h, unit: "mm en 12 h" }
+      : THRESHOLDS[alert.type];
   const track = isDark ? trackColor.dark : trackColor.light;
   const ink = isDark ? textColor.dark : textColor.light;
 
@@ -110,6 +115,8 @@ export default function AlertDetailScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: isDark ? screenBackground.dark : screenBackground.light }}>
+      {/* La cabecera es clara en los tres niveles, también con tema oscuro. */}
+      <StatusBar style="dark" />
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
         <View style={{ backgroundColor: color, paddingTop: insets.top + 8, paddingHorizontal: 16, paddingBottom: 20, gap: 8 }}>
           <TouchableOpacity

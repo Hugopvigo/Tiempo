@@ -1,7 +1,7 @@
 import { View, ScrollView, RefreshControl, TouchableOpacity, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DynamicBackground, ThemedText, AnimatedView, WeatherParticles , useThemeContext } from "@/components/theme";
-import { CurrentWeather, HourlyForecastCard, DailyForecastCard, WeatherDetails, AirQualityCard, LunarPhaseCard, PrecipitationChart } from "@/components/weather";
+import { CurrentWeather, HourlyForecastCard, DailyForecastCard, WeatherDetails, AirQualityCard, LunarPhaseCard, PrecipitationChart, hasRainAhead } from "@/components/weather";
 import { CurrentWeatherSkeleton, HourlyForecastSkeleton, DailyForecastSkeleton, WeatherDetailsSkeleton } from "@/components/ui/Skeleton";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { CitySelector } from "@/components/city";
@@ -262,9 +262,12 @@ export default function HomeScreen() {
                   <HourlyForecastCard hourly={weather.hourly} />
                 </AnimatedView>
 
-                <AnimatedView delay={150}>
-                  <PrecipitationChart hourly={weather.hourly} />
-                </AnimatedView>
+                {/* Sin lluvia no hay tarjeta ni hueco donde iría. */}
+                {hasRainAhead(weather.hourly) && (
+                  <AnimatedView delay={150}>
+                    <PrecipitationChart hourly={weather.hourly} />
+                  </AnimatedView>
+                )}
 
                 <AnimatedView delay={200}>
                   <DailyForecastCard daily={weather.daily} />
