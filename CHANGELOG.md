@@ -1,10 +1,15 @@
 # Changelog
 
-## Sin publicar — Avisos AEMET por polígono
+## v4.7.0 — Avisos AEMET por polígono
 
 - El tar de OpenData trae un `<polygon>` (lat,lon, WGS84) por zona. Si el aviso los trae y la ciudad tiene coordenadas, solo se muestran las zonas que contienen la ciudad, con ~2 km de margen porque los polígonos llevan dos decimales. Getafe deja de ver los avisos de la Sierra y cualquier municipio sin zona asignada a mano recibe los de su zona exacta
 - Sin polígono o sin coordenadas se mantiene el filtro por nombre de zona y provincia
 - La descripción del aviso lista solo las zonas que contienen la ciudad
+
+### Versión
+- `app.json`, `package.json`, `README.md`, `index.html` → 4.7.0
+- `runtimeVersion` pasa a ser un valor fijo (`"4.6.1"`) en vez de la policy `appVersion`: así subir la versión de la app ya no corta las actualizaciones OTA del móvil, y solo hay que tocarlo cuando cambie el código nativo
+- Actualización OTA publicada en los canales `preview` y `production`
 
 ## v4.6.2 — Lluvia que salía como nieve, avisos locales con umbrales Meteoalerta y retoques de inicio
 

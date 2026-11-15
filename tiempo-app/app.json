@@ -2,7 +2,7 @@
   "expo": {
     "name": "Tiempo",
     "slug": "tiempo-app",
-    "version": "4.6.2",
+    "version": "4.7.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -174,8 +174,6 @@
       }
     },
     "owner": "hugopvigo",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
+    "runtimeVersion": "4.6.1"
   }
 }
