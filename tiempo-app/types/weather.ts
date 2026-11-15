@@ -29,6 +29,12 @@ export interface HourlyForecast {
   condition: WeatherCondition;
   icon: string;
   precipitationChance: number;
+  /** mm acumulados en la hora */
+  precipitation: number;
+  /** cm de nieve acumulados en la hora */
+  snowfall: number;
+  /** racha máxima de viento, km/h */
+  windGusts: number;
 }
 
 export interface DailyForecast {
