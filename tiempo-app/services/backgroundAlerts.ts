@@ -95,7 +95,7 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
         const subzonePatterns = getAEMETSubzonePatterns(city);
 
         if (isAEMETConfigured() && zonaCode) {
-          const aemetAlerts = await getAEMETAlerts(zonaCode, subzonePatterns);
+          const aemetAlerts = await getAEMETAlerts(zonaCode, subzonePatterns, { lat: city.lat, lon: city.lon });
           if (aemetAlerts.length > 0) {
             const aemetTypes = new Set(aemetAlerts.map((a) => a.type));
             const complement = localAlerts.filter((a) => !aemetTypes.has(a.type));

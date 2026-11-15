@@ -104,6 +104,13 @@ function parseTar(buffer: ArrayBuffer): string[] {
 
 interface CAPArea {
   areaDesc?: string;
+  /** "lat,lon lat,lon …" (CAP, WGS84); puede haber varios por zona */
+  polygon?: string | string[];
+}
+
+export interface GeoPoint {
+  lat: number;
+  lon: number;
 }
 
 interface CAPAlertInfo {
@@ -138,11 +145,56 @@ function matchesSubzone(areaDescs: string[], patterns: string[]): boolean {
   });
 }
 
+function parsePolygon(text: string): [number, number][] {
+  return text
+    .trim()
+    .split(/\s+/)
+    .map((pair) => pair.split(",").map(Number) as [number, number])
+    .filter((p) => p.length === 2 && Number.isFinite(p[0]) && Number.isFinite(p[1]));
+}
+
+// Ray casting sobre (lat, lon). Los polígonos de AEMET llevan dos decimales
+// (~1 km), así que una ciudad pegada al borde puede quedar fuera por redondeo.
+export function pointInPolygon(point: GeoPoint, ring: [number, number][]): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [yi, xi] = ring[i];
+    const [yj, xj] = ring[j];
+    if (yi > point.lat !== yj > point.lat && point.lon < ((xj - xi) * (point.lat - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// Margen de ~2 km alrededor de la ciudad: es mejor un aviso vecino que perder uno real.
+const POLYGON_MARGIN_DEG = 0.02;
+
+function areaContainsPoint(area: CAPArea, point: GeoPoint): boolean {
+  const polygons = Array.isArray(area.polygon) ? area.polygon : area.polygon ? [area.polygon] : [];
+  const probes: GeoPoint[] = [
+    point,
+    { lat: point.lat + POLYGON_MARGIN_DEG, lon: point.lon },
+    { lat: point.lat - POLYGON_MARGIN_DEG, lon: point.lon },
+    { lat: point.lat, lon: point.lon + POLYGON_MARGIN_DEG },
+    { lat: point.lat, lon: point.lon - POLYGON_MARGIN_DEG },
+  ];
+  return polygons.some((text) => {
+    const ring = parsePolygon(String(text));
+    return ring.length >= 3 && probes.some((q) => pointInPolygon(q, ring));
+  });
+}
+
+function hasPolygon(area: CAPArea): boolean {
+  return Array.isArray(area.polygon) ? area.polygon.length > 0 : Boolean(area.polygon);
+}
+
 export function parseCAPAlert(
   parsed: any,
   zonaCode: string,
   subzonePatterns?: string[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  point?: GeoPoint
 ): WeatherAlert | null {
   const alert = parsed.alert || parsed["alert"] || parsed;
   if (!alert) return null;
@@ -168,12 +220,21 @@ export function parseCAPAlert(
   const severity = CAP_SEVERITY[capSeverity];
   if (!severity) return null;
 
-  const areas = Array.isArray(info.area) ? info.area : info.area ? [info.area] : [];
+  let areas = (Array.isArray(info.area) ? info.area : info.area ? [info.area] : []).filter(Boolean);
+
+  // Con polígonos y coordenadas manda la geometría: solo cuentan las zonas que
+  // contienen la ciudad. Sin polígonos (o sin coordenadas) se filtra por nombre.
+  if (point && areas.some(hasPolygon)) {
+    areas = areas.filter((a) => areaContainsPoint(a, point));
+    if (areas.length === 0) return null;
+  }
+
   const areaDescs = areas
     .map((a) => a?.areaDesc)
     .filter((d): d is string => Boolean(d));
 
-  if (subzonePatterns && subzonePatterns.length > 0 && areaDescs.length > 0) {
+  const usedPolygon = Boolean(point) && areas.some(hasPolygon);
+  if (!usedPolygon && subzonePatterns && subzonePatterns.length > 0 && areaDescs.length > 0) {
     if (!matchesSubzone(areaDescs, subzonePatterns)) return null;
   }
 
@@ -209,7 +270,8 @@ export function parseCAPAlert(
 
 export async function getAEMETAlerts(
   zonaCode: string,
-  subzonePatterns?: string[]
+  subzonePatterns?: string[],
+  point?: GeoPoint
 ): Promise<WeatherAlert[]> {
   try {
     const ccaa = getCCAACode(zonaCode);
@@ -245,7 +307,7 @@ export async function getAEMETAlerts(
     for (const xml of xmlFiles) {
       try {
         const parsed = parser.parse(xml);
-        const alert = parseCAPAlert(parsed, zonaCode, subzonePatterns);
+        const alert = parseCAPAlert(parsed, zonaCode, subzonePatterns, new Date(), point);
         if (!alert) continue;
         const prev = byId.get(alert.id);
         if (!prev || new Date(alert.endTime) > new Date(prev.endTime)) byId.set(alert.id, alert);
