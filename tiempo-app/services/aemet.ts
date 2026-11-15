@@ -41,26 +41,27 @@ const CAP_SEVERITY: Record<string, WeatherAlert["severity"] | null> = {
   Minor: null,
 };
 
-function capEventToType(event: string): WeatherAlert["type"] | null {
-  const lower = event.toLowerCase();
-  if (/lluvia|precipitaci/.test(lower)) return "rain";
-  if (/tormenta|rayos|eléctrica/.test(lower)) return "storm";
-  if (/nieve|nevada/.test(lower)) return "snow";
-  if (/viento/.test(lower)) return "wind";
-  if (/calor|temperatura.*máxima|temperatura.*max/.test(lower)) return "heat";
-  if (/frío|frío|temperatura.*mínima|temperatura.*min|hielo|deshielo/.test(lower)) return "cold";
-  if (/costera|marítimo|marítima|costa|oleaje/.test(lower)) return "coastal";
-  if (/niebla/.test(lower)) return "fog";
-  if (/polvo|arena|calima/.test(lower)) return "fog";
+// Fenómenos del Plan Meteoalerta (eventos CAP en español, p. ej. "Aviso de
+// temperaturas máximas de nivel rojo"). Se compara sin acentos porque el XML
+// llega en UTF-8 y así da igual cómo venga escrito.
+export function capEventToType(event: string): WeatherAlert["type"] | null {
+  const e = stripAccents(event);
+  if (/lluvia|precipitaci/.test(e)) return "rain";
+  if (/tormenta|rayos|electric/.test(e)) return "storm";
+  if (/nieve|nevada|alud/.test(e)) return "snow";
+  if (/viento|racha/.test(e)) return "wind";
+  if (/calor|temperaturas? max/.test(e)) return "heat";
+  if (/frio|temperaturas? min|hielo|deshielo/.test(e)) return "cold";
+  if (/coster|maritim|costa|oleaje|galerna|rissag/.test(e)) return "coastal";
+  if (/niebla|polvo|arena|calima/.test(e)) return "fog";
   return null;
 }
 
-function bytesToString(bytes: Uint8Array): string {
-  let result = "";
-  for (let i = 0; i < bytes.length; i++) {
-    result += String.fromCharCode(bytes[i]);
-  }
-  return result;
+// Los CAP de AEMET son UTF-8 (<?xml ... encoding="utf-8"?>); decodificar byte a
+// byte rompía tildes y eñes ("Coruña" → "CoruÃ±a") y con ello el filtro de
+// subzonas y el texto mostrado.
+export function decodeTarText(bytes: Uint8Array): string {
+  return new TextDecoder("utf-8").decode(bytes);
 }
 
 function parseTar(buffer: ArrayBuffer): string[] {
@@ -85,7 +86,7 @@ function parseTar(buffer: ArrayBuffer): string[] {
     if (typeFlag === "\0" || typeFlag === "0" || typeFlag === "") {
       if (offset + size > bytes.length) break;
       const data = bytes.slice(offset, offset + size);
-      files.push(bytesToString(data));
+      files.push(decodeTarText(data));
     }
 
     offset += paddedSize;
@@ -130,9 +131,18 @@ function matchesSubzone(areaDescs: string[], patterns: string[]): boolean {
   });
 }
 
-export function parseCAPAlert(parsed: any, zonaCode: string, subzonePatterns?: string[]): WeatherAlert | null {
+export function parseCAPAlert(
+  parsed: any,
+  zonaCode: string,
+  subzonePatterns?: string[],
+  now: Date = new Date()
+): WeatherAlert | null {
   const alert = parsed.alert || parsed["alert"] || parsed;
   if (!alert) return null;
+
+  // Solo avisos reales y vigentes: ni pruebas, ni cancelaciones, ni caducados.
+  if (alert.status && alert.status !== "Actual") return null;
+  if (alert.msgType === "Cancel") return null;
 
   let infos: CAPAlertInfo[] = [];
   if (alert.info) {
@@ -160,8 +170,9 @@ export function parseCAPAlert(parsed: any, zonaCode: string, subzonePatterns?: s
     if (!matchesSubzone(areaDescs, subzonePatterns)) return null;
   }
 
-  const onset = info.onset || new Date().toISOString();
-  const expires = info.expires || new Date(Date.now() + 24 * 3600000).toISOString();
+  const onset = info.onset || now.toISOString();
+  const expires = info.expires || new Date(now.getTime() + 24 * 3600000).toISOString();
+  if (new Date(expires).getTime() <= now.getTime()) return null;
   const areaDesc = areaDescs.join("; ");
   const description = [info.description, areaDesc].filter(Boolean).join("\n");
 
