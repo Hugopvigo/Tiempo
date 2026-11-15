@@ -15,7 +15,7 @@
   <a href="https://hugopvigo.github.io/Tiempo/"><img alt="web" src="https://img.shields.io/badge/web-en%20vivo-a78bfa?style=flat-square&labelColor=1a1a1e"></a>
   <img alt="licencia" src="https://img.shields.io/badge/licencia-CC%20BY--NC--SA%204.0-8E8E93?style=flat-square&labelColor=1a1a1e">
   <img alt="stack" src="https://img.shields.io/badge/Expo-54-8E8E93?style=flat-square&labelColor=1a1a1e">
-  <img alt="version" src="https://img.shields.io/badge/versi%C3%B3n-4.8.0-8E8E93?style=flat-square&labelColor=1a1a1e">
+  <img alt="version" src="https://img.shields.io/badge/versi%C3%B3n-4.8.1-8E8E93?style=flat-square&labelColor=1a1a1e">
 </p>
 
 ---
@@ -127,7 +127,7 @@ Las últimas APKs publicadas están en la
 
 > **Estado de las versiones:** la última APK publicada es la **v4.2**
 > (release `Version_4.2`, asset `App_Tiempo_Version_4_2.apk`). El código del
-> repositorio va por la **v4.8.0** (`tiempo-app/package.json`), que todavía no
+> repositorio va por la **v4.8.1** (`tiempo-app/package.json`), que todavía no
 > está compilada ni subida como release. El botón de descarga de la landing
 > enlaza por eso a la v4.2.
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## v4.8.1 — Barras de temperatura a color y lluvia legible en los próximos días
+
+### Bug fix: las barras de temperatura eran siempre del mismo color
+- Las barras de "próximos días" eran planas (texto blanco o negro). Ahora son un degradado de frío a cálido que va de azul a naranja sobre la escala real de la semana: el color depende de dónde caiga ese día en el rango de temperaturas, no del orden de la lista
+
+### Bug fix: una hora de llovizna no se veía junto a un pico fuerte
+- La altura de las barras de lluvia era lineal: con un pico de 13 mm, una hora de 1 mm quedaba en un trazo invisible. Ahora la escala es de raíz, así que las horas de poca lluvia se distinguen al lado del pico
+- Escala mínima de 4 a 2 mm: una llovizna ya no dibuja barras hasta arriba
+
+### Otros ajustes
+- La probabilidad de lluvia de los próximos días tiene sitio para el 100 %
+
+### Versión
+- `app.json`, `package.json`, `README.md`, `index.html` → 4.8.1
+- Actualización OTA en los canales `preview` y `production` (runtime 4.6.1) y build nativa de preview (APK interna)
+
 ## v4.8.0 — Notificaciones rehechas y pulido visual
 
 ### Notificaciones
