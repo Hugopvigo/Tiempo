@@ -68,6 +68,11 @@ export async function notifyAlertEnded(identifier: string, text: NotificationTex
   });
 }
 
+/** Retira de la bandeja la notificación de un aviso que ya no aplica. */
+export async function dismissAlertNotification(identifier: string): Promise<void> {
+  await Notifications.dismissNotificationAsync(identifier).catch(() => {});
+}
+
 export async function notifyRainSoon(text: NotificationText): Promise<void> {
   await Notifications.scheduleNotificationAsync({
     identifier: RAIN_SOON_ID,

@@ -7,6 +7,7 @@ import { getAEMETZone, getAEMETSubzonePatterns } from "@/constants/aemetZones";
 import {
   notifyAlert,
   notifyAlertEnded,
+  dismissAlertNotification,
   notifyRainSoon,
   scheduleMorningSummary,
   cancelMorningSummary,
@@ -157,6 +158,10 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
         states = plan.next;
 
         for (const action of plan.actions) {
+          if (action.kind === "dismiss") {
+            await dismissAlertNotification(notificationId(action.state.key));
+            continue;
+          }
           if (action.kind === "ended") {
             await notifyAlertEnded(
               notificationId(action.state.key),

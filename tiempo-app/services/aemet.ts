@@ -189,6 +189,35 @@ function hasPolygon(area: CAPArea): boolean {
   return Array.isArray(area.polygon) ? area.polygon.length > 0 : Boolean(area.polygon);
 }
 
+/**
+ * Avisos de un fichero CAP. Un fichero puede traer varios bloques <info> en
+ * español (un fenómeno o un tramo horario cada uno): sale un aviso por bloque.
+ */
+export function parseCAPAlerts(
+  parsed: any,
+  zonaCode: string,
+  subzonePatterns?: string[],
+  now: Date = new Date(),
+  point?: GeoPoint
+): WeatherAlert[] {
+  const alert = parsed.alert || parsed["alert"] || parsed;
+  if (!alert) return [];
+
+  // Solo avisos reales y vigentes: ni pruebas, ni cancelaciones, ni caducados.
+  if (alert.status && alert.status !== "Actual") return [];
+  if (alert.msgType === "Cancel") return [];
+
+  const infos: CAPAlertInfo[] = alert.info ? (Array.isArray(alert.info) ? alert.info : [alert.info]) : [];
+  const spanish = infos.filter((i) => i.language && i.language.startsWith("es"));
+  // Sin bloques marcados como español se usa el primero, como hasta ahora.
+  const chosen = spanish.length > 0 ? spanish : infos.slice(0, 1);
+
+  return chosen
+    .map((info) => infoToAlert(info, zonaCode, subzonePatterns, now, point))
+    .filter((a): a is WeatherAlert => a !== null);
+}
+
+/** Primer aviso del fichero, o null. */
 export function parseCAPAlert(
   parsed: any,
   zonaCode: string,
@@ -196,22 +225,16 @@ export function parseCAPAlert(
   now: Date = new Date(),
   point?: GeoPoint
 ): WeatherAlert | null {
-  const alert = parsed.alert || parsed["alert"] || parsed;
-  if (!alert) return null;
+  return parseCAPAlerts(parsed, zonaCode, subzonePatterns, now, point)[0] ?? null;
+}
 
-  // Solo avisos reales y vigentes: ni pruebas, ni cancelaciones, ni caducados.
-  if (alert.status && alert.status !== "Actual") return null;
-  if (alert.msgType === "Cancel") return null;
-
-  let infos: CAPAlertInfo[] = [];
-  if (alert.info) {
-    infos = Array.isArray(alert.info) ? alert.info : [alert.info];
-  }
-  if (infos.length === 0) return null;
-
-  const esInfo = infos.find((i) => i.language && i.language.startsWith("es"));
-  const info = esInfo || infos[0];
-
+function infoToAlert(
+  info: CAPAlertInfo,
+  zonaCode: string,
+  subzonePatterns: string[] | undefined,
+  now: Date,
+  point: GeoPoint | undefined
+): WeatherAlert | null {
   const event = info.event || "";
   const type = capEventToType(event);
   if (!type) return null;
@@ -273,7 +296,9 @@ export function parseCAPAlert(
     startTime: onset,
     endTime: expires,
     source: "aemet",
-    key: `aemet-${zonaCode}-${type}${areaSlug ? `-${areaSlug}` : ""}`,
+    // Con el día de inicio: el aviso de hoy y el de mañana para la misma zona
+    // son avisos distintos.
+    key: `aemet-${zonaCode}-${type}-${onset.slice(0, 10)}${areaSlug ? `-${areaSlug}` : ""}`,
     zone: areaDescs.join(", ") || undefined,
     detail: info.description || undefined,
     polygons: polygons.length > 0 ? polygons : undefined,
@@ -328,10 +353,10 @@ export async function getAEMETAlerts(
     for (const xml of xmlFiles) {
       try {
         const parsed = parser.parse(xml);
-        const alert = parseCAPAlert(parsed, zonaCode, subzonePatterns, new Date(), point);
-        if (!alert) continue;
-        const prev = byId.get(alert.id);
-        if (!prev || new Date(alert.endTime) > new Date(prev.endTime)) byId.set(alert.id, alert);
+        for (const alert of parseCAPAlerts(parsed, zonaCode, subzonePatterns, new Date(), point)) {
+          const prev = byId.get(alert.id);
+          if (!prev || new Date(alert.endTime) > new Date(prev.endTime)) byId.set(alert.id, alert);
+        }
       } catch {
         // skip malformed XML
       }

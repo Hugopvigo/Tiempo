@@ -29,17 +29,19 @@ function temp(celsius: number, unit: "celsius" | "fahrenheit"): string {
   return `${Math.round(v)}°`;
 }
 
+// Open-Meteo da en cada hora T la lluvia acumulada entre T-1 y T.
 // "lluvia hasta las 17 h", "lluvia desde las 15 h", "lluvia de 12 a 17 h".
 function rainWindow(hours: { time: string; precipitation: number }[]): string | null {
   const wet = hours.map((h) => h.precipitation >= RAIN_MM);
   const first = wet.indexOf(true);
   if (first === -1) return null;
   const last = wet.lastIndexOf(true);
-  const endHour = (hourOf(hours[last].time) + 1) % 24;
+  const startHour = hourOf(hours[first].time) - 1;
+  const endHour = hourOf(hours[last].time);
   if (first === 0 && last === hours.length - 1) return "lluvia todo el día";
   if (first === 0) return `lluvia hasta las ${endHour} h`;
-  if (last === hours.length - 1) return `lluvia desde las ${hourOf(hours[first].time)} h`;
-  return `lluvia de ${hourOf(hours[first].time)} a ${endHour} h`;
+  if (last === hours.length - 1) return `lluvia desde las ${startHour} h`;
+  return `lluvia de ${startHour} a ${endHour} h`;
 }
 
 /**
@@ -54,7 +56,8 @@ export function morningSummaryText(
   const day = weather.daily.find((d) => d.date === date);
   if (!day) return null;
 
-  const hours = weather.hourly.filter((h) => h.time.startsWith(date) && hourOf(h.time) >= 8);
+  // Tramos de 08-09 en adelante (la hora 00 del día siguiente queda fuera).
+  const hours = weather.hourly.filter((h) => h.time.startsWith(date) && hourOf(h.time) >= 9);
   const fullDay = hours.length >= 12;
   const window = fullDay ? rainWindow(hours) : null;
   const headline = window ?? SKY[day.condition];
@@ -80,15 +83,20 @@ export function morningSummaryText(
  * corre cada media hora como mucho: no se puede afinar a minutos.
  */
 export function rainSoonText(weather: WeatherData): NotificationText | null {
-  const [now, next] = weather.hourly;
-  if (!now || !next) return null;
+  // hourly[0] es la hora en curso: su dato es la lluvia de la hora anterior.
+  // hourly[1] cubre lo que queda de esta hora y hourly[2], la siguiente.
+  const [past, thisHour, nextHour] = weather.hourly;
+  if (!past || !thisHour) return null;
   const rainingNow =
-    now.precipitation >= 0.1 || ["rain", "storm", "snow"].includes(weather.current.condition);
-  if (rainingNow || next.precipitation < 0.3) return null;
-  const from = hourOf(next.time);
-  const mm = next.precipitation < 1 ? "menos de 1" : `unos ${Math.round(next.precipitation)}`;
+    past.precipitation >= 0.1 || ["rain", "storm", "snow"].includes(weather.current.condition);
+  if (rainingNow) return null;
+  const soon = thisHour.precipitation >= 0.3 ? thisHour : nextHour && nextHour.precipitation >= 0.3 ? nextHour : null;
+  if (!soon) return null;
+  const to = hourOf(soon.time);
+  const from = (to + 23) % 24;
+  const mm = soon.precipitation < 1 ? "menos de 1" : `unos ${Math.round(soon.precipitation)}`;
   return {
     title: "Lluvia en la próxima hora",
-    body: `${weather.cityName}. Se esperan ${mm} mm entre las ${from} y las ${(from + 1) % 24} h.`,
+    body: `${weather.cityName}. Se esperan ${mm} mm entre las ${from} y las ${to} h.`,
   };
 }

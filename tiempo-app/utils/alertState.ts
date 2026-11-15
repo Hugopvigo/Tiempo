@@ -23,11 +23,15 @@ export interface AlertState {
 export type AlertAction =
   | { kind: "new"; alert: WeatherAlert }
   | { kind: "upgraded"; alert: WeatherAlert }
-  | { kind: "ended"; state: AlertState };
+  | { kind: "ended"; state: AlertState }
+  // Retirar la notificación sin avisar: el aviso ya no aplica pero no "terminó".
+  | { kind: "dismiss"; state: AlertState };
 
 const RANK: Record<Severity, number> = { yellow: 1, orange: 2, red: 3 };
 // Una previsión propia no se repite en 24 h salvo que suba de nivel.
 const LOCAL_TTL = 24 * 60 * 60 * 1000;
+// "Termina el aviso" solo tiene sentido recién caducado.
+const ENDED_WINDOW = 2 * 60 * 60 * 1000;
 
 export function alertKey(alert: WeatherAlert): string {
   return alert.key ?? alert.id;
@@ -94,9 +98,14 @@ export function planAlertNotifications(
 
   for (const state of mine.values()) {
     if (seen.has(state.key)) continue;
-    const expired = new Date(state.endTime).getTime() <= now;
+    const sinceEnd = now - new Date(state.endTime).getTime();
     if (state.source === "aemet") {
-      if (aemetOk || expired) actions.push({ kind: "ended", state });
+      // Que el aviso no esté en la lista no significa que haya terminado: puede
+      // haberse desactivado ese tipo en ajustes, cambiado la ciudad de zona o
+      // retirado AEMET el aviso. Solo se anuncia el fin cuando su hora de fin
+      // acaba de pasar; en los demás casos se retira la notificación en silencio.
+      if (sinceEnd >= 0 && sinceEnd <= ENDED_WINDOW && aemetOk) actions.push({ kind: "ended", state });
+      else if (aemetOk || sinceEnd > ENDED_WINDOW) actions.push({ kind: "dismiss", state });
       else next.push(state);
     } else if (now - state.notifiedAt < LOCAL_TTL) {
       // Se conserva para no volver a avisar si el umbral se cruza otra vez hoy.
