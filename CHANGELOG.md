@@ -1,6 +1,6 @@
 # Changelog
 
-## Sin publicar — Notificaciones rehechas y pulido visual
+## v4.8.0 — Notificaciones rehechas y pulido visual
 
 ### Notificaciones
 - El título dice nivel, fenómeno y zona ("Aviso naranja: lluvias en Rías Baixas") y el cuerpo, las horas y lo que se espera ("Hoy de 12:00 a 18:00. Precipitación acumulada en una hora: 30 mm.")
@@ -19,6 +19,10 @@
 - La gráfica de lluvia pasa de probabilidad a milímetros por hora, con el total y el pico
 - Próximos días con barras planas y filas de la misma altura; detalles alineados a la izquierda
 - Barra inferior con etiquetas y toda la pestaña pulsable
+
+### Versión
+- `app.json`, `package.json`, `README.md`, `index.html` → 4.8.0
+- Actualización OTA en los canales `preview` y `production` (runtime 4.6.1) y build nativa de preview (APK interna)
 
 ## v4.7.0 — Avisos AEMET por polígono
 
