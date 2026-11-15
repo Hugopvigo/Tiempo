@@ -107,11 +107,11 @@ export function LunarPhaseCard({ data }: LunarPhaseCardProps) {
   const monoColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)";
 
   return (
-    <ThemedCard style={{ marginBottom: 12 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 }}>
+    <ThemedCard>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <Moon size={16} color={isColored ? "#FCD34D" : monoColor} />
-        <ThemedText secondary style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}>
-          Fase Lunar
+        <ThemedText style={{ fontSize: 15, fontWeight: "600" }}>
+          Fase lunar
         </ThemedText>
       </View>
 
@@ -139,7 +139,7 @@ export function LunarPhaseCard({ data }: LunarPhaseCardProps) {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
           <Sunrise size={14} color={isColored ? "#FFB800" : monoColor} />
           <View>
-            <ThemedText secondary style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.3 }}>Amanecer</ThemedText>
+            <ThemedText secondary style={{ fontSize: 12 }}>Amanecer</ThemedText>
             <ThemedText style={{ fontSize: 14, fontWeight: "500" }}>{data.sunrise}</ThemedText>
           </View>
         </View>
@@ -147,7 +147,7 @@ export function LunarPhaseCard({ data }: LunarPhaseCardProps) {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
           <Sunset size={14} color={isColored ? "#FF9500" : monoColor} />
           <View>
-            <ThemedText secondary style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.3 }}>Atardecer</ThemedText>
+            <ThemedText secondary style={{ fontSize: 12 }}>Atardecer</ThemedText>
             <ThemedText style={{ fontSize: 14, fontWeight: "500" }}>{data.sunset}</ThemedText>
           </View>
         </View>
@@ -159,7 +159,7 @@ export function LunarPhaseCard({ data }: LunarPhaseCardProps) {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
               <Moon size={14} color={isColored ? "#FCD34D" : monoColor} />
               <View>
-                <ThemedText secondary style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.3 }}>Orto lunar</ThemedText>
+                <ThemedText secondary style={{ fontSize: 12 }}>Orto lunar</ThemedText>
                 <ThemedText style={{ fontSize: 14, fontWeight: "500" }}>{data.moonrise}</ThemedText>
               </View>
             </View>
@@ -168,7 +168,7 @@ export function LunarPhaseCard({ data }: LunarPhaseCardProps) {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
               <Moon size={14} color={isColored ? "#94A3B8" : monoColor} />
               <View>
-                <ThemedText secondary style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.3 }}>Ocaso lunar</ThemedText>
+                <ThemedText secondary style={{ fontSize: 12 }}>Ocaso lunar</ThemedText>
                 <ThemedText style={{ fontSize: 14, fontWeight: "500" }}>{data.moonset}</ThemedText>
               </View>
             </View>

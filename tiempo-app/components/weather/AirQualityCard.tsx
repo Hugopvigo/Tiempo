@@ -71,12 +71,12 @@ export function AirQualityCard({ data }: AirQualityCardProps) {
   const aqiPercent = Math.min((aqi / 150) * 100, 100);
 
   return (
-    <ThemedCard style={{ marginBottom: 12 }}>
+    <ThemedCard>
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
           <Wind size={16} color={displayColor} />
-          <ThemedText secondary style={{ fontSize: 13, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5, flex: 1 }}>
-            Calidad del Aire
+          <ThemedText style={{ fontSize: 15, fontWeight: "600", flex: 1 }}>
+            Calidad del aire
           </ThemedText>
           <View style={{
             width: 36,
@@ -126,7 +126,7 @@ export function AirQualityCard({ data }: AirQualityCardProps) {
 
           {(data.current.grassPollen != null || data.current.olivePollen != null || data.current.birchPollen != null) && (
             <View style={{ marginTop: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }}>
-              <ThemedText secondary style={{ fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+              <ThemedText secondary style={{ fontSize: 13, fontWeight: "600", marginBottom: 10 }}>
                 Polen
               </ThemedText>
               {data.current.grassPollen != null && (

@@ -54,18 +54,18 @@ const DetailTile = memo(function DetailTile({
   const iconColor = isColored ? detailColorMap[iconKey] : monoColor;
 
   return (
-    <ThemedCard style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 18, minHeight: 140, alignItems: "center", justifyContent: "center" }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 6 }}>
-        <IconComponent size={14} color={iconColor} />
-        <ThemedText secondary style={{ fontSize: 12, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 }}>
+    <ThemedCard style={{ flex: 1, minHeight: 104, gap: 2 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
+        <IconComponent size={15} color={iconColor} />
+        <ThemedText secondary style={{ fontSize: 13 }}>
           {label}
         </ThemedText>
       </View>
-      <ThemedText style={{ fontSize: 28, fontWeight: "500", textAlign: "center" }}>
+      <ThemedText style={{ fontSize: 24, fontWeight: "600" }} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </ThemedText>
       {subtitle && (
-        <ThemedText secondary style={{ fontSize: 14, marginTop: 4, textAlign: "center" }}>
+        <ThemedText secondary style={{ fontSize: 13 }} numberOfLines={1}>
           {subtitle}
         </ThemedText>
       )}
@@ -94,7 +94,7 @@ export function WeatherDetails({
 }: WeatherDetailsProps) {
   const { settings } = useSettingsStore();
   return (
-    <View style={{ gap: 12, marginBottom: 12 }}>
+    <View style={{ gap: 12 }}>
       <View style={{ flexDirection: "row", gap: 12 }}>
         <DetailTile
           iconKey="sensation"
