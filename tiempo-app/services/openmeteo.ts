@@ -162,6 +162,7 @@ export async function searchCities(query: string, signal?: AbortSignal) {
     name: r.name,
     country: r.country ?? "",
     admin1: r.admin1 ?? "",
+    admin2: r.admin2 ?? "",
     lat: Math.round(r.latitude * 10000) / 10000,
     lon: Math.round(r.longitude * 10000) / 10000,
   }));

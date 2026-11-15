@@ -48,7 +48,8 @@ export function useLocation(): LocationState {
           const r = reverse[0];
           locationCity.name = r.city || r.district || r.subregion || r.name || "Mi ubicación";
           locationCity.country = r.country || "";
-          locationCity.admin1 = r.region || r.subregion || "";
+          locationCity.admin1 = r.region || "";
+          locationCity.admin2 = r.subregion || "";
         }
       } catch (e) {
         console.warn("reverseGeocode failed:", e);

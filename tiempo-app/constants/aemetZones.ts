@@ -1,4 +1,5 @@
 import type { City } from "@/types/weather";
+import { zoneNamesForProvince } from "./meteoalertaZonas";
 
 const ADMIN1_TO_AEMET_ZONE: Record<string, string> = {
   "Andalucía": "AND",
@@ -62,62 +63,53 @@ const ZONE_TO_CCAA: Record<string, string> = {
   MEL: "79",
 };
 
+// Open-Meteo devuelve "Comunidad Autónoma de Galicia", "Comunidad Autónoma del
+// País Vasco", "Principado de Asturias"…; expo-location, el nombre a secas.
+// Sin quitar el prefijo, las ciudades añadidas desde el buscador no tenían zona
+// y no recibían ningún aviso de AEMET.
+function normalizeAdmin1(admin1: string): string {
+  return admin1
+    .trim()
+    .replace(/^(Comunidad Autónoma|Comunitat Autònoma|Comunidad Foral|Región|Regió|Ciudad Autónoma)\s+(de las|de los|de la|del|de)\s+/i, "")
+    .trim();
+}
+
 export function getAEMETZone(city: City): string | undefined {
   if (!city.admin1) return undefined;
-  const normalized = city.admin1.trim();
-  return ADMIN1_TO_AEMET_ZONE[normalized];
+  const raw = city.admin1.trim();
+  return ADMIN1_TO_AEMET_ZONE[raw] ?? ADMIN1_TO_AEMET_ZONE[normalizeAdmin1(raw)];
 }
 
 export function getCCAACode(zonaCode: string): string | undefined {
   return ZONE_TO_CCAA[zonaCode];
 }
 
-// Subzone override by city name: city name → subzone patterns to match
-const CITY_SUBZONE_OVERRIDE: Record<string, string[]> = {};
-
 /**
  * Patrones de nombre de zona Meteoalerta (CAP <areaDesc>) para una ciudad.
  * Lista vacía = sin filtro: se muestran todos los avisos de la comunidad.
  *
- * El admin1 (la comunidad) NO se usa como patrón: "Galicia" no aparece en
- * ningún nombre de zona (filtraba todos los avisos fuera de Galicia y
- * Madrid), y "Madrid" casaba con "Sierra de Madrid", con lo que Getafe
- * recibía solo los avisos de nieve de la Sierra y la capital los de las
- * tres zonas. Mejor enseñar toda la comunidad que una zona equivocada.
+ * Orden: zona concreta si conocemos la ciudad (Madrid capital está en
+ * "Metropolitana y Henares", Vigo en "Rias Baixas"); si no, todas las zonas de
+ * su provincia (admin2 de la geocodificación); si tampoco, toda la comunidad.
+ * El admin1 no se usa como patrón: "Galicia" no aparece en ningún nombre de
+ * zona y "Madrid" casaba con "Sierra de Madrid" (avisos de nieve de la Sierra
+ * para la capital y para Getafe).
  */
 export function getAEMETSubzonePatterns(city: City): string[] {
   const nameLower = city.name.toLowerCase();
-
-  // Check explicit override first
-  if (CITY_SUBZONE_OVERRIDE[city.name]) {
-    return CITY_SUBZONE_OVERRIDE[city.name];
+  for (const [key, zonePatterns] of Object.entries(CITY_KEYWORD_ZONES)) {
+    if (nameLower.includes(key)) return zonePatterns;
   }
 
-  const patterns: string[] = [];
-
-  // Try to extract province/county from city name or admin1 context
-  const provinceKeywords: Record<string, string[]> = {
-    "coruña": ["A Coruña", "Coruña", "Coruna"],
-    "coruna": ["A Coruña", "Coruña", "Coruna"],
-    "lugo": ["Lugo"],
-    "ourense": ["Ourense"],
-    "orense": ["Ourense"],
-    "pontevedra": ["Pontevedra"],
-    "santiago": ["A Coruña", "Coruña", "Coruna"],
-    "ferrol": ["A Coruña", "Coruña", "Coruna"],
-    "vigo": ["Pontevedra"],
-    "rias": ["Rías Baixas", "Rias Baixas"],
-    "madrid": ["Metropolitana"],
-    "alcalá": ["Henares"],
-    "alcala": ["Henares"],
-  };
-
-  for (const [key, zonePatterns] of Object.entries(provinceKeywords)) {
-    if (nameLower.includes(key)) {
-      patterns.push(...zonePatterns);
-    }
-  }
-
-  // Deduplicate
-  return [...new Set(patterns)];
+  return zoneNamesForProvince(city.admin2);
 }
+
+// Ciudad (por palabra en el nombre) → zona Meteoalerta en la que está. Solo
+// las que se saben seguras; el resto cae en las zonas de su provincia.
+const CITY_KEYWORD_ZONES: Record<string, string[]> = {
+  "madrid": ["Metropolitana y Henares"],
+  "alcalá de henares": ["Metropolitana y Henares"],
+  "alcala de henares": ["Metropolitana y Henares"],
+  "vigo": ["Rias Baixas"],
+  "pontevedra": ["Rias Baixas"],
+};

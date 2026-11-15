@@ -123,7 +123,10 @@ export interface City {
   id: string;
   name: string;
   country: string;
+  /** Comunidad autónoma (admin1 de la geocodificación) */
   admin1?: string;
+  /** Provincia (admin2); sirve para acotar los avisos AEMET a las zonas de la provincia */
+  admin2?: string;
   lat: number;
   lon: number;
   isLocation?: boolean;
