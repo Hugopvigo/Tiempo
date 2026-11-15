@@ -1,9 +1,9 @@
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useThemeContext } from "@/components/theme";
+import { useThemeContext, ThemedText } from "@/components/theme";
 import { Home, Search, Waves, Map, Settings } from "lucide-react-native";
 import { useRouter, usePathname } from "expo-router";
-import { navBarBackground } from "@/constants/theme";
+import { navBarBackground, textColor, secondaryTextColor } from "@/constants/theme";
 
 const tabs = [
   { path: "/", icon: Home, label: "Inicio" },
@@ -35,10 +35,8 @@ export function BottomNavBar() {
           {tabs.map((tab) => {
             const isActive = pathname === tab.path;
             const color = isActive
-              ? "#007AFF"
-              : isDark
-                ? "rgba(255,255,255,0.6)"
-                : "#718096";
+              ? (isDark ? textColor.dark : textColor.light)
+              : (isDark ? secondaryTextColor.dark : secondaryTextColor.light);
 
             return (
               <TouchableOpacity
@@ -48,16 +46,16 @@ export function BottomNavBar() {
                     router.replace(tab.path as any);
                   }
                 }}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+                accessibilityLabel={tab.label}
+                activeOpacity={0.6}
                 style={styles.tabItem}
               >
-                <tab.icon size={24} color={color} strokeWidth={isActive ? 2.5 : 2} />
-                <View
-                  style={[
-                    styles.indicator,
-                    { backgroundColor: isActive ? "#007AFF" : "transparent" },
-                  ]}
-                />
+                <tab.icon size={22} color={color} strokeWidth={isActive ? 2.5 : 2} />
+                <ThemedText style={{ fontSize: 11, color, fontWeight: isActive ? "600" : "400" }}>
+                  {tab.label}
+                </ThemedText>
               </TouchableOpacity>
             );
           })}
@@ -78,23 +76,18 @@ const styles = StyleSheet.create({
   },
   content: {
     borderTopWidth: 0.5,
-    paddingTop: 12,
+    paddingTop: 6,
   },
   tabsWrapper: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    height: 50,
+    alignItems: "stretch",
+    height: 52,
   },
+  // Cada pestaña ocupa su quinto entero: toda el área es pulsable.
   tabItem: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    width: 60,
-  },
-  indicator: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 4,
+    gap: 3,
   },
 });

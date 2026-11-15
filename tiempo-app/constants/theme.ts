@@ -32,14 +32,27 @@ export const themeGradients: ThemeGradients = {
   },
 };
 
+// Planas y casi opacas: se leen igual sobre cualquier fondo de tiempo.
 export const cardBackground = {
-  light: "rgba(255, 255, 255, 0.8)", // Un poco más opaco para mejor lectura
-  dark: "rgba(30, 41, 59, 0.5)",    // Slate 800 con transparencia
+  light: "rgba(255, 255, 255, 0.9)",
+  dark: "rgba(22, 34, 51, 0.82)",
 };
 
 export const cardBorder = {
   light: "rgba(0, 0, 0, 0.03)",
   dark: "rgba(255, 255, 255, 0.06)",
+};
+
+// Pista de las barras (rango de temperaturas, vigencia de un aviso) y líneas base.
+export const trackColor = {
+  light: "#E3E9EE",
+  dark: "#2A3B4F",
+};
+
+// Lluvia en gráficas y cifras.
+export const rainColor = {
+  light: "#1F5FBF",
+  dark: "#7FB2F0",
 };
 
 export const textColor = {

@@ -4,3 +4,4 @@ export { ThemedCard } from "./ThemedCard";
 export { DynamicBackground } from "./DynamicBackground";
 export { AnimatedView } from "./AnimatedView";
 export { WeatherParticles } from "./WeatherParticles";
+export { CardTitle } from "./CardTitle";
