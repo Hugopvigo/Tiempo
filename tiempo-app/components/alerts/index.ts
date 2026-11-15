@@ -1,1 +1,1 @@
-export { AlertBanner, AlertList } from "./AlertBanner";
+export { AlertBanner } from "./AlertBanner";

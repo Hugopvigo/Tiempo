@@ -9,7 +9,7 @@ type Thresholds = readonly [yellow: number, orange: number, red: number];
 // cuando la app no tiene aviso oficial para ese fenómeno. Zonas de montaña y
 // litoral mediterráneo tienen umbrales distintos: ahí el aviso local puede
 // quedarse corto o pasarse; el oficial de AEMET siempre manda.
-const UMBRAL = {
+export const UMBRAL = {
   tempMax: [36, 39, 42] as Thresholds,         // °C, máxima del día
   tempMin: [-4, -8, -12] as Thresholds,        // °C, mínima del día
   racha: [70, 90, 130] as Thresholds,          // km/h, racha máxima

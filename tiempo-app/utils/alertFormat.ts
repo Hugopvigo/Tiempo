@@ -137,5 +137,44 @@ export function alertDetailUrl(alert: WeatherAlert): string {
   if (alert.zone) params.set("zone", alert.zone);
   if (alert.detail) params.set("detail", alert.detail);
   if (alert.polygons) params.set("polygons", JSON.stringify(alert.polygons));
+  if (alert.point) params.set("point", `${alert.point.lat},${alert.point.lon}`);
   return `/alert-detail?${params.toString()}`;
+}
+
+/** "Aviso naranja de AEMET en Rías Baixas" o "Previsión propia, nivel naranja". */
+export function alertKicker(alert: WeatherAlert): string {
+  const level = severityLabel(alert.severity).toLowerCase();
+  if (alert.source === "aemet") {
+    return `Aviso ${level} de AEMET${alert.zone ? ` en ${alert.zone}` : ""}`;
+  }
+  return `Previsión propia, nivel ${level}`;
+}
+
+/** Lo que se espera, en una frase; si el aviso no lo trae, su título. */
+export function alertHeadline(alert: WeatherAlert): string {
+  return alert.detail ?? alert.title;
+}
+
+/** "Lluvias en Rías Baixas": fenómeno y lugar, para la cabecera del detalle. */
+export function alertPlaceTitle(alert: WeatherAlert): string {
+  const phen = PHENOMENON[alert.type];
+  const title = phen.charAt(0).toUpperCase() + phen.slice(1);
+  return alert.zone ? `${title} en ${alert.zone}` : title;
+}
+
+/** "Empieza en 1 h 8 min", "Quedan 3 h 20 min" o "Ya ha terminado". */
+export function countdownLabel(startIso: string, endIso: string, now: Date = new Date()): string {
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  if (isNaN(start) || isNaN(end)) return "";
+  const span = (ms: number) => {
+    const min = Math.max(1, Math.round(ms / 60000));
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    if (h >= 24) return `${Math.round(h / 24)} d`;
+    return h === 0 ? `${m} min` : m === 0 ? `${h} h` : `${h} h ${m} min`;
+  };
+  if (now.getTime() < start) return `Empieza en ${span(start - now.getTime())}`;
+  if (now.getTime() < end) return `Quedan ${span(end - now.getTime())}`;
+  return "Ya ha terminado";
 }

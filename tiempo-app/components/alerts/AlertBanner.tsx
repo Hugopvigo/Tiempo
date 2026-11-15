@@ -1,12 +1,12 @@
-import { View, TouchableOpacity, ScrollView } from "react-native";
-import { ThemedText, useThemeContext } from "@/components/theme";
+import { View, TouchableOpacity } from "react-native";
+import { ThemedText } from "@/components/theme";
 import type { WeatherAlert } from "@/types/weather";
-import { alertColors } from "@/constants/theme";
-import { ChevronRight, X } from "lucide-react-native";
+import { alertColors, alertInk } from "@/constants/theme";
+import { X } from "lucide-react-native";
 import { ALERT_ICON } from "./alertIcon";
-import { severityLabel, validityLabel, alertDetailUrl } from "@/utils/alertFormat";
+import { periodLabel, alertDetailUrl, alertKicker, alertHeadline } from "@/utils/alertFormat";
 import { useRouter } from "expo-router";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createMMKV } from "react-native-mmkv";
 
 const alertStorage = createMMKV({ id: "tiempo-storage" });
@@ -44,10 +44,8 @@ interface AlertBannerProps {
 }
 
 export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
-  const { isDark } = useThemeContext();
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [zoneKey, setZoneKey] = useState<string>("default");
-  const dismissRef = useRef(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -77,208 +75,57 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
   const top = active[0];
   const color = alertColors[top.severity];
   const Icon = ALERT_ICON[top.type];
-  const validity = validityLabel(top.startTime, top.endTime);
+  const period = periodLabel(top.startTime, top.endTime);
+  const extra = active.length - 1;
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      onPress={() => {
-        if (dismissRef.current) {
-          dismissRef.current = false;
-          return;
-        }
-        router.push(alertDetailUrl(top) as never);
-      }}
-    >
-      <View
-        style={{
-          borderRadius: 14,
-          overflow: "hidden",
-          marginBottom: 12,
-        }}
+    <View style={{ marginBottom: 4 }}>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={`${alertKicker(top)}. ${alertHeadline(top)}. Ver el aviso`}
+        onPress={() => router.push(alertDetailUrl(top) as never)}
+        style={{ backgroundColor: color, borderRadius: 20, padding: 16, gap: 8 }}
       >
-        <View
-          style={{
-            backgroundColor: `${color}18`,
-            borderWidth: 0.5,
-            borderColor: `${color}40`,
-            borderRadius: 14,
-            padding: 14,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
-            <View
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: `${color}28`,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Icon size={20} color={color} />
-            </View>
-
-            <View style={{ flex: 1, gap: 3, paddingRight: 28 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <ThemedText style={{ fontSize: 15, fontWeight: "600", flexShrink: 1 }} numberOfLines={1}>
-                  {top.title}
-                </ThemedText>
-                <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6, backgroundColor: `${color}30` }}>
-                  <ThemedText style={{ fontSize: 11, fontWeight: "600", color }}>
-                    {severityLabel(top.severity)}
-                  </ThemedText>
-                </View>
-              </View>
-
-              <ThemedText
-                secondary
-                style={{ fontSize: 12.5, lineHeight: 17 }}
-                numberOfLines={2}
-              >
-                {top.description}
-              </ThemedText>
-
-              {validity !== "" && (
-                <ThemedText secondary style={{ fontSize: 11.5, marginTop: 1 }}>
-                  {validity}
-                </ThemedText>
-              )}
-
-              {active.length > 1 && (
-                <ThemedText
-                  secondary
-                  style={{ fontSize: 11, marginTop: 2, fontWeight: "500" }}
-                >
-                  +{active.length - 1} aviso{active.length - 1 > 1 ? "s" : ""} más
-                </ThemedText>
-              )}
-            </View>
-
-            <ChevronRight
-              size={16}
-              color={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)"}
-              style={{ marginTop: 2 }}
-            />
-          </View>
+        {/* Margen derecho: sitio para el botón de cerrar. */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingRight: 36 }}>
+          <Icon size={18} color={alertInk} strokeWidth={2.2} />
+          <ThemedText style={{ fontSize: 14, fontWeight: "600", color: alertInk, flexShrink: 1 }} numberOfLines={2}>
+            {alertKicker(top)}
+          </ThemedText>
         </View>
-      </View>
+
+        <ThemedText style={{ fontSize: 20, lineHeight: 25, fontWeight: "700", color: alertInk }} numberOfLines={3}>
+          {alertHeadline(top)}
+        </ThemedText>
+
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <ThemedText style={{ fontSize: 14, fontWeight: "600", color: alertInk, flexShrink: 1 }}>
+            {extra > 0 ? `${period}. Y ${extra} más` : period}
+          </ThemedText>
+          <ThemedText style={{ fontSize: 14, fontWeight: "600", color: alertInk, textDecorationLine: "underline" }}>
+            Ver el aviso
+          </ThemedText>
+        </View>
+      </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() => {
-          dismissRef.current = true;
-          handleDismiss(top.id);
-        }}
-        hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+        onPress={() => handleDismiss(top.id)}
+        accessibilityRole="button"
+        accessibilityLabel="Ocultar este aviso"
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         style={{
           position: "absolute",
-          top: 10,
-          right: 8,
-          width: 32,
-          height: 32,
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: 16,
-          backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
-        }}
-      >
-        <X size={20} color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)"} />
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
-}
-
-interface AlertListProps {
-  alerts: WeatherAlert[];
-}
-
-export function AlertList({ alerts }: AlertListProps) {
-  if (alerts.length === 0) return null;
-
-  return (
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-      {alerts.map((alert) => (
-        <AlertRow key={alert.id} alert={alert} />
-      ))}
-    </ScrollView>
-  );
-}
-
-function AlertRow({ alert }: { alert: WeatherAlert }) {
-  const { isDark } = useThemeContext();
-  const color = alertColors[alert.severity];
-  const Icon = ALERT_ICON[alert.type];
-
-  return (
-    <TouchableOpacity
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-        padding: 14,
-        borderRadius: 14,
-        backgroundColor: `${color}10`,
-        borderWidth: 0.5,
-        borderColor: `${color}30`,
-        marginBottom: 10,
-      }}
-      activeOpacity={0.7}
-    >
-      <View
-        style={{
+          top: 6,
+          right: 6,
           width: 36,
           height: 36,
-          borderRadius: 18,
-          backgroundColor: `${color}20`,
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Icon size={18} color={color} />
-      </View>
-
-      <View style={{ flex: 1 }}>
-        <ThemedText style={{ fontSize: 14, fontWeight: "600" }}>
-          {alert.title}
-        </ThemedText>
-        <ThemedText secondary style={{ fontSize: 12, marginTop: 2 }}>
-          {formatTime(alert.startTime)} — {formatTime(alert.endTime)}
-        </ThemedText>
-      </View>
-
-      <View
-        style={{
-          paddingHorizontal: 8,
-          paddingVertical: 4,
-          borderRadius: 6,
-          backgroundColor: `${color}25`,
-        }}
-      >
-        <ThemedText style={{ fontSize: 11, fontWeight: "600", color }}>
-          {severityLabel(alert.severity)}
-        </ThemedText>
-      </View>
-
-      <ChevronRight
-        size={16}
-        color={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)"}
-      />
-    </TouchableOpacity>
+        <X size={20} color={alertInk} />
+      </TouchableOpacity>
+    </View>
   );
 }
-
-function formatTime(iso: string): string {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString("es-ES", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
-}
-

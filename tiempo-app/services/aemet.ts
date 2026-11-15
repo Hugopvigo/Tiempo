@@ -277,6 +277,7 @@ export function parseCAPAlert(
     zone: areaDescs.join(", ") || undefined,
     detail: info.description || undefined,
     polygons: polygons.length > 0 ? polygons : undefined,
+    point: polygons.length > 0 ? point : undefined,
   };
 }
 

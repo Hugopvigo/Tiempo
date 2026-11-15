@@ -80,3 +80,7 @@ export const alertColors = {
   orange: "#FF9500",
   red: "#FF3B30",
 } as const;
+
+// Texto sobre los colores de aviso: el mismo tono oscuro en los tres niveles
+// (contraste de 4,6:1 o más), también con el tema oscuro.
+export const alertInk = "#12222B";

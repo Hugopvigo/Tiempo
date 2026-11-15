@@ -151,6 +151,8 @@ export interface WeatherAlert {
   detail?: string;
   /** Polígonos de la zona que contiene la ciudad, como pares [lat, lon] */
   polygons?: [number, number][][];
+  /** Coordenadas de la ciudad para la que se filtró el aviso */
+  point?: { lat: number; lon: number };
 }
 
 export interface AirQualityData {
