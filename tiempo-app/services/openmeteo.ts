@@ -168,6 +168,16 @@ export async function searchCities(query: string, signal?: AbortSignal) {
   }));
 }
 
+/** Comunidad y provincia de una ciudad guardada por su id de geocodificación (Open-Meteo). */
+export async function getCityAdminById(id: string): Promise<{ admin1: string; admin2: string } | null> {
+  if (!/^\d+$/.test(id)) return null;
+  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/get?id=${id}&language=es`);
+  if (!res.ok) return null;
+  const r = await res.json();
+  if (!r?.name) return null;
+  return { admin1: r.admin1 ?? "", admin2: r.admin2 ?? "" };
+}
+
 interface MarineApiResponse {
   latitude: number;
   longitude: number;

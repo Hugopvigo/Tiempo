@@ -110,4 +110,33 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   },
 }));
 
+/**
+ * Rellena la provincia (admin2) de las ciudades guardadas antes de que se
+ * almacenara. Sin ella, los avisos AEMET se acotan solo por comunidad.
+ */
+export async function backfillCityProvinces(): Promise<void> {
+  const { getCityAdminById } = await import("@/services/openmeteo");
+  const { cities } = useCityStore.getState();
+  const pending = cities.filter((c) => !c.admin2 && /^\d+$/.test(c.id));
+  if (pending.length === 0) return;
+  const updates = new Map<string, { admin1: string; admin2: string }>();
+  for (const c of pending) {
+    try {
+      const admin = await getCityAdminById(c.id);
+      if (admin?.admin2) updates.set(c.id, admin);
+    } catch {
+      // sin red: se reintenta en el próximo arranque
+    }
+  }
+  if (updates.size === 0) return;
+  const current = useCityStore.getState();
+  const patched = current.cities.map((c) => (updates.has(c.id) ? { ...c, ...updates.get(c.id)! } : c));
+  const active = updates.has(current.activeCity.id)
+    ? { ...current.activeCity, ...updates.get(current.activeCity.id)! }
+    : current.activeCity;
+  storage.set("cities", JSON.stringify(patched));
+  storage.set("activeCity", JSON.stringify(active));
+  useCityStore.setState({ cities: patched, activeCity: active });
+}
+
 export { storage };

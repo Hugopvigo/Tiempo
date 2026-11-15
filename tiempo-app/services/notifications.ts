@@ -1,6 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import type { WeatherAlert } from "@/types/weather";
+import { validityLabel } from "@/components/alerts/alertIcon";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -21,11 +22,15 @@ export async function requestNotificationPermissions(): Promise<boolean> {
 
 export async function scheduleAlertNotification(alert: WeatherAlert): Promise<string> {
   const color = alert.severity === "red" ? "🔴" : alert.severity === "orange" ? "🟠" : "🟡";
+  // Vigencia primero ("Desde mañana a las 09:00 hasta…"); la descripción de
+  // AEMET ya empieza por la zona.
+  const validity = validityLabel(alert.startTime, alert.endTime);
+  const body = validity ? `${validity}. ${alert.description}` : alert.description;
 
   return Notifications.scheduleNotificationAsync({
     content: {
       title: `${color} ${alert.title}`,
-      body: alert.description,
+      body,
       sound: alert.severity === "red" || alert.severity === "orange",
       data: { alertId: alert.id, type: alert.type },
     },

@@ -61,7 +61,14 @@ export function capEventToType(event: string): WeatherAlert["type"] | null {
 // byte rompía tildes y eñes ("Coruña" → "CoruÃ±a") y con ello el filtro de
 // subzonas y el texto mostrado.
 export function decodeTarText(bytes: Uint8Array): string {
-  return new TextDecoder("utf-8").decode(bytes);
+  const text = new TextDecoder("utf-8").decode(bytes);
+  // Si no era UTF-8 válido (U+FFFD), vuelve a la lectura byte a byte (Latin-1).
+  if (text.includes("\uFFFD")) {
+    let latin1 = "";
+    for (let i = 0; i < bytes.length; i++) latin1 += String.fromCharCode(bytes[i]);
+    return latin1;
+  }
+  return text;
 }
 
 function parseTar(buffer: ArrayBuffer): string[] {
@@ -174,7 +181,9 @@ export function parseCAPAlert(
   const expires = info.expires || new Date(now.getTime() + 24 * 3600000).toISOString();
   if (new Date(expires).getTime() <= now.getTime()) return null;
   const areaDesc = areaDescs.join("; ");
-  const description = [info.description, areaDesc].filter(Boolean).join("\n");
+  // La zona va primero: es lo que distingue "Sierra de Madrid" de la capital y
+  // es lo primero que se lee en la notificación.
+  const description = [areaDesc, info.description].filter(Boolean).join("\n");
 
   // El slug del área distingue avisos del mismo tipo/severidad/día en subzonas
   // distintas; sin él colisionarían los ids y el dedup suprimiría avisos reales.
@@ -229,19 +238,23 @@ export async function getAEMETAlerts(
     if (xmlFiles.length === 0) return [];
 
     const parser = new XMLParser({ ignoreAttributes: true });
-    const alerts: WeatherAlert[] = [];
+    // Un aviso y su actualización (msgType Update) comparten id: se queda el
+    // que caduque más tarde.
+    const byId = new Map<string, WeatherAlert>();
 
     for (const xml of xmlFiles) {
       try {
         const parsed = parser.parse(xml);
         const alert = parseCAPAlert(parsed, zonaCode, subzonePatterns);
-        if (alert) alerts.push(alert);
+        if (!alert) continue;
+        const prev = byId.get(alert.id);
+        if (!prev || new Date(alert.endTime) > new Date(prev.endTime)) byId.set(alert.id, alert);
       } catch {
         // skip malformed XML
       }
     }
 
-    return alerts;
+    return [...byId.values()];
   } catch {
     return [];
   }

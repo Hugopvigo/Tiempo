@@ -10,7 +10,7 @@ import { useState, Component, type ReactNode, type ErrorInfo, useEffect } from "
 import { View, Text, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { configureAEMET } from "@/services/aemet";
-import { useSettingsStore } from "@/stores/cityStore";
+import { useSettingsStore, backfillCityProvinces } from "@/stores/cityStore";
 import { registerBackgroundFetch } from "@/services/backgroundAlerts";
 import { setupNotificationChannel } from "@/services/notifications";
 
@@ -57,6 +57,12 @@ export default function RootLayout() {
       configureAEMET(settings.aemetApiKey);
     }
   }, [settings.aemetApiKey]);
+
+  // Las ciudades guardadas antes de la v4.6.2 no tienen provincia; sin ella los
+  // avisos AEMET llegan de toda la comunidad (p. ej. nieve de la Sierra en Getafe).
+  useEffect(() => {
+    backfillCityProvinces().catch(() => {});
+  }, []);
 
   // Asegura canal y tarea en background en cada arranque; si solo se hiciera
   // al activar el toggle en ajustes, una tarea desregistrada por el sistema
