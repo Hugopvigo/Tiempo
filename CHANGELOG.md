@@ -1,6 +1,6 @@
 # Changelog
 
-## Sin publicar — Lluvia que salía como nieve, avisos locales con umbrales Meteoalerta y retoques de inicio
+## v4.6.2 — Lluvia que salía como nieve, avisos locales con umbrales Meteoalerta y retoques de inicio
 
 ### Bug fix: "va a nevar" cuando solo llovía
 - `weatherCodeToCondition` tenía intercambiados los rangos WMO 60-69 (lluvia) y 70-79 (nieve): cada hora de lluvia se pintaba con copo y generaba el aviso local "Nevada" y su notificación; la nieve real salía como lluvia. El código 3 (cubierto) caía en "parcialmente nublado". Tabla literal según la documentación de Open-Meteo
@@ -33,6 +33,10 @@
 
 ### Mantenimiento
 - `services/notifications.ts` importaba el formato de los avisos desde `components/`, lo que arrastraba los iconos de Lucide a la tarea en segundo plano. Movido a `utils/alertFormat.ts`
+
+### Versión
+- `app.json`, `package.json`, `README.md` → 4.6.2
+- Actualización OTA publicada en los canales `preview` y `production` con runtime 4.6.1 (el mismo que lleva la app instalada): no hay cambios nativos, así que el móvil se actualiza sin pasar por la Play Store
 
 ---
 
