@@ -4,7 +4,17 @@ import { getWeather } from "@/services/openmeteo";
 import { generateAlerts } from "@/services/alerts";
 import { configureAEMET, getAEMETAlerts, isAEMETConfigured } from "@/services/aemet";
 import { getAEMETZone, getAEMETSubzonePatterns } from "@/constants/aemetZones";
-import { scheduleAlertNotification, setBadgeCount } from "@/services/notifications";
+import {
+  notifyAlert,
+  notifyAlertEnded,
+  notifyRainSoon,
+  scheduleMorningSummary,
+  cancelMorningSummary,
+  setBadgeCount,
+} from "@/services/notifications";
+import { newAlertText, upgradedAlertText, endedAlertText, alertDetailUrl } from "@/utils/alertFormat";
+import { planAlertNotifications, pruneAlertStates, alertKey, type AlertState } from "@/utils/alertState";
+import { morningSummaryText, rainSoonText } from "@/utils/summaryText";
 import { createMMKV } from "react-native-mmkv";
 import type { City, AppSettings, WeatherAlert } from "@/types/weather";
 import { saveWidgetData } from "@/widgets/widgetStorage";
@@ -12,29 +22,35 @@ import { saveWidgetData } from "@/widgets/widgetStorage";
 const storage = createMMKV({ id: "tiempo-storage" });
 const BACKGROUND_TASK = "background-alerts";
 
-const ALERT_DEDUP_TTL = 24 * 60 * 60 * 1000;
+const RAIN_SOON_GAP = 6 * 60 * 60 * 1000;
+const SUMMARY_HOUR = 8;
 
-interface DedupEntry {
-  id: string;
-  timestamp: number;
-}
-
-function loadLastAlertIds(): DedupEntry[] {
+function loadAlertStates(): AlertState[] {
   try {
-    const json = storage.getString("lastAlertIds");
-    if (!json) return [];
-    const entries: DedupEntry[] = JSON.parse(json);
-    const cutoff = Date.now() - ALERT_DEDUP_TTL;
-    return entries.filter((e) => e.timestamp > cutoff);
+    const json = storage.getString("alertStates");
+    return json ? (JSON.parse(json) as AlertState[]) : [];
   } catch {
     return [];
   }
 }
 
-function saveLastAlertIds(entries: DedupEntry[]): void {
-  const cutoff = Date.now() - ALERT_DEDUP_TTL;
-  const filtered = entries.filter((e) => e.timestamp > cutoff);
-  storage.set("lastAlertIds", JSON.stringify(filtered));
+// Identificador estable por aviso: la subida de nivel y el fin sustituyen a la
+// notificación anterior.
+function notificationId(key: string): string {
+  return `alert-${key}`;
+}
+
+// Próximas 08:00: hoy si aún no han pasado, si no mañana.
+function nextSummaryDate(now: Date): Date {
+  const d = new Date(now);
+  d.setHours(SUMMARY_HOUR, 0, 0, 0);
+  if (d.getTime() <= now.getTime() + 60 * 1000) d.setDate(d.getDate() + 1);
+  return d;
+}
+
+function localDateKey(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 TaskManager.defineTask(BACKGROUND_TASK, async () => {
@@ -54,15 +70,15 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
 
     let totalActive = 0;
     let newAlerts = 0;
-    const dedupEntries = loadLastAlertIds();
-    const dedupIds = new Set(dedupEntries.map((e) => e.id));
+    let states = loadAlertStates();
+    const checkedCities = cities.slice(0, 3);
 
     const activeCityJson = storage.getString("activeCity");
     const activeCityId: string | undefined = activeCityJson
       ? (JSON.parse(activeCityJson) as City).id
       : undefined;
 
-    for (const city of cities.slice(0, 3)) {
+    for (const city of checkedCities) {
       try {
         const weather = await getWeather(city.lat, city.lon, city.name);
 
@@ -88,36 +104,74 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
           });
         }
 
-        const localAlerts = generateAlerts(weather);
-
-        let alerts: WeatherAlert[];
-        const zonaCode = getAEMETZone(city);
-        const subzonePatterns = getAEMETSubzonePatterns(city);
-
-        if (isAEMETConfigured() && zonaCode) {
-          const aemetAlerts = await getAEMETAlerts(zonaCode, subzonePatterns, { lat: city.lat, lon: city.lon });
-          if (aemetAlerts.length > 0) {
-            const aemetTypes = new Set(aemetAlerts.map((a) => a.type));
-            const complement = localAlerts.filter((a) => !aemetTypes.has(a.type));
-            alerts = [...aemetAlerts, ...complement];
+        if (city.id === activeCityId) {
+          if (settings.notifications.morningSummary) {
+            const when = nextSummaryDate(new Date());
+            const text = morningSummaryText(weather, localDateKey(when), settings.temperatureUnit);
+            if (text) await scheduleMorningSummary(text, when);
           } else {
-            alerts = localAlerts;
+            await cancelMorningSummary();
           }
-        } else {
-          alerts = localAlerts;
+
+          if (settings.notifications.rainSoon) {
+            const text = rainSoonText(weather);
+            const last = storage.getNumber("lastRainSoon") ?? 0;
+            if (text && Date.now() - last > RAIN_SOON_GAP) {
+              await notifyRainSoon(text);
+              storage.set("lastRainSoon", Date.now());
+            }
+          }
         }
 
-        alerts.sort((a, b) => severityOrder(a.severity) - severityOrder(b.severity));
+        const localAlerts = generateAlerts(weather);
 
-        for (const alert of alerts) {
-          const typeKey = alert.type as keyof typeof settings.notifications;
-          if (typeKey !== "enabled" && !settings.notifications[typeKey]) continue;
-          totalActive++;
-          if (dedupIds.has(alert.id)) continue;
+        let alerts: WeatherAlert[] = localAlerts;
+        // Sin clave o sin zona no hay consulta que pueda fallar.
+        let aemetOk = true;
+        const zonaCode = getAEMETZone(city);
 
-          await scheduleAlertNotification(alert);
-          dedupEntries.push({ id: alert.id, timestamp: Date.now() });
-          dedupIds.add(alert.id);
+        if (isAEMETConfigured() && zonaCode) {
+          const aemetAlerts = await getAEMETAlerts(
+            zonaCode,
+            getAEMETSubzonePatterns(city),
+            { lat: city.lat, lon: city.lon }
+          );
+          aemetOk = aemetAlerts !== null;
+          if (aemetAlerts && aemetAlerts.length > 0) {
+            const aemetTypes = new Set(aemetAlerts.map((a) => a.type));
+            alerts = [...aemetAlerts, ...localAlerts.filter((a) => !aemetTypes.has(a.type))];
+          }
+        }
+
+        alerts = alerts
+          .filter((a) => settings.notifications[a.type])
+          .sort((a, b) => severityOrder(a.severity) - severityOrder(b.severity));
+        totalActive += alerts.length;
+
+        const plan = planAlertNotifications(states, {
+          scope: city.id,
+          alerts,
+          aemetOk,
+          now: Date.now(),
+        });
+        states = plan.next;
+
+        for (const action of plan.actions) {
+          if (action.kind === "ended") {
+            await notifyAlertEnded(
+              notificationId(action.state.key),
+              endedAlertText(action.state.type, action.state.zone)
+            );
+            continue;
+          }
+          const text =
+            action.kind === "upgraded" ? upgradedAlertText(action.alert) : newAlertText(action.alert);
+          await notifyAlert(
+            notificationId(alertKey(action.alert)),
+            text,
+            action.alert,
+            alertDetailUrl(action.alert)
+          );
           newAlerts++;
         }
       } catch {
@@ -125,7 +179,10 @@ TaskManager.defineTask(BACKGROUND_TASK, async () => {
       }
     }
 
-    saveLastAlertIds(dedupEntries);
+    storage.set(
+      "alertStates",
+      JSON.stringify(pruneAlertStates(states, checkedCities.map((c) => c.id), Date.now()))
+    );
 
     if (newAlerts > 0) {
       storage.set("lastAlertCheck", Date.now());

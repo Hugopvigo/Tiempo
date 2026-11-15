@@ -133,6 +133,10 @@ function makeAlert(
     // Misma ventana que se evalúa (las próximas 24 h). Antes era la puesta de
     // sol de hoy y de noche el banner decía "Hasta las 18:00" ya pasadas.
     endTime: new Date(Date.now() + 24 * 3600000).toISOString(),
+    source: "local",
+    key: `local-${type}-${weather.lat}-${weather.lon}`,
+    zone: weather.cityName,
+    detail: `${detail}.`,
   };
 }
 

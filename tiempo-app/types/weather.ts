@@ -141,6 +141,16 @@ export interface WeatherAlert {
   type: "rain" | "storm" | "snow" | "wind" | "heat" | "cold" | "coastal" | "fog";
   startTime: string;
   endTime: string;
+  /** Aviso oficial de AEMET o previsión propia a partir de Open-Meteo */
+  source?: "aemet" | "local";
+  /** Identidad del aviso sin el nivel: permite detectar que sube, se alarga o termina */
+  key?: string;
+  /** Zona Meteoalerta (AEMET) o ciudad (local) */
+  zone?: string;
+  /** Lo que se espera, en una frase: "Precipitación acumulada en una hora: 30 mm." */
+  detail?: string;
+  /** Polígonos de la zona que contiene la ciudad, como pares [lat, lon] */
+  polygons?: [number, number][][];
 }
 
 export interface AirQualityData {
@@ -215,6 +225,10 @@ export interface AppSettings {
     cold: boolean;
     coastal: boolean;
     fog: boolean;
+    /** Resumen del día a las 08:00 */
+    morningSummary?: boolean;
+    /** Aviso cuando empieza a llover en la próxima hora */
+    rainSoon?: boolean;
   };
   temperatureUnit: "celsius" | "fahrenheit";
   windUnit: "kmh" | "mph" | "ms" | "knots";

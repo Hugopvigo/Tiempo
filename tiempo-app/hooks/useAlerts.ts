@@ -13,7 +13,12 @@ export function useAEMETAlerts(
 ) {
   return useQuery<WeatherAlert[]>({
     queryKey: ["alerts", zonaCode, subzonePatterns?.join(",") ?? "", point?.lat, point?.lon],
-    queryFn: () => getAEMETAlerts(zonaCode!, subzonePatterns, point),
+    queryFn: async () => {
+      const alerts = await getAEMETAlerts(zonaCode!, subzonePatterns, point);
+      // Fallo de consulta: que la query quede en error y conserve los últimos avisos buenos.
+      if (alerts === null) throw new Error("AEMET no disponible");
+      return alerts;
+    },
     staleTime: 15 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
     enabled: isAEMETConfigured() && !!zonaCode,

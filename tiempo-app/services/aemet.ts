@@ -257,6 +257,13 @@ export function parseCAPAlert(
     .replace(/\s+de nivel (amarillo|naranja|rojo)/i, "")
     .trim();
 
+  const polygons = point
+    ? areas
+        .flatMap((a) => (Array.isArray(a.polygon) ? a.polygon : a.polygon ? [a.polygon] : []))
+        .map((text) => parsePolygon(String(text)))
+        .filter((ring) => ring.length >= 3)
+    : [];
+
   return {
     id: `aemet-${zonaCode}-${type}-${severity}-${onset.slice(0, 10)}${areaSlug ? `-${areaSlug}` : ""}`,
     title,
@@ -265,14 +272,24 @@ export function parseCAPAlert(
     type,
     startTime: onset,
     endTime: expires,
+    source: "aemet",
+    key: `aemet-${zonaCode}-${type}${areaSlug ? `-${areaSlug}` : ""}`,
+    zone: areaDescs.join(", ") || undefined,
+    detail: info.description || undefined,
+    polygons: polygons.length > 0 ? polygons : undefined,
   };
 }
 
+/**
+ * Avisos vigentes para la zona. Devuelve `null` si no se pudo consultar
+ * (sin red, AEMET sin `datos`, tar ilegible): no es lo mismo que "no hay
+ * avisos", y quien avisa de que un aviso termina necesita distinguirlo.
+ */
 export async function getAEMETAlerts(
   zonaCode: string,
   subzonePatterns?: string[],
   point?: GeoPoint
-): Promise<WeatherAlert[]> {
+): Promise<WeatherAlert[] | null> {
   try {
     const ccaa = getCCAACode(zonaCode);
     if (!ccaa) return [];
@@ -286,18 +303,21 @@ export async function getAEMETAlerts(
         },
       }
     );
-    if (!res.ok) return [];
+    if (res.status === 404) return [];
+    if (!res.ok) return null;
 
     const json = await res.json();
-    if (!json.datos) return [];
+    // 404 de AEMET en el cuerpo: no hay avisos elaborados para la comunidad.
+    if (json.estado === 404) return [];
+    if (!json.datos) return null;
 
     const tarRes = await fetch(json.datos);
-    if (!tarRes.ok) return [];
+    if (!tarRes.ok) return null;
 
     const tarBuffer = await tarRes.arrayBuffer();
 
     const xmlFiles = parseTar(tarBuffer);
-    if (xmlFiles.length === 0) return [];
+    if (xmlFiles.length === 0) return null;
 
     const parser = new XMLParser({ ignoreAttributes: true });
     // Un aviso y su actualización (msgType Update) comparten id: se queda el
@@ -318,7 +338,7 @@ export async function getAEMETAlerts(
 
     return [...byId.values()];
   } catch {
-    return [];
+    return null;
   }
 }
 
