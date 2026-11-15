@@ -4,8 +4,9 @@ import { useThemeContext, ThemedText, ThemedCard, DynamicBackground } from "@/co
 import { useLocalSearchParams, Stack } from "expo-router";
 import type { WeatherAlert } from "@/types/weather";
 import { alertColors } from "@/constants/theme";
-import { AlertTriangle, Clock, Shield, ExternalLink } from "lucide-react-native";
+import { Clock, Shield, ExternalLink } from "lucide-react-native";
 import { isAEMETConfigured } from "@/services/aemet";
+import { ALERT_ICON, severityLabel as shortSeverityLabel } from "@/components/alerts/alertIcon";
 
 export default function AlertDetailScreen() {
   const { isDark } = useThemeContext();
@@ -28,6 +29,7 @@ export default function AlertDetailScreen() {
   };
 
   const color = alertColors[alert.severity];
+  const Icon = ALERT_ICON[alert.type];
 
   return (
     <DynamicBackground condition="clear">
@@ -60,7 +62,7 @@ export default function AlertDetailScreen() {
                 justifyContent: "center",
               }}
             >
-              <AlertTriangle size={24} color={color} />
+              <Icon size={24} color={color} />
             </View>
             <View style={{ flex: 1 }}>
               <ThemedText style={{ fontSize: 22, fontWeight: "600" }}>
@@ -155,12 +157,6 @@ function formatTime(iso: string): string {
 }
 
 function severityLabel(s: WeatherAlert["severity"]): string {
-  switch (s) {
-    case "red":
-      return "Rojo (extremo)";
-    case "orange":
-      return "Naranja (importante)";
-    case "yellow":
-      return "Amarillo (riesgo)";
-  }
+  const detail = s === "red" ? "riesgo extremo" : s === "orange" ? "riesgo importante" : "riesgo";
+  return `${shortSeverityLabel(s)} (${detail})`;
 }

@@ -2,7 +2,8 @@ import { View, TouchableOpacity, ScrollView } from "react-native";
 import { ThemedText, useThemeContext } from "@/components/theme";
 import type { WeatherAlert } from "@/types/weather";
 import { alertColors } from "@/constants/theme";
-import { AlertTriangle, ChevronRight, X } from "lucide-react-native";
+import { ChevronRight, X } from "lucide-react-native";
+import { ALERT_ICON, severityLabel, validityLabel } from "./alertIcon";
 import { useRouter } from "expo-router";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createMMKV } from "react-native-mmkv";
@@ -74,6 +75,8 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
 
   const top = active[0];
   const color = alertColors[top.severity];
+  const Icon = ALERT_ICON[top.type];
+  const validity = validityLabel(top.endTime);
 
   return (
     <TouchableOpacity
@@ -111,33 +114,45 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
             padding: 14,
           }}
         >
-          <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
-            <AlertTriangle size={18} color={color} style={{ marginTop: 2 }} />
+          <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: `${color}28`,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon size={20} color={color} />
+            </View>
 
-            <View style={{ flex: 1, gap: 4 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
-                  <View
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: color,
-                    }}
-                  />
-                  <ThemedText style={{ fontSize: 14, fontWeight: "600" }}>
-                    {top.title}
+            <View style={{ flex: 1, gap: 3, paddingRight: 28 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <ThemedText style={{ fontSize: 15, fontWeight: "600", flexShrink: 1 }} numberOfLines={1}>
+                  {top.title}
+                </ThemedText>
+                <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6, backgroundColor: `${color}30` }}>
+                  <ThemedText style={{ fontSize: 11, fontWeight: "600", color }}>
+                    {severityLabel(top.severity)}
                   </ThemedText>
                 </View>
               </View>
 
               <ThemedText
                 secondary
-                style={{ fontSize: 12, lineHeight: 17 }}
+                style={{ fontSize: 12.5, lineHeight: 17 }}
                 numberOfLines={2}
               >
                 {top.description}
               </ThemedText>
+
+              {validity !== "" && (
+                <ThemedText secondary style={{ fontSize: 11.5, marginTop: 1 }}>
+                  {validity}
+                </ThemedText>
+              )}
 
               {active.length > 1 && (
                 <ThemedText
@@ -201,6 +216,7 @@ export function AlertList({ alerts }: AlertListProps) {
 function AlertRow({ alert }: { alert: WeatherAlert }) {
   const { isDark } = useThemeContext();
   const color = alertColors[alert.severity];
+  const Icon = ALERT_ICON[alert.type];
 
   return (
     <TouchableOpacity
@@ -227,7 +243,7 @@ function AlertRow({ alert }: { alert: WeatherAlert }) {
           justifyContent: "center",
         }}
       >
-        <AlertTriangle size={18} color={color} />
+        <Icon size={18} color={color} />
       </View>
 
       <View style={{ flex: 1 }}>
@@ -274,13 +290,3 @@ function formatTime(iso: string): string {
   }
 }
 
-function severityLabel(s: WeatherAlert["severity"]): string {
-  switch (s) {
-    case "red":
-      return "Rojo";
-    case "orange":
-      return "Naranja";
-    case "yellow":
-      return "Amarillo";
-  }
-}
