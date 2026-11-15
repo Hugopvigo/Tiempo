@@ -1,6 +1,7 @@
 import { View, TouchableOpacity, type DimensionValue } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { ThemedCard, ThemedText, CardTitle, useThemeContext } from "@/components/theme";
-import { rainColor, trackColor, textColor } from "@/constants/theme";
+import { rainColor, trackColor } from "@/constants/theme";
 import { WeatherIcon } from "./WeatherIcon";
 import type { DailyForecast } from "@/types/weather";
 import { formatTemperature } from "@/constants/weather";
@@ -30,7 +31,6 @@ const DayRow = memo(function DayRow({
   const barWidth = Math.min(Math.max(rawBarWidth, 4), 100 - barLeft);
 
   const trackBg = isDark ? trackColor.dark : trackColor.light;
-  const barColor = isDark ? textColor.dark : textColor.light;
   const rain = isDark ? rainColor.dark : rainColor.light;
 
   return (
@@ -53,11 +53,11 @@ const DayRow = memo(function DayRow({
       </View>
 
       {d.precipitationChance > 0 ? (
-        <ThemedText style={{ fontSize: 13, width: 36, textAlign: "right", color: rain, fontWeight: "600" }}>
+        <ThemedText numberOfLines={1} style={{ fontSize: 13, width: 44, textAlign: "right", color: rain, fontWeight: "600" }}>
           {d.precipitationChance}%
         </ThemedText>
       ) : (
-        <View style={{ width: 36 }} />
+        <View style={{ width: 44 }} />
       )}
 
       <ThemedText secondary style={{ fontSize: 16, width: 38, textAlign: "right" }}>
@@ -73,9 +73,23 @@ const DayRow = memo(function DayRow({
             top: 0,
             bottom: 0,
             borderRadius: 3,
-            backgroundColor: barColor,
+            overflow: "hidden",
           }}
-        />
+        >
+          {/* El degradado abarca toda la pista: cada barra enseña su tramo, de frío a calor. */}
+          <LinearGradient
+            colors={["#60A5FA", "#FB923C"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              position: "absolute",
+              left: pct(-(barLeft / barWidth) * 100),
+              width: pct((100 / barWidth) * 100),
+              top: 0,
+              bottom: 0,
+            }}
+          />
+        </View>
       </View>
 
       <ThemedText style={{ fontSize: 16, fontWeight: "600", width: 38, textAlign: "right" }}>
