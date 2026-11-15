@@ -96,15 +96,14 @@ export function getCCAACode(zonaCode: string): string | undefined {
  * para la capital y para Getafe).
  */
 export function getAEMETSubzonePatterns(city: City): string[] {
-  const nameLower = city.name.toLowerCase();
-  for (const [key, zonePatterns] of Object.entries(CITY_KEYWORD_ZONES)) {
-    if (nameLower.includes(key)) return zonePatterns;
-  }
+  // Nombre exacto: por subcadena, "madrid" casaba con Madridejos (Toledo).
+  const exact = CITY_KEYWORD_ZONES[city.name.trim().toLowerCase()];
+  if (exact) return exact;
 
   return zoneNamesForProvince(city.admin2);
 }
 
-// Ciudad (por palabra en el nombre) → zona Meteoalerta en la que está. Solo
+// Ciudad (nombre exacto, en minúsculas) → zona Meteoalerta en la que está. Solo
 // las que se saben seguras; el resto cae en las zonas de su provincia.
 const CITY_KEYWORD_ZONES: Record<string, string[]> = {
   "madrid": ["Metropolitana y Henares"],

@@ -3,6 +3,7 @@ import type { City } from "@/types/weather";
 // Zonas de aviso del Plan Meteoalerta (AEMET, Anexo 1 "Umbrales y niveles de
 // aviso", v1 31-may-2022), con la provincia a la que pertenecen. Generado a partir
 // del PDF oficial; el nombre coincide con el <areaDesc> de los avisos CAP.
+// Baleares y Canarias: el anexo agrupa por isla; aquí la provincia es la real.
 export interface MeteoalertaZona {
   code: string;
   name: string;
@@ -53,26 +54,26 @@ export const METEOALERTA_ZONAS: MeteoalertaZona[] = [
   { code: "633303", name: "Suroccidental asturiana", province: "Asturias" },
   { code: "633304", name: "Central y Valles Mineros", province: "Asturias" },
   { code: "633305", name: "Cordillera y Picos de Europa", province: "Asturias" },
-  { code: "645301", name: "", province: "Ibiza y Formentera" },
-  { code: "645401", name: "Sierra Tramontana", province: "Mallorca" },
-  { code: "645402", name: "Norte y nordeste de Mallorca", province: "Mallorca" },
-  { code: "645403", name: "Interior de Mallorca", province: "Mallorca" },
-  { code: "645404", name: "Sur de Mallorca", province: "Mallorca" },
-  { code: "645405", name: "Levante mallorquín", province: "Mallorca" },
-  { code: "645501", name: "Menorca", province: "Menorca" },
+  { code: "645301", name: "Ibiza y Formentera", province: "Illes Balears" },
+  { code: "645401", name: "Sierra Tramontana", province: "Illes Balears" },
+  { code: "645402", name: "Norte y nordeste de Mallorca", province: "Illes Balears" },
+  { code: "645403", name: "Interior de Mallorca", province: "Illes Balears" },
+  { code: "645404", name: "Sur de Mallorca", province: "Illes Balears" },
+  { code: "645405", name: "Levante mallorquín", province: "Illes Balears" },
+  { code: "645501", name: "Menorca", province: "Illes Balears" },
   { code: "659001", name: "Norte de Gran Canaria", province: "Las Palmas" },
   { code: "659003", name: "Cumbres de Gran Canaria", province: "Las Palmas" },
   { code: "659004", name: "Este, sur y oeste de Gran Canaria", province: "Las Palmas" },
   { code: "659101", name: "Lanzarote", province: "Las Palmas" },
   { code: "659201", name: "Fuerteventura", province: "Las Palmas" },
-  { code: "659302", name: "", province: "Cumbres de la Palma" },
-  { code: "659303", name: "", province: "Este de la Palma" },
-  { code: "659304", name: "", province: "Oeste de la Palma" },
-  { code: "659401", name: "", province: "La Gomera" },
-  { code: "659501", name: "", province: "El Hierro" },
-  { code: "659601", name: "", province: "Norte de Tenerife" },
-  { code: "659602", name: "", province: "Área Metropolitana de Tenerife" },
-  { code: "659603", name: "", province: "Este, sur y oeste de Tenerife" },
+  { code: "659302", name: "Cumbres de la Palma", province: "Santa Cruz de Tenerife" },
+  { code: "659303", name: "Este de la Palma", province: "Santa Cruz de Tenerife" },
+  { code: "659304", name: "Oeste de la Palma", province: "Santa Cruz de Tenerife" },
+  { code: "659401", name: "La Gomera", province: "Santa Cruz de Tenerife" },
+  { code: "659501", name: "El Hierro", province: "Santa Cruz de Tenerife" },
+  { code: "659601", name: "Norte de Tenerife", province: "Santa Cruz de Tenerife" },
+  { code: "659602", name: "Área Metropolitana de Tenerife", province: "Santa Cruz de Tenerife" },
+  { code: "659603", name: "Este, sur y oeste de Tenerife", province: "Santa Cruz de Tenerife" },
   { code: "663901", name: "Litoral cántabro", province: "Cantabria" },
   { code: "663902", name: "Liébana", province: "Cantabria" },
   { code: "663903", name: "Centro y valle de Villaverde", province: "Cantabria" },
@@ -198,41 +199,36 @@ function norm(s: string): string {
   return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
-// "Provincia de Sevilla" / "Provincia de las Islas Baleares" (Open-Meteo) → "sevilla" / "islas baleares"
+// "Provincia de Sevilla", "Província de Lérida", "Ciudad Autónoma de Ceuta" → "sevilla", "lerida", "ceuta".
+// No se quitan artículos: "La Rioja" y "Las Palmas" los llevan en el nombre.
 function normProvince(s: string): string {
-  return norm(s).replace(/^provincia de (las |la |los |el )?/, "");
+  return norm(s).replace(/^(provincia|ciudad autonoma|comunidad autonoma) (de|del) /, "");
 }
 
 // Equivalencias entre lo que devuelve la geocodificación y la provincia del anexo.
-const PROVINCE_ALIASES: Record<string, string[]> = {
-  "vizcaya": ["Bizkaia"],
-  "bizkaia": ["Bizkaia"],
-  "guipuzcoa": ["Gipuzkoa"],
-  "gipuzkoa": ["Gipuzkoa"],
-  "alava": ["Álava"],
-  "araba": ["Álava"],
-  "la coruna": ["A Coruña"],
-  "coruna": ["A Coruña"],
-  "orense": ["Ourense"],
-  "gerona": ["Girona"],
-  "lerida": ["Lleida"],
-  "castellon de la plana": ["Castellón"],
-  "castello": ["Castellón"],
-  "alacant": ["Alicante"],
-  "valencia": ["Valencia"],
-  "islas baleares": ["Mallorca", "Menorca", "Ibiza y Formentera"],
-  "illes balears": ["Mallorca", "Menorca", "Ibiza y Formentera"],
-  "santa cruz de tenerife": ["Norte de Tenerife", "Este, sur y oeste de Tenerife", "Área Metropolitana de Tenerife", "La Gomera", "El Hierro", "Cumbres de la Palma", "Este de la Palma", "Oeste de la Palma"],
-  "las palmas": ["Las Palmas"],
+const PROVINCE_ALIASES: Record<string, string> = {
+  "vizcaya": "Bizkaia",
+  "guipuzcoa": "Gipuzkoa",
+  "araba": "Álava",
+  "la coruna": "A Coruña",
+  "coruna": "A Coruña",
+  "orense": "Ourense",
+  "gerona": "Girona",
+  "lerida": "Lleida",
+  "castellon de la plana": "Castellón",
+  "castello": "Castellón",
+  "alacant": "Alicante",
+  "las islas baleares": "Illes Balears",
+  "islas baleares": "Illes Balears",
+  "baleares": "Illes Balears",
 };
 
 /** Nombres de zona Meteoalerta de la provincia de una ciudad; vacío si no se conoce. */
 export function zoneNamesForProvince(admin2: string | undefined): string[] {
   if (!admin2) return [];
   const key = normProvince(admin2);
-  const provinces = PROVINCE_ALIASES[key] ?? [admin2];
-  const wanted = new Set(provinces.map(normProvince));
-  return METEOALERTA_ZONAS.filter((z) => wanted.has(norm(z.province))).map((z) => z.name);
+  const wanted = norm(PROVINCE_ALIASES[key] ?? key);
+  return METEOALERTA_ZONAS.filter((z) => norm(z.province) === wanted).map((z) => z.name);
 }
 
 export function zoneNamesForCity(city: City): string[] {
