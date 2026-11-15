@@ -12,7 +12,7 @@ interface PrecipitationChartProps {
 const H = 132;
 const PAD_TOP = 18; // sitio para la cifra del pico
 const PAD_BOTTOM = 22; // etiquetas de hora
-const MIN_SCALE_MM = 4; // una llovizna no debe dibujar barras hasta arriba
+const MIN_SCALE_MM = 2; // una llovizna no debe dibujar barras hasta arriba
 const MIN_TOTAL_MM = 0.1;
 
 function formatMm(mm: number): string {
@@ -46,7 +46,8 @@ export function PrecipitationChart({ hourly }: PrecipitationChartProps) {
     const baseY = PAD_TOP + plotH;
 
     const bars = points.map((p, i) => {
-      const h = p.precipitation > 0 ? Math.max(2, (p.precipitation / scale) * plotH) : 0;
+      // Escala de raíz: con un pico de 13 mm, una hora de 1 mm sigue viéndose.
+      const h = p.precipitation > 0 ? Math.max(3, Math.sqrt(p.precipitation / scale) * plotH) : 0;
       return { x: i * slot + (slot - barW) / 2, y: baseY - h, h, hour: parseInt(p.time.split("T")[1]?.slice(0, 2) ?? "0", 10) };
     });
     const peakIndex = points.findIndex((p) => p.precipitation === peak);
