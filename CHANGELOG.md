@@ -1,5 +1,11 @@
 # Changelog
 
+## Sin publicar — Avisos AEMET por polígono
+
+- El tar de OpenData trae un `<polygon>` (lat,lon, WGS84) por zona. Si el aviso los trae y la ciudad tiene coordenadas, solo se muestran las zonas que contienen la ciudad, con ~2 km de margen porque los polígonos llevan dos decimales. Getafe deja de ver los avisos de la Sierra y cualquier municipio sin zona asignada a mano recibe los de su zona exacta
+- Sin polígono o sin coordenadas se mantiene el filtro por nombre de zona y provincia
+- La descripción del aviso lista solo las zonas que contienen la ciudad
+
 ## v4.6.2 — Lluvia que salía como nieve, avisos locales con umbrales Meteoalerta y retoques de inicio
 
 ### Bug fix: "va a nevar" cuando solo llovía
