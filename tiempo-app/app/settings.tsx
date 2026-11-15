@@ -6,9 +6,9 @@ import { useSettingsStore, useCityStore } from "@/stores/cityStore";
 import { BottomNavBar } from "@/components/ui/BottomNavBar";
 import { SwipeableCityRow } from "@/components/city";
 import { useRouter } from "expo-router";
-import { Moon, Sun, Monitor, Plus, Navigation, Thermometer, Bell, CloudRain, CloudLightning, Snowflake, Wind, ThermometerSun, ThermometerSnowflake, Waves, CloudFog, Key, Palette, CircleDot } from "lucide-react-native";
+import { Moon, Sun, Monitor, Plus, Navigation, Thermometer, Bell, CloudRain, CloudLightning, Snowflake, Wind, ThermometerSun, ThermometerSnowflake, Waves, CloudFog, Key, Palette, CircleDot, Sunrise, Umbrella } from "lucide-react-native";
 import { useLocation } from "@/hooks/useLocation";
-import { requestNotificationPermissions, setupNotificationChannel, cancelAllAlertNotifications, setBadgeCount } from "@/services/notifications";
+import { requestNotificationPermissions, setupNotificationChannel, cancelAllAlertNotifications, cancelMorningSummary, setBadgeCount } from "@/services/notifications";
 import { registerBackgroundFetch, unregisterBackgroundFetch } from "@/services/backgroundAlerts";
 import { configureAEMET } from "@/services/aemet";
 import type { ThemeMode, IconStyle } from "@/types/weather";
@@ -320,6 +320,27 @@ export default function SettingsScreen() {
           onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, fog: v } })}
           iconColor={iconColor}
           isDark={isDark}
+        />
+        <NotificationToggle
+          label="Resumen de la mañana"
+          icon={Sunrise}
+          value={settings.notifications.morningSummary ?? false}
+          onValueChange={(v) => {
+            if (!v) cancelMorningSummary();
+            updateSettings({ notifications: { ...settings.notifications, morningSummary: v } });
+          }}
+          iconColor={iconColor}
+          isDark={isDark}
+          note="A las 08:00, de la ciudad activa"
+        />
+        <NotificationToggle
+          label="Lluvia en la próxima hora"
+          icon={Umbrella}
+          value={settings.notifications.rainSoon ?? false}
+          onValueChange={(v) => updateSettings({ notifications: { ...settings.notifications, rainSoon: v } })}
+          iconColor={iconColor}
+          isDark={isDark}
+          note="Aunque no haya aviso oficial"
         />
       </View>
     )}

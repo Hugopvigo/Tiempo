@@ -1,6 +1,7 @@
 import "../global.css";
 import { Platform } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
+import * as Notifications from "expo-notifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import { useTheme } from "@/hooks/useTheme";
@@ -73,6 +74,18 @@ export default function RootLayout() {
       registerBackgroundFetch();
     }
   }, [settings.notifications.enabled]);
+  // Tocar una notificación abre lo que anuncia: el detalle del aviso o inicio.
+  useEffect(() => {
+    const open = (response: Notifications.NotificationResponse | null) => {
+      const url = response?.notification.request.content.data?.url;
+      if (typeof url === "string" && url.startsWith("/")) router.push(url as never);
+    };
+    // Arranque en frío desde la notificación.
+    Notifications.getLastNotificationResponseAsync().then(open).catch(() => {});
+    const sub = Notifications.addNotificationResponseReceivedListener(open);
+    return () => sub.remove();
+  }, []);
+
   const [queryClient] = useState(
     () =>
     new QueryClient({

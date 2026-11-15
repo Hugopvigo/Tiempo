@@ -4,7 +4,7 @@ import type { WeatherAlert } from "@/types/weather";
 import { alertColors } from "@/constants/theme";
 import { ChevronRight, X } from "lucide-react-native";
 import { ALERT_ICON } from "./alertIcon";
-import { severityLabel, validityLabel } from "@/utils/alertFormat";
+import { severityLabel, validityLabel, alertDetailUrl } from "@/utils/alertFormat";
 import { useRouter } from "expo-router";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createMMKV } from "react-native-mmkv";
@@ -87,16 +87,7 @@ export function AlertBanner({ alerts, onDismiss }: AlertBannerProps) {
           dismissRef.current = false;
           return;
         }
-        const params = new URLSearchParams({
-          id: top.id,
-          title: top.title,
-          description: top.description,
-          severity: top.severity,
-          type: top.type,
-          startTime: top.startTime,
-          endTime: top.endTime,
-        });
-        router.push(`/alert-detail?${params.toString()}`);
+        router.push(alertDetailUrl(top) as never);
       }}
     >
       <View
